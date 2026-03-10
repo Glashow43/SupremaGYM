@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SupremaGym</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --bg: #0e0f17;
+  --surface: #181a27;
+  --surface2: #1f2133;
+  --border: #2a2d42;
+  --nav-bg: #12131f;
+  --purple: #8b6cf7;
+  --purple2: #a78bfa;
+  --green: #22c55e;
+  --red: #f43f5e;
+  --blue: #3b82f6;
+  --orange: #f97316;
+  --yellow: #fbbf24;
+  --text: #e8eaf6;
+  --text2: #8b8fa8;
+  --text3: #4a4e6a;
+  --squat: #f87171;
+  --bench: #60a5fa;
+  --deadlift: #4ade80;
+  --r: 14px;
+  --sh: 0 2px 16px rgba(0,0,0,0.4);
+  --grad: linear-gradient(135deg,#4c3fa0,#6b52d1,#8b6cf7);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);min-height:100dvh;color:var(--text);}
+
+/* LOGIN */
+#login-screen{display:flex;position:fixed;inset:0;z-index:9000;background:var(--grad);flex-direction:column;align-items:center;justify-content:center;padding:30px;}
+.login-logo{font-size:60px;margin-bottom:16px;}
+.login-title{font-size:28px;font-weight:800;color:#fff;margin-bottom:6px;}
+.login-sub{font-size:14px;color:rgba(255,255,255,0.75);margin-bottom:48px;text-align:center;}
+.login-btn{display:flex;align-items:center;gap:12px;background:#fff;border:none;border-radius:12px;padding:14px 24px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 4px 20px rgba(0,0,0,0.2);width:100%;max-width:300px;justify-content:center;}
+#login-loading{display:none;margin-top:20px;color:#fff;font-size:13px;}
+#login-error{display:none;color:rgba(255,255,255,0.85);font-size:12px;margin-top:16px;text-align:center;}
+#login-loading-spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* TOP NAV */
+.topnav{background:var(--nav-bg);padding:0 14px;display:flex;align-items:center;height:50px;position:sticky;top:0;z-index:100;}
+.topnav-links{display:flex;gap:2px;overflow-x:auto;flex:1;scrollbar-width:none;}
+.topnav-links::-webkit-scrollbar{display:none;}
+.tnl{background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;font-weight:600;cursor:pointer;padding:6px 10px;border-radius:8px;white-space:nowrap;font-family:'Inter',sans-serif;}
+.tnl.active{color:#fff;background:rgba(255,255,255,0.15);}
+.topnav-user{display:none;align-items:center;gap:6px;margin-left:8px;flex-shrink:0;}
+.topnav-user.visible{display:flex;}
+#user-avatar{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);display:none;}
+#user-name{font-size:11px;color:rgba(255,255,255,0.75);font-weight:600;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sign-out-btn{background:none;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.7);font-size:10px;font-weight:600;padding:3px 7px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;}
+
+/* PAGES */
+.page{display:none;padding:0 0 110px;}
+.page.active{display:block;}
+#page-session{padding-bottom:170px;}
+.pc{max-width:680px;margin:0 auto;padding:14px 13px;}
+.ptitle{font-size:20px;font-weight:800;color:var(--text);margin-bottom:14px;}
+
+/* BOTTOM NAV */
+.botnav{position:fixed;bottom:0;left:0;right:0;background:var(--nav-bg);display:flex;z-index:100;padding-bottom:max(env(safe-area-inset-bottom),8px);}
+.bnb{flex:1;background:none;border:none;color:rgba(255,255,255,0.5);font-size:8px;font-weight:600;cursor:pointer;padding:8px 2px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:'Inter',sans-serif;min-height:52px;}
+.bnb svg{width:20px;height:20px;}
+.bnb.active{color:#fff;}
+.bnb.active svg{filter:drop-shadow(0 0 4px rgba(167,139,250,0.8));}
+
+/* CARDS */
+.wcard{background:var(--surface);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:var(--sh);}
+.bcard{border-radius:var(--r);padding:16px;color:#fff;margin-bottom:10px;}
+.bcard.purple{background:var(--purple);}
+.bcard.green{background:var(--green);}
+.bcard.red{background:var(--red);}
+.bcard.blue{background:var(--blue);}
+.bcard.squat{background:var(--squat);}
+.bcard.bench{background:var(--bench);}
+.bcard.deadlift{background:var(--deadlift);}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:20px;border:none;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:opacity 0.15s;}
+.btn:active{opacity:0.7;}
+.btn.g{background:var(--green);color:#fff;}
+.btn.r{background:var(--red);color:#fff;}
+.btn.b{background:var(--blue);color:#fff;}
+.btn.p{background:var(--purple);color:#fff;}
+.btn.out{background:none;border:2px solid rgba(255,255,255,0.4);color:#fff;}
+.btn.full{width:100%;justify-content:center;}
+.btn.sm{padding:5px 10px;font-size:11px;}
+
+/* MODALS */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;}
+.mo.open{display:flex;}
+.mdl{background:var(--surface);border-radius:var(--r);padding:20px;width:100%;max-width:420px;max-height:80vh;overflow-y:auto;}
+.mdl-title{font-size:16px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.mclose{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2);line-height:1;}
+.fg{margin-bottom:14px;}
+.fl{font-size:11px;font-weight:700;color:var(--text2);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.04em;}
+.fi{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;font-family:'Inter',sans-serif;outline:none;background:var(--surface2);color:var(--text);}
+.fi:focus{border-color:var(--purple);}
+
+/* FORM */
+.rm-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.rm-card{background:var(--surface);border-radius:12px;padding:12px 8px;text-align:center;box-shadow:var(--sh);}
+.rm-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;}
+.rm-val{font-size:22px;font-weight:800;}
+.rm-unit{font-size:10px;color:var(--text2);}
+.rm-card.squat .rm-label,.rm-card.squat .rm-val{color:var(--squat);}
+.rm-card.bench .rm-label,.rm-card.bench .rm-val{color:var(--bench);}
+.rm-card.deadlift .rm-label,.rm-card.deadlift .rm-val{color:var(--deadlift);}
+
+/* NOTIF */
+#notif{position:fixed;top:60px;left:50%;transform:translateX(-50%) translateY(-80px);background:#1a1d2e;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:9999;transition:transform 0.3s;white-space:nowrap;}
+#notif.show{transform:translateX(-50%) translateY(0);}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--text2);}
+.empty-icon{font-size:40px;margin-bottom:10px;}
+
+/* SECTION HEADER */
+.sh{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text2);margin:16px 0 8px;border-bottom:2px solid var(--border);padding-bottom:5px;}
+.sh.p{color:var(--purple);border-color:var(--purple);}
+
+/* BADGES */
+.bdg{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:0.04em;}
+.bdg.g{background:rgba(34,197,94,0.2);color:var(--green);}
+.bdg.r{background:rgba(244,63,94,0.2);color:var(--red);}
+.bdg.b{background:rgba(59,130,246,0.2);color:var(--blue);}
+.bdg.p{background:rgba(139,108,247,0.2);color:var(--purple2);}
+.bdg.o{background:rgba(249,115,22,0.2);color:var(--orange);}
+
+/* INSTALL BANNER */
+#install-banner{display:none;background:var(--purple);color:#fff;padding:10px 14px;align-items:center;justify-content:space-between;font-size:12px;font-weight:600;gap:10px;}
+#install-banner button{background:rgba(255,255,255,0.25);border:none;color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;}
+
+/* HOME */
+.home-total{font-size:28px;font-weight:900;color:var(--purple);}
+.home-total-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;}
+.stat-row{display:flex;justify-content:space-between;gap:8px;margin-bottom:12px;}
+.stat-item{flex:1;background:var(--surface);border-radius:12px;padding:12px 10px;text-align:center;box-shadow:var(--sh);}
+.stat-val{font-size:20px;font-weight:800;margin-bottom:2px;}
+.stat-lbl{font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase;}
+
+/* SESSION LOGGER */
+.sess-ex{background:var(--surface);border-radius:var(--r);margin-bottom:12px;overflow:hidden;box-shadow:var(--sh);}
+.sess-ex-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);}
+.sess-ex-name{font-size:14px;font-weight:700;}
+.sess-set-row{display:grid;grid-template-columns:28px 1fr 1fr 1fr 32px;gap:6px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);}
+.sess-set-row:last-child{border-bottom:none;}
+.set-num{font-size:11px;color:var(--text2);font-weight:700;text-align:center;}
+.set-inp{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:6px 8px;font-size:13px;font-family:'Inter',sans-serif;text-align:center;outline:none;background:var(--surface2);color:var(--text);}
+.set-inp:focus{border-color:var(--purple);}
+.set-done{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.set-done.done{background:var(--green);border-color:var(--green);color:#fff;}
+.set-lbl{font-size:9px;color:var(--text2);font-weight:600;text-align:center;text-transform:uppercase;}
+.sess-hdr{background:var(--grad);border-radius:var(--r);padding:14px;color:#fff;margin-bottom:14px;}
+
+/* PROGRAMS */
+.psp{display:none;}
+.psp.active{display:block;}
+.prog-item{background:var(--surface);border-radius:var(--r);padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh);cursor:pointer;}
+.prog-item.active-prog{border:2px solid var(--green);background:rgba(34,197,94,0.07);}
+.prog-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.prog-info{flex:1;}
+.prog-name{font-size:14px;font-weight:700;margin-bottom:2px;}
+.prog-meta{font-size:11px;color:var(--text2);}
+.back-btn{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;padding:8px 0 12px;font-family:'Inter',sans-serif;}
+
+/* WEEK/SESSION TREE */
+.tree-week{margin-bottom:10px;}
+.tree-week-hdr{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface);border-radius:12px;cursor:pointer;box-shadow:var(--sh);}
+.tree-week-hdr:hover{background:rgba(139,108,247,0.12);}
+.tree-body{padding:0 0 0 20px;}
+.tree-body.col{display:none;}
+.sess-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface);border-radius:10px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+.sess-item.suggested{background:rgba(34,197,94,0.1);border:1.5px solid var(--green);}
+.sess-item-info{flex:1;}
+.sess-item-name{font-size:13px;font-weight:700;}
+.sess-item-meta{font-size:11px;color:var(--text2);}
+
+/* EXERCISE PAGE */
+.expage-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.excat-section{margin-bottom:6px;}
+.excat-title{font-size:13px;font-weight:800;color:var(--purple2);border-bottom:2px solid var(--purple);padding-bottom:5px;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;}
+.exrow{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 12px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+.exrow-thumb{width:54px;height:54px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
+.exrow-body{flex:1;min-width:0;}
+.exrow-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.exrow-desc{font-size:11px;color:var(--text2);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.exrow-weight{font-size:11px;color:var(--text2);}
+.exrow-actions{display:flex;gap:5px;flex-shrink:0;}
+.exbtn-edit{background:#2980b9;color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
+.exbtn-del{background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
+.ex-list-custom{font-size:9px;background:var(--purple);color:#fff;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;}
+.ex-page-search{padding:0 0 10px;}
+.ex-page-search input{width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;font-family:'Inter',sans-serif;outline:none;background:var(--surface2);color:var(--text);}
+.ex-page-search input:focus{border-color:var(--purple);}
+.ex-cat-btn{background:none;border:1.5px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;color:var(--text2);}
+.ex-cat-btn.active{background:var(--purple);border-color:var(--purple);color:#fff;}
+.ex-cats-row{display:flex;gap:6px;padding:0 0 10px;overflow-x:auto;scrollbar-width:none;}
+.ex-cats-row::-webkit-scrollbar{display:none;}
+
+/* EXERCISE PICKER (modal overlay) */
+.ex-picker-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:none;align-items:flex-end;}
+.ex-picker-overlay.open{display:flex;}
+.ex-picker-sheet{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-height:85vh;display:flex;flex-direction:column;padding-bottom:max(env(safe-area-inset-bottom),16px);box-shadow:0 -8px 40px rgba(0,0,0,0.5);}
+.ex-picker-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 10px;border-bottom:1px solid var(--border);}
+.ex-picker-title{font-size:16px;font-weight:800;color:var(--text);}
+.ex-picker-close{background:var(--surface2);border:none;font-size:18px;cursor:pointer;color:var(--text2);line-height:1;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.ex-picker-search{padding:10px 14px 6px;}
+.ex-picker-search input{width:100%;border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;font-size:14px;font-family:'Inter',sans-serif;outline:none;background:var(--surface2);color:var(--text);}
+.ex-picker-search input:focus{border-color:var(--purple);}
+.ex-picker-cats{display:flex;gap:6px;padding:6px 14px 10px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;}
+.ex-picker-cats::-webkit-scrollbar{display:none;}
+.ex-picker-list{overflow-y:auto;flex:1;}
+.ex-pick-item{display:flex;align-items:center;gap:13px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;}
+.ex-pick-item:hover,.ex-pick-item:active{background:rgba(139,108,247,0.1);}
+.ex-pick-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.ex-pick-name{font-size:14px;font-weight:700;color:var(--text);}
+.ex-pick-cat{font-size:11px;color:var(--text2);margin-top:2px;display:flex;align-items:center;gap:4px;}
+.ex-pick-lift{font-size:9px;background:rgba(139,108,247,0.2);color:var(--purple2);border-radius:4px;padding:1px 5px;font-weight:700;text-transform:uppercase;}
+
+/* PROGRAM EDITOR */
+.ex-editor{position:fixed;inset:0;background:var(--bg);z-index:300;display:none;flex-direction:column;overflow-y:auto;}
+.ex-editor.open{display:flex;}
+.ex-editor-hdr{background:var(--nav-bg);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:1;}
+.ex-editor-hdr h2{font-size:16px;font-weight:800;}
+.ee-ex-item{background:var(--surface);border-radius:12px;margin:8px 14px;overflow:hidden;box-shadow:var(--sh);}
+.ee-ex-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);}
+.ee-ex-name{font-size:13px;font-weight:700;}
+.ee-set-row{display:grid;grid-template-columns:24px 60px 70px 60px 60px 32px;gap:6px;align-items:center;padding:7px 12px;border-bottom:1px solid var(--border);}
+.ee-set-row:last-child{border-bottom:none;}
+.ee-set-num{font-size:10px;color:var(--text2);font-weight:700;text-align:center;}
+.ee-inp{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:5px 6px;font-size:12px;font-family:'Inter',sans-serif;text-align:center;outline:none;background:var(--surface2);color:var(--text);}
+.ee-inp:focus{border-color:var(--purple);}
+.ee-hdr-labels{display:grid;grid-template-columns:24px 60px 70px 60px 60px 32px;gap:6px;padding:4px 12px 2px;background:var(--surface2);}
+.ee-lbl{font-size:9px;color:var(--text2);font-weight:700;text-align:center;text-transform:uppercase;}
+
+/* QUICK EX MODAL */
+#modal-quick-ex{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:16px;}
+#modal-quick-ex.open{display:flex;}
+#modal-quick-ex .mdl{max-width:340px;}
+
+/* CALC PAGE */
+.calc-result-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.calc-result-row:last-child{border-bottom:none;}
+.calc-pct{font-size:13px;color:var(--text2);font-weight:600;}
+.calc-kg{font-size:15px;font-weight:800;}
+.calc-reps{font-size:11px;color:var(--text2);}
+
+/* PROGRESS */
+.hist-item{background:var(--surface);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:var(--sh);}
+.hist-date{font-size:11px;color:var(--text2);font-weight:600;margin-bottom:4px;}
+.hist-name{font-size:14px;font-weight:700;margin-bottom:6px;}
+.hist-tags{display:flex;flex-wrap:wrap;gap:4px;}
+.hist-tag{font-size:10px;background:rgba(139,108,247,0.15);color:var(--purple);border-radius:6px;padding:2px 7px;font-weight:700;}
+.chart-container{background:var(--surface);border-radius:var(--r);padding:14px;margin-bottom:12px;box-shadow:var(--sh);}
+
+/* TRAIN PAGE */
+.train-prog{background:var(--surface);border-radius:var(--r);margin-bottom:10px;overflow:hidden;box-shadow:var(--sh);}
+.train-prog-hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;font-weight:700;font-size:14px;}
+.train-prog-hdr .chevron{transition:transform 0.2s;font-size:12px;color:var(--text2);}
+.train-prog-hdr.open .chevron{transform:rotate(90deg);}
+.train-prog-body{display:none;padding:0 14px 12px;}
+.train-prog-body.open{display:block;}
+
+/* SETTINGS */
+.settings-section{background:var(--surface);border-radius:var(--r);margin-bottom:12px;overflow:hidden;box-shadow:var(--sh);}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--border);}
+.settings-row:last-child{border-bottom:none;}
+.settings-row-label{font-size:14px;font-weight:600;}
+.settings-row-sub{font-size:11px;color:var(--text2);margin-top:1px;}
+
+/* WCARD extras */
+.wcard-title{font-size:13px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;}
+.wcard .btn{margin-top:6px;}
+</style>
+</head>
+<body>
+
+<!-- NOTIF -->
+<div id="notif"></div>
+
+<!-- INSTALL BANNER -->
+<div id="install-banner">
+  <span>📲 Installer SupremaGym sur l'écran d'accueil</span>
+  <button onclick="installApp()">Installer</button>
+</div>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-logo">🏋️</div>
+  <div class="login-title">SupremaGym</div>
+  <div class="login-sub">Ton compagnon d'entraînement powerlifting</div>
+  <button class="login-btn" onclick="signInWithGoogle()">
+    <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.05 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+    Se connecter avec Google
+  </button>
+  <div id="login-loading"><span id="login-loading-spinner"></span>Connexion en cours...</div>
+  <div id="login-error"></div>
+</div>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="topnav-links">
+    <button class="tnl active" onclick="showPage('home',0)">🏠 Accueil</button>
+    <button class="tnl" onclick="showPage('exercises',1)">💪 Exercices</button>
+    <button class="tnl" onclick="showPage('programs',2)">📋 Programmes</button>
+    <button class="tnl" onclick="showPage('train',3)">⚡ S'entraîner</button>
+    <button class="tnl" onclick="showPage('calc',4)">🏆 1RM</button>
+    <button class="tnl" onclick="showPage('progress',5)">📈 Historique</button>
+    <button class="tnl" onclick="showPage('settings',6)">⚙️ Réglages</button>
+  </div>
+  <div class="topnav-user" id="user-badge">
+    <img id="user-avatar" src="" alt="">
+    <span id="user-name"></span>
+    <button class="sign-out-btn" onclick="signOut()">Déco</button>
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div class="page active" id="page-home">
+  <div class="pc">
+    <!-- 1RM Row -->
+    <div class="rm-row" id="home-rm-row">
+      <div class="rm-card squat">
+        <div class="rm-label">Squat</div>
+        <div class="rm-val" id="rm-squat">—</div>
+        <div class="rm-unit">kg</div>
+      </div>
+      <div class="rm-card bench">
+        <div class="rm-label">Bench</div>
+        <div class="rm-val" id="rm-bench">—</div>
+        <div class="rm-unit">kg</div>
+      </div>
+      <div class="rm-card deadlift">
+        <div class="rm-label">Deadlift</div>
+        <div class="rm-val" id="rm-deadlift">—</div>
+        <div class="rm-unit">kg</div>
+      </div>
+    </div>
+
+    <!-- Total -->
+    <div class="wcard" style="text-align:center;padding:16px;">
+      <div class="home-total-label">Total powerlifting</div>
+      <div class="home-total" id="home-total">— kg</div>
+    </div>
+
+    <!-- Active program -->
+    <div id="home-active-prog"></div>
+
+    <!-- Last session -->
+    <div id="home-last-sess"></div>
+
+    <!-- Quick actions -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
+      <button class="btn g full" onclick="showPage('train',3)">🏋️ S'entraîner</button>
+      <button class="btn b full" onclick="showPage('programs',2)">📋 Programmes</button>
+    </div>
+
+    <!-- Recent sessions -->
+    <div class="sh p" style="margin-top:16px;">Séances récentes</div>
+    <div id="home-recent-sess"></div>
+  </div>
+</div>
+
+<!-- EXERCISES PAGE -->
+<div class="page" id="page-exercises">
+  <div class="pc">
+    <div class="expage-header">
+      <div class="ptitle" style="margin:0;">💪 Gestion des exercices</div>
+      <button class="btn g sm" onclick="openAddCustomEx()">✚ Nouvel exercice</button>
+    </div>
+    <div class="ex-page-search">
+      <input type="search" id="expage-search" placeholder="🔍 Rechercher..." oninput="renderExPage()">
+    </div>
+    <div class="ex-cats-row" id="expage-cats"></div>
+    <div id="expage-list"></div>
+  </div>
+</div>
+
+<!-- PROGRAMS PAGE -->
+<div class="page" id="page-programs">
+  <div class="psp active" id="prog-list">
+    <div class="pc">
+      <div class="ptitle">📋 Mes Programmes</div>
+      <div class="wcard" style="text-align:center;">
+        <button class="btn g full" onclick="openModal('modal-create-prog')">✚ Créer un programme</button>
+      </div>
+      <div id="prog-list-content"></div>
+    </div>
+  </div>
+  <div class="psp" id="prog-detail">
+    <div class="pc">
+      <button class="back-btn" onclick="showProgList()">← Retour</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;gap:9px;flex-wrap:wrap;">
+        <div class="ptitle" id="detail-prog-name" style="margin:0;">PROGRAMME</div>
+      </div>
+      <div id="detail-weeks-content"></div>
+      <button onclick="addWeek()" style="width:100%;padding:11px;background:var(--surface);border:2px dashed var(--border);border-radius:var(--r);color:var(--blue);font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-top:4px;">＋ Ajouter une semaine</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRAIN PAGE -->
+<div class="page" id="page-train">
+  <div class="pc">
+    <div class="ptitle">⚡ S'entraîner</div>
+    <div id="train-suggestion"></div>
+    <div id="train-prog-list"></div>
+  </div>
+</div>
+
+<!-- SESSION PAGE -->
+<div class="page" id="page-session">
+  <div class="pc">
+    <div class="sess-hdr">
+      <button onclick="showPage('train',3)" style="background:none;border:none;color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;padding:0 0 6px;">← Retour</button>
+      <div style="font-size:17px;font-weight:800;" id="sess-title">Séance</div>
+      <div style="font-size:12px;opacity:0.8;" id="sess-subtitle"></div>
+    </div>
+    <div id="sess-exercises"></div>
+    <button class="btn g full" style="margin-bottom:8px;" onclick="openExPicker('session')">＋ Ajouter un exercice</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+      <button class="btn r full" onclick="clearSession()">✕ Annuler</button>
+      <button class="btn g full" onclick="saveSession()">✓ Terminer</button>
+    </div>
+  </div>
+</div>
+
+<!-- CALC PAGE -->
+<div class="page" id="page-calc">
+  <div class="pc">
+    <div class="ptitle">🏆 Calculateur 1RM</div>
+    <div class="wcard">
+      <div class="fg">
+        <label class="fl">Type de levé</label>
+        <select class="fi" id="calc-lift" onchange="renderCalc()">
+          <option value="squat">Squat</option>
+          <option value="bench">Bench Press</option>
+          <option value="deadlift">Deadlift</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="fg">
+          <label class="fl">Poids (kg)</label>
+          <input type="number" class="fi" id="calc-weight" placeholder="100" oninput="renderCalc()" min="0">
+        </div>
+        <div class="fg">
+          <label class="fl">Répétitions</label>
+          <input type="number" class="fi" id="calc-reps" placeholder="5" oninput="renderCalc()" min="1" max="20">
+        </div>
+      </div>
+      <button class="btn p full" onclick="save1RM()">💾 Sauvegarder comme 1RM</button>
+    </div>
+    <div id="calc-results"></div>
+  </div>
+</div>
+
+<!-- PROGRESS PAGE -->
+<div class="page" id="page-progress">
+  <div class="pc">
+    <div class="ptitle">📈 Historique</div>
+    <div id="progress-content"></div>
+  </div>
+</div>
+
+<!-- SETTINGS PAGE -->
+<div class="page" id="page-settings">
+  <div class="pc">
+    <div class="ptitle">⚙️ Réglages</div>
+    <div class="settings-section">
+      <div class="settings-row">
+        <div>
+          <div class="settings-row-label">📤 Exporter les données</div>
+          <div class="settings-row-sub">JSON de sauvegarde</div>
+        </div>
+        <button class="btn b sm" onclick="exportData()">Exporter</button>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-row-label">📥 Importer des données</div>
+          <div class="settings-row-sub">Restaurer une sauvegarde</div>
+        </div>
+        <button class="btn p sm" onclick="document.getElementById('import-file').click()">Importer</button>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-row-label">🗑️ Effacer toutes les données</div>
+          <div class="settings-row-sub">Irréversible</div>
+        </div>
+        <button class="btn r sm" onclick="clearAllData()">Effacer</button>
+      </div>
+    </div>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+    <div class="wcard" id="settings-info"></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="botnav">
+  <button class="bnb active" onclick="showPage('home',0)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+    Accueil
+  </button>
+  <button class="bnb" onclick="showPage('exercises',1)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/><circle cx="17" cy="18" r="3"/></svg>
+    Exos
+  </button>
+  <button class="bnb" onclick="showPage('programs',2)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+    Prog
+  </button>
+  <button class="bnb" onclick="showPage('train',3)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    Train
+  </button>
+  <button class="bnb" onclick="showPage('calc',4)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 7H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+    1RM
+  </button>
+  <button class="bnb" onclick="showPage('progress',5)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 17l4-8 4 5 4-3 4 6"/></svg>
+    Stats
+  </button>
+  <button class="bnb" onclick="showPage('settings',6)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+    Réglages
+  </button>
+</nav>
+
+<!-- MODAL: Create Program -->
+<div class="mo" id="modal-create-prog">
+  <div class="mdl">
+    <div class="mdl-title">Nouveau programme <button class="mclose" onclick="closeModal('modal-create-prog')">×</button></div>
+    <div class="fg"><label class="fl">Nom du programme</label><input class="fi" id="prog-name-input" placeholder="Ex: POWER RUSH"></div>
+    <div class="fg"><label class="fl">Nombre de semaines</label><input type="number" class="fi" id="prog-weeks-input" value="4" min="1" max="20"></div>
+    <div class="fg"><label class="fl">Séances par semaine</label><input type="number" class="fi" id="prog-sessions-input" value="4" min="1" max="7"></div>
+    <button class="btn g full" onclick="createProgram()">✚ Créer</button>
+  </div>
+</div>
+
+<!-- MODAL: Edit Exercise (Exercise Page) -->
+<div class="mo" id="modal-edit-ex">
+  <div class="mdl">
+    <div class="mdl-title">✏️ Exercice <button class="mclose" onclick="closeModal('modal-edit-ex')">×</button></div>
+    <input type="hidden" id="edit-ex-oldname">
+    <div class="fg"><label class="fl">Nom</label><input class="fi" id="edit-ex-name" placeholder="Nom de l'exercice"></div>
+    <div class="fg"><label class="fl">Description (optionnel)</label><input class="fi" id="edit-ex-desc" placeholder="Description"></div>
+    <div class="fg"><label class="fl">Catégorie</label>
+      <select class="fi" id="edit-ex-cat">
+        <option>Powerlifting</option><option>Jambes</option><option>Pectoraux</option>
+        <option>Dos</option><option>Épaules</option><option>Bras</option><option>Abdominaux</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl">Poids par défaut (kg)</label><input type="number" class="fi" id="edit-ex-weight" value="0" min="0"></div>
+    <button class="btn g full" onclick="saveEditEx()">✅ Enregistrer</button>
+  </div>
+</div>
+
+<!-- MODAL: Quick Add Exercise to Session -->
+<div id="modal-quick-ex">
+  <div class="mdl">
+    <div class="mdl-title">Ajouter l'exercice <button class="mclose" onclick="document.getElementById('modal-quick-ex').classList.remove('open')">×</button></div>
+    <div id="quick-ex-name" style="font-size:13px;color:var(--purple);font-weight:700;margin-bottom:16px;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div class="fg"><label class="fl">Séries</label><input type="number" class="fi" id="qex-sets" value="4" min="1"></div>
+      <div class="fg"><label class="fl">Répétitions</label><input type="number" class="fi" id="qex-reps" value="5" min="1"></div>
+    </div>
+    <button class="btn g full" onclick="confirmQuickEx()">✅ Ajouter</button>
+  </div>
+</div>
+
+<!-- EXERCISE PICKER OVERLAY -->
+<div class="ex-picker-overlay" id="ex-picker-overlay" onclick="closeExPicker(event)">
+  <div class="ex-picker-sheet">
+    <div class="ex-picker-hdr">
+      <div>
+        <div class="ex-picker-title">💪 Choisir un exercice</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;" id="ex-picker-count"></div>
+      </div>
+      <button class="ex-picker-close" onclick="document.getElementById('ex-picker-overlay').classList.remove('open')">×</button>
+    </div>
+    <div class="ex-picker-search">
+      <input type="search" id="ex-picker-search" placeholder="🔍 Rechercher un exercice..." oninput="renderExPicker()" autocomplete="off">
+    </div>
+    <div class="ex-picker-cats" id="ex-picker-cats"></div>
+    <div class="ex-picker-list" id="ex-picker-list"></div>
+  </div>
+</div>
+
+<!-- PROGRAM EDITOR (full-screen overlay) -->
+<div class="ex-editor" id="ex-editor">
+  <div class="ex-editor-hdr">
+    <h2 id="ee-title">Éditeur de séance</h2>
+    <div style="display:flex;gap:8px;">
+      <button class="btn g sm" onclick="openExPicker('editor')">＋ Exercice</button>
+      <button class="btn out sm" onclick="saveExEditor()">💾 Sauver</button>
+      <button class="btn r sm" onclick="closeExEditor()">✕</button>
+    </div>
+  </div>
+  <div id="ee-body" style="flex:1;overflow-y:auto;padding:8px 0 20px;"></div>
+</div>
+
+<script>
+// ── Firebase ──────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyCk_HK6USgcJQl_J4rcBkkQtUR2cdDnfks",
+  authDomain: "supermagym.firebaseapp.com",
+  projectId: "supermagym",
+  storageBucket: "supermagym.firebasestorage.app",
+  messagingSenderId: "360406512913",
+  appId: "1:360406512913:web:b7fa06a01c62615a7948b0"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+let currentUser = null;
+let syncTimer = null;
+
+// ── Storage helpers ───────────────────────────────────────
+function ld(k,d){try{return JSON.parse(localStorage.getItem(k))??d;}catch{return d;}}
+function sv(k,v){localStorage.setItem(k,JSON.stringify(v));scheduleSyncToCloud();}
+
+// ── Cloud sync ────────────────────────────────────────────
+function scheduleSyncToCloud(){
+  if(!currentUser)return;
+  clearTimeout(syncTimer);
+  syncTimer=setTimeout(syncToCloud,1500);
+}
+async function syncToCloud(){
+  if(!currentUser)return;
+  try{
+    await db.collection('users').doc(currentUser.uid).set({
+      oneRMs:S.rm, sessions:S.sessions, programs:S.progs,
+      activeProgram:S.ap, currentSession:S.cur, currentSessionContext:S.ctx,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }catch(e){console.error('Sync:',e);}
+}
+async function loadFromCloud(){
+  if(!currentUser)return false;
+  try{
+    const doc=await db.collection('users').doc(currentUser.uid).get();
+    if(!doc.exists)return false;
+    const d=doc.data();
+    if(d.oneRMs)S.rm=d.oneRMs;
+    if(d.sessions)S.sessions=d.sessions;
+    if(d.programs)S.progs=d.programs;
+    if(d.activeProgram!==undefined)S.ap=d.activeProgram;
+    if(d.currentSession)S.cur=d.currentSession;
+    if(d.currentSessionContext!==undefined)S.ctx=d.currentSessionContext;
+    localStorage.setItem('oneRMs',JSON.stringify(S.rm));
+    localStorage.setItem('sessions',JSON.stringify(S.sessions));
+    localStorage.setItem('programs',JSON.stringify(S.progs));
+    localStorage.setItem('activeProgram',JSON.stringify(S.ap));
+    localStorage.setItem('currentSession',JSON.stringify(S.cur));
+    localStorage.setItem('currentSessionContext',JSON.stringify(S.ctx));
+    return true;
+  }catch(e){console.error('Load:',e);return false;}
+}
+
+// ── Auth ──────────────────────────────────────────────────
+function signInWithGoogle(){
+  document.getElementById('login-loading').style.display='block';
+  document.getElementById('login-error').style.display='none';
+  const provider=new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch(e=>{
+    document.getElementById('login-loading').style.display='none';
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('login-error').textContent='❌ '+e.message;
+  });
+}
+function signOut(){
+  if(confirm('Se déconnecter ?'))auth.signOut();
+}
+
+auth.onAuthStateChanged(async user=>{
+  if(user){
+    currentUser=user;
+    document.getElementById('login-loading').style.display='block';
+    const loaded=await loadFromCloud();
+    if(!loaded){
+      // First login: inject default program
+      const defProg=getDefaultProgram();
+      if(!S.progs.find(p=>p.name===defProg.name)){
+        S.progs.push(defProg);
+        localStorage.setItem('programs',JSON.stringify(S.progs));
+      }
+      await syncToCloud();
+    }
+    document.getElementById('login-screen').style.display='none';
+    const badge=document.getElementById('user-badge');
+    badge.classList.add('visible');
+    const av=document.getElementById('user-avatar');
+    if(user.photoURL){av.src=user.photoURL;av.style.display='block';}
+    document.getElementById('user-name').textContent=user.displayName||user.email||'';
+    renderDash();
+    renderSess();
+  }else{
+    currentUser=null;
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('user-badge').classList.remove('visible');
+    document.getElementById('login-loading').style.display='none';
+  }
+});
+
+// ── App State ─────────────────────────────────────────────
+let S={
+  rm:ld('oneRMs',{squat:null,bench:null,deadlift:null}),
+  sessions:ld('sessions',[]),
+  cur:ld('currentSession',[]),
+  progs:ld('programs',[]),
+  ap:ld('activeProgram',null),
+  ctx:ld('currentSessionContext',null)
+};
+let xid=0;
+
+// ── Navigation ────────────────────────────────────────────
+function showPage(id,ni){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.bnb').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tnl').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.bnb')[ni]?.classList.add('active');
+  document.querySelectorAll('.tnl')[ni]?.classList.add('active');
+  if(id==='home')renderDash();
+  if(id==='exercises')setTimeout(renderExPage,0);
+  if(id==='programs')renderProgList();
+  if(id==='train')renderTrain();
+  if(id==='session')renderSess();
+  if(id==='progress')renderProgress();
+  if(id==='calc')renderCalc();
+  if(id==='settings')renderSettings();
+  window.scrollTo(0,0);
+}
+let _notifTimer=null;
+function notify(m){const e=document.getElementById('notif');e.textContent=m;e.classList.add('show');clearTimeout(_notifTimer);_notifTimer=setTimeout(()=>e.classList.remove('show'),2400);}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// ── Exercise Data ─────────────────────────────────────────
+const CAT_ICONS={
+  'Powerlifting':{emoji:'🏆',color:'#a78bfa',bg:'rgba(139,108,247,0.18)'},
+  'Jambes':      {emoji:'🦵',color:'#fb923c',bg:'rgba(249,115,22,0.18)'},
+  'Pectoraux':   {emoji:'💪',color:'#f87171',bg:'rgba(248,113,113,0.18)'},
+  'Dos':         {emoji:'🏋️',color:'#60a5fa',bg:'rgba(96,165,250,0.18)'},
+  'Épaules':     {emoji:'🔼',color:'#34d399',bg:'rgba(52,211,153,0.18)'},
+  'Bras':        {emoji:'💥',color:'#c084fc',bg:'rgba(192,132,252,0.18)'},
+  'Abdominaux':  {emoji:'🔥',color:'#f87171',bg:'rgba(244,63,94,0.18)'},
+  'Personnalisé':{emoji:'✏️',color:'#94a3b8',bg:'rgba(148,163,184,0.15)'},
+};
+const BUILTIN_EXERCISES=[
+  {name:'Squat',lift:'squat',cat:'Powerlifting'},
+  {name:'Bench Press',lift:'bench',cat:'Powerlifting'},
+  {name:'Deadlift',lift:'deadlift',cat:'Powerlifting'},
+  {name:'Squat Barre Haute',lift:'squat',cat:'Powerlifting'},
+  {name:'Squat Tempo',lift:'squat',cat:'Powerlifting'},
+  {name:'Bench Pause 2ct',lift:'bench',cat:'Powerlifting'},
+  {name:'Larsen Press',lift:'bench',cat:'Powerlifting'},
+  {name:'Soulevé de terre roumain',lift:'deadlift',cat:'Powerlifting'},
+  {name:'Leg Press',lift:'',cat:'Jambes'},
+  {name:'Leg Curl',lift:'',cat:'Jambes'},
+  {name:'Leg Extension',lift:'',cat:'Jambes'},
+  {name:'Fentes',lift:'',cat:'Jambes'},
+  {name:'Hip Thrust',lift:'',cat:'Jambes'},
+  {name:'Bulgare (Split Squat)',lift:'',cat:'Jambes'},
+  {name:'Mollets Debout',lift:'',cat:'Jambes'},
+  {name:'RDL Haltères',lift:'deadlift',cat:'Jambes'},
+  {name:'Développé couché',lift:'bench',cat:'Pectoraux'},
+  {name:'Développé incliné',lift:'bench',cat:'Pectoraux'},
+  {name:'Développé décliné',lift:'bench',cat:'Pectoraux'},
+  {name:'Écarté Haltères',lift:'',cat:'Pectoraux'},
+  {name:'Dips',lift:'bench',cat:'Pectoraux'},
+  {name:'Pompes',lift:'',cat:'Pectoraux'},
+  {name:'Rowing Barre',lift:'',cat:'Dos'},
+  {name:'Rowing Haltère (Bucheron)',lift:'',cat:'Dos'},
+  {name:'Rowing Poulie Basse',lift:'',cat:'Dos'},
+  {name:'Tirage Vertical Prise Large',lift:'',cat:'Dos'},
+  {name:'Tirage Vertical Prise Serrée',lift:'',cat:'Dos'},
+  {name:'Traction',lift:'',cat:'Dos'},
+  {name:'Face Pull',lift:'',cat:'Dos'},
+  {name:'Shrug Barre',lift:'',cat:'Dos'},
+  {name:'Développé Militaire',lift:'ohp',cat:'Épaules'},
+  {name:'Développé Haltères Épaules',lift:'ohp',cat:'Épaules'},
+  {name:'Élévations Latérales',lift:'',cat:'Épaules'},
+  {name:'Élévations Frontales',lift:'',cat:'Épaules'},
+  {name:'Arnold Press',lift:'',cat:'Épaules'},
+  {name:'Curl Barre',lift:'',cat:'Bras'},
+  {name:'Curl Haltères',lift:'',cat:'Bras'},
+  {name:'Curl Marteau',lift:'',cat:'Bras'},
+  {name:'Extension Triceps Poulie',lift:'',cat:'Bras'},
+  {name:'Extension Triceps Haltère',lift:'',cat:'Bras'},
+  {name:'Barre Frontale (Skull Crusher)',lift:'',cat:'Bras'},
+  {name:'Crunch',lift:'',cat:'Abdominaux'},
+  {name:'Planche',lift:'',cat:'Abdominaux'},
+  {name:'Relevé de Jambes',lift:'',cat:'Abdominaux'},
+  {name:'Gainage Latéral',lift:'',cat:'Abdominaux'},
+  {name:'Ab Wheel',lift:'',cat:'Abdominaux'},
+];
+function getAllExercises(){
+  const custom=(ld('customExercises',[])||[]).map(e=>({...e,custom:true}));
+  return [...BUILTIN_EXERCISES,...custom];
+}
+
+// ── Exercise Picker ───────────────────────────────────────
+let pickerMode='session';
+let pickerCat='Tous';
+let _pickerExs=[];
+function openExPicker(mode){
+  pickerMode=mode;
+  pickerCat='Tous';
+  document.getElementById('ex-picker-search').value='';
+  renderExPicker();
+  document.getElementById('ex-picker-overlay').classList.add('open');
+}
+function closeExPicker(e){
+  if(e&&e.target!==document.getElementById('ex-picker-overlay'))return;
+  document.getElementById('ex-picker-overlay').classList.remove('open');
+}
+function renderExPicker(){
+  const q=(document.getElementById('ex-picker-search').value||'').toLowerCase();
+  const cats=['Tous','Powerlifting','Jambes','Pectoraux','Dos','Épaules','Bras','Abdominaux','Personnalisé'];
+  document.getElementById('ex-picker-cats').innerHTML=cats.map(c=>{
+    const ic=CAT_ICONS[c]||{};
+    const label=c==='Tous'?'Tous':((ic.emoji||'')+'\u00a0'+c);
+    return `<button class="ex-cat-btn${pickerCat===c?' active':''}" onclick="setPickerCat('${c}')">${label}</button>`;
+  }).join('');
+  let exs=getAllExercises();
+  if(pickerCat!=='Tous')exs=exs.filter(e=>pickerCat==='Personnalisé'?e.custom:e.cat===pickerCat);
+  if(q)exs=exs.filter(e=>e.name.toLowerCase().includes(q));
+  _pickerExs=exs;
+  const listEl=document.getElementById('ex-picker-list');
+  listEl.innerHTML=exs.length?'':`<div class="empty"><p>Aucun exercice</p></div>`;
+  exs.forEach((e,i)=>{
+    const ic=CAT_ICONS[e.cat]||CAT_ICONS['Personnalisé'];
+    const div=document.createElement('div');
+    div.className='ex-pick-item';
+    div.innerHTML=`<div class="ex-pick-icon" style="background:${ic.bg};color:${ic.color};">${ic.emoji}</div><div><div class="ex-pick-name">${e.name}</div><div class="ex-pick-cat">${e.cat}</div></div>`;
+    div.addEventListener('click',()=>pickExercise(_pickerExs[i]));
+    listEl.appendChild(div);
+  });
+}
+function setPickerCat(c){pickerCat=c;renderExPicker();}
+function pickExercise(e){
+  document.getElementById('ex-picker-overlay').classList.remove('open');
+  if(pickerMode==='session'){
+    document.getElementById('quick-ex-name').textContent=e.name;
+    pendingPickedEx=e;
+    document.getElementById('modal-quick-ex').classList.add('open');
+  } else if(pickerMode==='editor'){
+    eeState.exs.push(normEx({name:e.name,liftType:e.lift||'',series:[]}));
+    renderExEditor();
+  }
+}
+
+// ── Exercise Page ─────────────────────────────────────────
+let exPageCat='Tous';
+let _exPageList=[];
+function renderExPage(){
+  const listEl=document.getElementById('expage-list');
+  const catsEl=document.getElementById('expage-cats');
+  if(!listEl||!catsEl)return;
+  const q=(document.getElementById('expage-search')?.value||'').toLowerCase();
+  const cats=['Tous','Powerlifting','Jambes','Pectoraux','Dos','Épaules','Bras','Abdominaux','Personnalisé'];
+  catsEl.innerHTML=cats.map(c=>{
+    const ic=CAT_ICONS[c]||{};
+    const label=c==='Tous'?'Tous':((ic.emoji||'')+'\u00a0'+c);
+    return `<button class="ex-cat-btn${exPageCat===c?' active':''}" onclick="setExPageCat('${c}')">${label}</button>`;
+  }).join('');
+  let exs=getAllExercises();
+  if(exPageCat!=='Tous')exs=exs.filter(e=>exPageCat==='Personnalisé'?e.custom:e.cat===exPageCat);
+  if(q)exs=exs.filter(e=>e.name.toLowerCase().includes(q));
+  _exPageList=exs;
+  if(!exs.length){listEl.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><p>Aucun exercice trouvé</p></div>';return;}
+  const CAT_ORDER=['Powerlifting','Jambes','Pectoraux','Dos','Épaules','Bras','Abdominaux','Personnalisé'];
+  const groups={};
+  exs.forEach((e,i)=>{const c=e.cat||'Personnalisé';if(!groups[c])groups[c]=[];groups[c].push({e,i});});
+  const orderedCats=CAT_ORDER.filter(c=>groups[c]).concat(Object.keys(groups).filter(c=>!CAT_ORDER.includes(c)));
+  let out='';
+  for(const cat of orderedCats){
+    const ic=CAT_ICONS[cat]||CAT_ICONS['Personnalisé'];
+    out+=`<div class="excat-section"><div class="excat-title">${ic.emoji} ${cat}</div>`;
+    for(const {e,i} of groups[cat]){
+      const w=e.defaultWeight||0;
+      const d=e.desc||'';
+      out+=`<div class="exrow">
+        <div class="exrow-thumb" style="background:${ic.bg};color:${ic.color};">${ic.emoji}</div>
+        <div class="exrow-body">
+          <div class="exrow-name">${e.name}${e.custom?'<span class="ex-list-custom">Perso</span>':''}</div>
+          ${d?`<div class="exrow-desc">${d}</div>`:''}
+          <div class="exrow-weight"><strong>Poids par défaut:</strong> ${w} kg</div>
+        </div>
+        <div class="exrow-actions">
+          <button class="exbtn-edit" data-idx="${i}">✏️ Modifier</button>
+          ${e.custom?`<button class="exbtn-del" data-idx="${i}">🗑️ Supprimer</button>`:''}
+        </div>
+      </div>`;
+    }
+    out+='</div>';
+  }
+  listEl.innerHTML=out;
+  listEl.querySelectorAll('.exbtn-edit').forEach(btn=>{
+    btn.onclick=()=>openEditEx(_exPageList[+btn.dataset.idx]);
+  });
+  listEl.querySelectorAll('.exbtn-del').forEach(btn=>{
+    btn.onclick=()=>deleteCustomEx(_exPageList[+btn.dataset.idx]);
+  });
+}
+function setExPageCat(cat){exPageCat=cat;renderExPage();}
+function openAddCustomEx(){
+  document.getElementById('edit-ex-oldname').value='';
+  document.getElementById('edit-ex-name').value='';
+  document.getElementById('edit-ex-desc').value='';
+  document.getElementById('edit-ex-cat').value='Jambes';
+  document.getElementById('edit-ex-weight').value='0';
+  openModal('modal-edit-ex');
+}
+function openEditEx(e){
+  document.getElementById('edit-ex-oldname').value=e.name;
+  document.getElementById('edit-ex-name').value=e.name;
+  document.getElementById('edit-ex-desc').value=e.desc||'';
+  document.getElementById('edit-ex-cat').value=e.cat||'Jambes';
+  document.getElementById('edit-ex-weight').value=e.defaultWeight||0;
+  openModal('modal-edit-ex');
+}
+function saveEditEx(){
+  const oldname=document.getElementById('edit-ex-oldname').value;
+  const name=document.getElementById('edit-ex-name').value.trim();
+  const desc=document.getElementById('edit-ex-desc').value.trim();
+  const cat=document.getElementById('edit-ex-cat').value;
+  const weight=parseFloat(document.getElementById('edit-ex-weight').value)||0;
+  if(!name){notify('Entre un nom');return;}
+  let custom=ld('customExercises',[])||[];
+  if(oldname){
+    const idx=custom.findIndex(e=>e.name===oldname);
+    if(idx>=0)custom[idx]={...custom[idx],name,desc,cat,defaultWeight:weight};
+    else custom.push({name,desc,cat,lift:'',defaultWeight:weight,custom:true});
+  }else{
+    custom.push({name,desc,cat,lift:'',defaultWeight:weight,custom:true});
+  }
+  sv('customExercises',custom);
+  closeModal('modal-edit-ex');
+  renderExPage();
+  notify('✅ Exercice enregistré !');
+}
+function deleteCustomEx(e){
+  if(!confirm('Supprimer "'+e.name+'" ?'))return;
+  let custom=ld('customExercises',[])||[];
+  custom=custom.filter(c=>c.name!==e.name);
+  sv('customExercises',custom);
+  renderExPage();
+}
+
+// ── Dashboard ─────────────────────────────────────────────
+function renderDash(){
+  const squat=S.rm.squat,bench=S.rm.bench,deadlift=S.rm.deadlift;
+  document.getElementById('rm-squat').textContent=squat||'—';
+  document.getElementById('rm-bench').textContent=bench||'—';
+  document.getElementById('rm-deadlift').textContent=deadlift||'—';
+  const total=(squat||0)+(bench||0)+(deadlift||0);
+  document.getElementById('home-total').textContent=total?total+' kg':'— kg';
+  // Active program
+  const apEl=document.getElementById('home-active-prog');
+  if(S.ap){
+    const prog=S.progs.find(p=>p.id===S.ap.programId);
+    if(prog){
+      apEl.innerHTML=`<div class="wcard">
+        <div class="wcard-title">Programme actif</div>
+        <div style="font-size:15px;font-weight:800;margin-bottom:4px;">${prog.name}</div>
+        <div style="font-size:12px;color:var(--text2);">Semaine ${S.ap.weekIdx+1}/${prog.weeks.length} · Séance ${S.ap.sessionIdx+1}</div>
+        <span class="bdg g">ACTIF</span>
+      </div>`;
+    }else apEl.innerHTML='';
+  }else apEl.innerHTML='';
+  // Last session
+  const lsEl=document.getElementById('home-last-sess');
+  if(S.sessions.length){
+    const last=S.sessions[S.sessions.length-1];
+    const d=new Date(last.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'});
+    lsEl.innerHTML=`<div class="wcard">
+      <div class="wcard-title">Dernière séance</div>
+      <div style="font-size:14px;font-weight:700;">${last.context?.sessionName||'Séance libre'}</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:8px;">${d} · ${last.exercises.length} exercice${last.exercises.length!==1?'s':''}</div>
+      <div class="hist-tags">${last.exercises.slice(0,5).map(e=>`<span class="hist-tag">${e.name}</span>`).join('')}</div>
+    </div>`;
+  }else lsEl.innerHTML='';
+  // Recent sessions
+  const rsEl=document.getElementById('home-recent-sess');
+  if(!S.sessions.length){rsEl.innerHTML='<div class="empty"><div class="empty-icon">🏋️</div><p>Aucune séance enregistrée<br>Lance ton premier entraînement !</p></div>';return;}
+  rsEl.innerHTML=S.sessions.slice().reverse().slice(0,5).map(s=>{
+    const d=new Date(s.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});
+    return `<div class="hist-item" style="cursor:pointer;">
+      <div class="hist-date">${d}</div>
+      <div class="hist-name">${s.context?.sessionName||'Séance libre'}</div>
+      <div class="hist-tags">${s.exercises.slice(0,4).map(e=>`<span class="hist-tag">${e.name}</span>`).join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Programs ──────────────────────────────────────────────
+let dpid=null;
+function renderProgList(){
+  const el=document.getElementById('prog-list-content');
+  if(!S.progs.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>Aucun programme</p></div>';return;}
+  el.innerHTML=S.progs.map(p=>{
+    const isActive=S.ap&&S.ap.programId===p.id;
+    return `<div class="prog-item${isActive?' active-prog':''}" onclick="openProgDetail(${p.id})">
+      <div class="prog-icon" style="background:rgba(139,108,247,0.15);">📋</div>
+      <div class="prog-info">
+        <div class="prog-name">${p.name}</div>
+        <div class="prog-meta">${p.weeks.length} semaines · ${p.weeks[0]?.sessions.length||0} séances/sem</div>
+        ${isActive?'<span class="bdg g">ACTIF</span>':''}
+      </div>
+      ${!isActive?`<button class="btn g sm" onclick="event.stopPropagation();activateProgram(${p.id})">Activer</button>`:''}
+    </div>`;
+  }).join('');
+}
+function showProgList(){
+  document.getElementById('prog-list').classList.add('active');
+  document.getElementById('prog-detail').classList.remove('active');
+}
+function openProgDetail(pid){
+  dpid=pid;
+  document.getElementById('prog-list').classList.remove('active');
+  document.getElementById('prog-detail').classList.add('active');
+  renderProgDetail();
+}
+function renderProgDetail(){
+  const prog=S.progs.find(p=>p.id===dpid);
+  if(!prog)return;
+  document.getElementById('detail-prog-name').textContent=prog.name;
+  const el=document.getElementById('detail-weeks-content');
+  el.innerHTML=prog.weeks.map((w,wi)=>`
+    <div class="wcard" style="margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:800;margin-bottom:8px;color:var(--purple);">Semaine ${w.weekNum}</div>
+      ${w.sessions.map((s,si)=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;">
+          <div>
+            <div style="font-size:13px;font-weight:700;">${s.name}</div>
+            <div style="font-size:11px;color:var(--text2);">${s.exercises.length} exercice${s.exercises.length!==1?'s':''}</div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn b sm" onclick="openExEditor(${dpid},${wi},${si})">✏️ Éditer</button>
+            <button class="btn g sm" onclick="startSess(${dpid},${wi},${si})">▶ Lancer</button>
+          </div>
+        </div>
+      `).join('')}
+      <button onclick="addSessToWeek(${dpid},${wi})" style="width:100%;padding:7px;background:none;border:1.5px dashed var(--border);border-radius:8px;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-top:2px;">＋ Ajouter une séance</button>
+    </div>
+  `).join('');
+}
+function createProgram(){
+  const name=document.getElementById('prog-name-input').value.trim();
+  const nw=parseInt(document.getElementById('prog-weeks-input').value)||4;
+  const ns=parseInt(document.getElementById('prog-sessions-input').value)||4;
+  if(!name){notify('Entre un nom');return;}
+  S.progs.push({id:Date.now(),name,weeks:Array(nw).fill(null).map((_,wi)=>({weekNum:wi+1,sessions:Array(ns).fill(null).map((_,si)=>({id:Date.now()+wi*100+si,name:`Séance ${si+1}`,exercises:[]}))}))});
+  sv('programs',S.progs);
+  closeModal('modal-create-prog');
+  document.getElementById('prog-name-input').value='';
+  renderProgList();
+  openProgDetail(S.progs[S.progs.length-1].id);
+  notify('Programme créé ! 🎉');
+}
+function addWeek(){
+  const p=S.progs.find(p=>p.id===dpid);if(!p)return;
+  p.weeks.push({weekNum:p.weeks.length+1,sessions:[{id:Date.now(),name:'Séance 1',exercises:[]}]});
+  sv('programs',S.progs);renderProgDetail();
+}
+function addSessToWeek(pid,wi){
+  const p=S.progs.find(p=>p.id===pid);if(!p)return;
+  p.weeks[wi].sessions.push({id:Date.now(),name:`Séance ${p.weeks[wi].sessions.length+1}`,exercises:[]});
+  sv('programs',S.progs);renderProgDetail();
+}
+function activateProgram(pid){
+  S.ap={programId:pid,weekIdx:0,sessionIdx:0};
+  sv('activeProgram',S.ap);
+  renderProgList();
+  notify('Programme activé ! 💪');
+}
+function deleteProgram(pid){
+  if(!confirm('Supprimer ce programme ?'))return;
+  S.progs=S.progs.filter(p=>p.id!==pid);
+  if(S.ap&&S.ap.programId===pid){S.ap=null;sv('activeProgram',null);}
+  sv('programs',S.progs);
+  showProgList();renderProgList();
+}
+
+// ── Program Editor ────────────────────────────────────────
+let eeState={pid:null,wi:null,si:null,exs:[]};
+function normEx(ex){
+  if(!ex.series||!ex.series.length)ex.series=[{reps:5,pct:null,weight:null,rpe:null,rest:180}];
+  return ex;
+}
+function openExEditor(pid,wi,si){
+  const prog=S.progs.find(p=>p.id===pid);
+  if(!prog)return;
+  const sess=prog.weeks[wi].sessions[si];
+  eeState={pid,wi,si,exs:sess.exercises.map(ex=>normEx(JSON.parse(JSON.stringify(ex))))};
+  document.getElementById('ee-title').textContent=`${prog.name} · S${wi+1}.${si+1} — ${sess.name}`;
+  renderExEditor();
+  document.getElementById('ex-editor').classList.add('open');
+}
+function closeExEditor(){document.getElementById('ex-editor').classList.remove('open');}
+function renderExEditor(){
+  const el=document.getElementById('ee-body');
+  if(!eeState.exs.length){el.innerHTML='<div class="empty" style="margin-top:20px;"><p>Aucun exercice<br>Ajouter avec le bouton + Exercice</p></div>';return;}
+  el.innerHTML=eeState.exs.map((ex,ei)=>`
+    <div class="ee-ex-item">
+      <div class="ee-ex-hdr">
+        <div class="ee-ex-name">${ex.name}</div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn g sm" onclick="addSetToEE(${ei})">＋ Série</button>
+          <button class="btn r sm" onclick="removeExFromEE(${ei})">✕</button>
+        </div>
+      </div>
+      <div class="ee-hdr-labels"><span class="ee-lbl">#</span><span class="ee-lbl">Reps</span><span class="ee-lbl">%1RM</span><span class="ee-lbl">Poids</span><span class="ee-lbl">RPE</span><span class="ee-lbl"></span></div>
+      ${ex.series.map((s,si)=>`
+        <div class="ee-set-row">
+          <span class="ee-set-num">${si+1}</span>
+          <input class="ee-inp" type="number" value="${s.reps||''}" placeholder="5" oninput="eeUpdate(${ei},${si},'reps',this.value)">
+          <input class="ee-inp" type="number" value="${s.pct||''}" placeholder="—" oninput="eeUpdate(${ei},${si},'pct',this.value)">
+          <input class="ee-inp" type="number" value="${s.weight||''}" placeholder="—" oninput="eeUpdate(${ei},${si},'weight',this.value)">
+          <input class="ee-inp" type="number" value="${s.rpe||''}" placeholder="—" oninput="eeUpdate(${ei},${si},'rpe',this.value)">
+          <button onclick="removeSetFromEE(${ei},${si})" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;">✕</button>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+function eeUpdate(ei,si,key,val){
+  eeState.exs[ei].series[si][key]=val===''?null:parseFloat(val)||parseInt(val)||val;
+}
+function addSetToEE(ei){
+  const last=eeState.exs[ei].series.slice(-1)[0]||{};
+  eeState.exs[ei].series.push({reps:last.reps||5,pct:last.pct||null,weight:last.weight||null,rpe:last.rpe||null,rest:180});
+  renderExEditor();
+}
+function removeSetFromEE(ei,si){eeState.exs[ei].series.splice(si,1);renderExEditor();}
+function removeExFromEE(ei){eeState.exs.splice(ei,1);renderExEditor();}
+function saveExEditor(){
+  const prog=S.progs.find(p=>p.id===eeState.pid);if(!prog)return;
+  prog.weeks[eeState.wi].sessions[eeState.si].exercises=eeState.exs;
+  sv('programs',S.progs);
+  closeExEditor();
+  renderProgDetail();
+  notify('✅ Séance sauvegardée !');
+}
+
+// ── Train Page ────────────────────────────────────────────
+function renderTrain(){
+  const el=document.getElementById('train-prog-list');
+  const sugEl=document.getElementById('train-suggestion');
+  sugEl.innerHTML='';
+  if(!S.progs.length){
+    el.innerHTML=`<div class="wcard" style="text-align:center;"><div class="empty-icon">📋</div><p>Aucun programme</p><button class="btn p" style="margin-top:10px;" onclick="showPage('programs',2)">Créer un programme</button></div>`;
+    return;
+  }
+  // Suggestion
+  if(S.ap){
+    const prog=S.progs.find(p=>p.id===S.ap.programId);
+    if(prog){
+      const w=prog.weeks[S.ap.weekIdx];
+      const s=w?.sessions[S.ap.sessionIdx];
+      if(s){
+        sugEl.innerHTML=`<div class="wcard" style="background:linear-gradient(135deg,#28a745,#20c997);color:#fff;margin-bottom:10px;">
+          <div style="font-size:11px;font-weight:800;opacity:0.8;margin-bottom:4px;">SÉANCE SUGGÉRÉE</div>
+          <div style="font-size:16px;font-weight:800;margin-bottom:2px;">${s.name}</div>
+          <div style="font-size:12px;opacity:0.85;margin-bottom:10px;">${prog.name} · Sem ${S.ap.weekIdx+1} · ${s.exercises.length} exercice${s.exercises.length!==1?'s':''}</div>
+          <button class="btn out" onclick="startSess(${prog.id},${S.ap.weekIdx},${S.ap.sessionIdx})">▶ Lancer maintenant</button>
+        </div>`;
+      }
+    }
+  }
+  // All programs
+  el.innerHTML=S.progs.map(p=>{
+    const isActive=S.ap&&S.ap.programId===p.id;
+    return `<div class="train-prog">
+      <div class="train-prog-hdr" onclick="toggleTrainProg(this)">
+        <span>📋</span>
+        <span style="flex:1;">${p.name}</span>
+        ${isActive?'<span class="bdg g">ACTIF</span>':''}
+        <span class="chevron">›</span>
+      </div>
+      <div class="train-prog-body">
+        ${p.weeks.map((w,wi)=>`
+          <div style="margin-bottom:8px;">
+            <div style="font-size:11px;font-weight:800;color:var(--purple);text-transform:uppercase;margin:8px 0 4px;">Semaine ${w.weekNum}</div>
+            ${w.sessions.map((s,si)=>{
+              const isSug=isActive&&S.ap.weekIdx===wi&&S.ap.sessionIdx===si;
+              return `<div class="sess-item${isSug?' suggested':''}">
+                <div class="sess-item-info">
+                  <div class="sess-item-name">${s.name}${isSug?' 📌':''}</div>
+                  <div class="sess-item-meta">${s.exercises.length} exercice${s.exercises.length!==1?'s':''}</div>
+                </div>
+                <button class="btn g sm" onclick="startSess(${p.id},${wi},${si})">▶ Lancer</button>
+              </div>`;
+            }).join('')}
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleTrainProg(hdr){
+  hdr.classList.toggle('open');
+  hdr.nextElementSibling.classList.toggle('open');
+}
+
+// ── Session Logger ────────────────────────────────────────
+let wakeLock=null;
+async function requestWakeLock(){
+  if(!('wakeLock' in navigator))return;
+  try{wakeLock=await navigator.wakeLock.request('screen');}catch(e){}
+}
+async function releaseWakeLock(){
+  if(wakeLock){await wakeLock.release();wakeLock=null;}
+}
+document.addEventListener('visibilitychange',async()=>{
+  if(wakeLock!==null&&document.visibilityState==='visible')await requestWakeLock();
+});
+
+function startSess(pid,wi,si){
+  const prog=S.progs.find(p=>p.id===pid);if(!prog)return;
+  const sess=prog.weeks[wi].sessions[si];
+  S.ctx={progId:pid,weekIdx:wi,sessionIdx:si,progName:prog.name,sessionName:sess.name};
+  S.cur=sess.exercises.map(ex=>({
+    id:++xid,name:ex.name,liftType:ex.liftType||ex.lift||'',
+    sets:(ex.series||[{reps:5,weight:null}]).map(s=>({reps:s.reps||5,weight:s.weight?String(s.weight):'',done:false}))
+  }));
+  sv('currentSession',S.cur);
+  sv('currentSessionContext',S.ctx);
+  requestWakeLock();
+  showPage('session',3);
+}
+function renderSess(){
+  const titleEl=document.getElementById('sess-title');
+  const subEl=document.getElementById('sess-subtitle');
+  const exEl=document.getElementById('sess-exercises');
+  if(!S.cur||!S.cur.length){
+    titleEl.textContent='Séance en cours';
+    subEl.textContent='';
+    exEl.innerHTML='<div class="empty"><p>Aucun exercice · Utilise le bouton + pour ajouter</p></div>';
+    return;
+  }
+  if(S.ctx){titleEl.textContent=S.ctx.sessionName||'Séance';subEl.textContent=S.ctx.progName||'';}
+  exEl.innerHTML=S.cur.map((ex,ei)=>`
+    <div class="sess-ex">
+      <div class="sess-ex-hdr">
+        <div class="sess-ex-name">${ex.name}</div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn g sm" onclick="addSetToSess(${ei})">＋</button>
+          <button class="btn r sm" onclick="removeExFromSess(${ei})">✕</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:28px 1fr 1fr 1fr 32px;gap:6px;padding:4px 12px 2px;background:var(--surface2);">
+        <span class="set-lbl">#</span><span class="set-lbl">Reps</span><span class="set-lbl">Poids (kg)</span><span class="set-lbl">RPE</span><span class="set-lbl">✓</span>
+      </div>
+      ${ex.sets.map((s,si)=>`
+        <div class="sess-set-row">
+          <span class="set-num">${si+1}</span>
+          <input class="set-inp" type="number" value="${s.reps}" oninput="sessUpdate(${ei},${si},'reps',this.value)" placeholder="5">
+          <input class="set-inp" type="number" value="${s.weight}" oninput="sessUpdate(${ei},${si},'weight',this.value)" placeholder="kg">
+          <input class="set-inp" type="number" value="${s.rpe||''}" oninput="sessUpdate(${ei},${si},'rpe',this.value)" placeholder="—" step="0.5">
+          <button class="set-done${s.done?' done':''}" onclick="toggleDone(${ei},${si})">${s.done?'✓':''}</button>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+function sessUpdate(ei,si,key,val){
+  S.cur[ei].sets[si][key]=val;
+  sv('currentSession',S.cur);
+}
+function toggleDone(ei,si){
+  S.cur[ei].sets[si].done=!S.cur[ei].sets[si].done;
+  sv('currentSession',S.cur);
+  renderSess();
+}
+function addSetToSess(ei){
+  const last=S.cur[ei].sets.slice(-1)[0]||{reps:5,weight:''};
+  S.cur[ei].sets.push({reps:last.reps,weight:last.weight,done:false});
+  sv('currentSession',S.cur);
+  renderSess();
+}
+function removeExFromSess(ei){
+  S.cur.splice(ei,1);
+  sv('currentSession',S.cur);
+  renderSess();
+}
+let pendingPickedEx=null;
+function confirmQuickEx(){
+  if(!pendingPickedEx)return;
+  const sets=parseInt(document.getElementById('qex-sets').value)||4;
+  const reps=parseInt(document.getElementById('qex-reps').value)||5;
+  S.cur.push({id:++xid,name:pendingPickedEx.name,liftType:pendingPickedEx.lift||'',
+    sets:Array(sets).fill(null).map(()=>({reps,weight:'',done:false}))});
+  sv('currentSession',S.cur);
+  document.getElementById('modal-quick-ex').classList.remove('open');
+  pendingPickedEx=null;
+  renderSess();
+}
+function saveSession(){
+  const sess={id:Date.now(),date:new Date().toISOString(),context:S.ctx,
+    exercises:S.cur.map(ex=>({name:ex.name,liftType:ex.liftType,
+      sets:ex.sets.filter(s=>s.weight||s.done)})).filter(e=>e.sets.length>0)};
+  if(!sess.exercises.length&&!confirm('Aucune série enregistrée. Sauvegarder quand même ?'))return;
+  S.sessions.push(sess);
+  // Update 1RMs
+  const prs=[];
+  sess.exercises.forEach(ex=>{
+    if(!ex.liftType)return;
+    ex.sets.forEach(s=>{
+      if(!s.weight)return;
+      const est=s.reps===1?+s.weight:+(parseFloat(s.weight)/(1.0278-0.0278*s.reps)).toFixed(1);
+      if(!S.rm[ex.liftType]||est>S.rm[ex.liftType]){S.rm[ex.liftType]=est;prs.push(`${ex.liftType}: ${est}kg`);}
+    });
+  });
+  S.cur=[];S.ctx=null;
+  sv('sessions',S.sessions);sv('oneRMs',S.rm);sv('currentSession',S.cur);sv('currentSessionContext',S.ctx);
+  // Advance active program only now (séance terminée)
+  if(S.ap&&S.ap.programId===sess.context?.progId){
+    const prog=S.progs.find(p=>p.id===S.ap.programId);
+    if(prog){
+      let wi2=S.ap.weekIdx,si2=S.ap.sessionIdx+1;
+      if(si2>=prog.weeks[wi2].sessions.length){wi2++;si2=0;}
+      if(wi2>=prog.weeks.length){wi2=0;si2=0;}
+      S.ap={programId:S.ap.programId,weekIdx:wi2,sessionIdx:si2};
+      sv('activeProgram',S.ap);
+    }
+  }
+  releaseWakeLock();
+  if(prs.length)notify('🏆 Nouveau PR ! '+prs.join(', '));else notify('✅ Séance sauvegardée !');
+  showPage('home',0);
+}
+function clearSession(){
+  if(!confirm('Annuler la séance ? Les données seront perdues.'))return;
+  S.cur=[];S.ctx=null;
+  sv('currentSession',S.cur);sv('currentSessionContext',S.ctx);
+  releaseWakeLock();
+  showPage('train',3);
+}
+
+// ── 1RM Calculator ────────────────────────────────────────
+const PCTS=[100,97,94,92,89,86,83,81,78,75,70,67,65,60];
+const PCR={100:1,97:2,94:3,92:4,89:5,86:6,83:7,81:8,78:9,75:10,70:12,67:15};
+function renderCalc(){
+  const w=parseFloat(document.getElementById('calc-weight').value);
+  const r=parseInt(document.getElementById('calc-reps').value);
+  const el=document.getElementById('calc-results');
+  if(!w||!r){el.innerHTML='';return;}
+  const orm=r===1?w:+(w/(1.0278-0.0278*r)).toFixed(1);
+  el.innerHTML=`<div class="wcard">
+    <div style="text-align:center;margin-bottom:12px;">
+      <div style="font-size:11px;color:var(--text2);text-transform:uppercase;font-weight:700;">1RM estimé</div>
+      <div style="font-size:32px;font-weight:900;color:var(--purple);">${orm} kg</div>
+    </div>
+    <div class="sh p">Tableau des %</div>
+    ${PCTS.map(pct=>{
+      const kg=+(orm*pct/100).toFixed(1);
+      const reps=PCR[pct]||'';
+      return `<div class="calc-result-row">
+        <span class="calc-pct">${pct}%</span>
+        <span class="calc-kg">${kg} kg</span>
+        <span class="calc-reps">${reps?reps+'+ reps':''}</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function save1RM(){
+  const lift=document.getElementById('calc-lift').value;
+  const w=parseFloat(document.getElementById('calc-weight').value);
+  const r=parseInt(document.getElementById('calc-reps').value);
+  if(!w||!r){notify('Entre un poids et des reps');return;}
+  const orm=r===1?w:+(w/(1.0278-0.0278*r)).toFixed(1);
+  S.rm[lift]=orm;
+  sv('oneRMs',S.rm);
+  renderDash();
+  notify(`✅ 1RM ${lift} mis à jour: ${orm}kg`);
+}
+
+// ── Progress / History ────────────────────────────────────
+function renderProgress(){
+  const el=document.getElementById('progress-content');
+  if(!S.sessions.length){el.innerHTML='<div class="empty"><div class="empty-icon">📈</div><p>Aucune séance enregistrée</p></div>';return;}
+  el.innerHTML=S.sessions.slice().reverse().map(s=>{
+    const d=new Date(s.date).toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+    return `<div class="hist-item">
+      <div class="hist-date">${d}</div>
+      <div class="hist-name">${s.context?.sessionName||'Séance libre'}</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">${s.exercises.length} exercice${s.exercises.length!==1?'s':''}</div>
+      <div class="hist-tags">${s.exercises.map(e=>{
+        const totalKg=e.sets.reduce((a,s)=>a+(parseFloat(s.weight)||0)*s.reps,0);
+        return `<span class="hist-tag">${e.name}${totalKg?'  ·  '+totalKg.toFixed(0)+'kg total':''}`;
+      }).join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Settings ──────────────────────────────────────────────
+function renderSettings(){
+  document.getElementById('settings-info').innerHTML=`
+    <div class="wcard-title">Statistiques</div>
+    <div style="font-size:13px;color:var(--text2);">${S.sessions.length} séances · ${S.progs.length} programmes</div>
+    ${currentUser?`<div style="font-size:12px;color:var(--text2);margin-top:4px;">Connecté: ${currentUser.email}</div>`:''}
+  `;
+}
+function exportData(){
+  const data={oneRMs:S.rm,sessions:S.sessions,programs:S.progs,activeProgram:S.ap};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`supremagym-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();notify('✅ Export OK !');
+}
+function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(d.sessions)S.sessions=d.sessions;
+      if(d.oneRMs)S.rm=d.oneRMs;
+      if(d.programs)S.progs=d.programs;
+      if(d.activeProgram!==undefined)S.ap=d.activeProgram;
+      sv('sessions',S.sessions);sv('oneRMs',S.rm);sv('programs',S.progs);sv('activeProgram',S.ap);
+      renderDash();notify('✅ Import OK !');
+    }catch(err){notify('❌ Fichier invalide');}
+  };
+  reader.readAsText(file);
+}
+function clearAllData(){
+  if(!confirm('Effacer TOUTES les données ? Irréversible !'))return;
+  if(!confirm('Vraiment tout effacer ?'))return;
+  S={rm:{squat:null,bench:null,deadlift:null},sessions:[],cur:[],progs:[],ap:null,ctx:null};
+  ['oneRMs','sessions','programs','activeProgram','currentSession','currentSessionContext','customExercises'].forEach(k=>localStorage.removeItem(k));
+  syncToCloud();renderDash();notify('🗑️ Données effacées');
+}
+
+// ── Default Program ───────────────────────────────────────
+function getDefaultProgram(){
+  return {"id":1001,"name":"POWER RUSH PANA","weeks":[{"weekNum":1,"sessions":[{"id":0,"name":"1ere Seance","exercises":[{"name":"SQUAT","liftType":"squat","series":[{"reps":5,"pct":65,"weight":120.25,"rpe":null,"rest":180},{"reps":5,"pct":75,"weight":138.75,"rpe":null,"rest":180},{"reps":5,"pct":82,"weight":151.7,"rpe":8.0,"rest":180},{"reps":5,"pct":82,"weight":151.7,"rpe":8.0,"rest":180},{"reps":5,"pct":72,"weight":133.2,"rpe":null,"rest":180}]},{"name":"BENCH 2CT PAUSE","liftType":"bench","series":[{"reps":3,"pct":74,"weight":74.0,"rpe":null,"rest":180},{"reps":3,"pct":82,"weight":82.0,"rpe":6.0,"rest":180},{"reps":3,"pct":86,"weight":86.0,"rpe":8.0,"rest":180},{"reps":3,"pct":86,"weight":86.0,"rpe":8.0,"rest":180},{"reps":3,"pct":86,"weight":86.0,"rpe":8.0,"rest":180}]}]},{"id":1,"name":"2ème Seance","exercises":[{"name":"DEADLIFT","liftType":"deadlift","series":[{"reps":5,"pct":65,"weight":126.75,"rpe":null,"rest":180},{"reps":5,"pct":75,"weight":146.25,"rpe":null,"rest":180},{"reps":5,"pct":82,"weight":159.9,"rpe":8.0,"rest":180},{"reps":5,"pct":82,"weight":159.9,"rpe":8.0,"rest":180},{"reps":5,"pct":72,"weight":140.4,"rpe":null,"rest":180}]},{"name":"RDL haltère","liftType":"deadlift","series":[{"reps":10,"pct":null,"weight":null,"rpe":5.0,"rest":180},{"reps":10,"pct":null,"weight":null,"rpe":5.0,"rest":180},{"reps":10,"pct":null,"weight":null,"rpe":5.0,"rest":180},{"reps":10,"pct":null,"weight":null,"rpe":5.0,"rest":180}]},{"name":"Rowing Bucheron","liftType":"","series":[{"reps":8,"pct":null,"weight":null,"rpe":8.0,"rest":180},{"reps":8,"pct":null,"weight":null,"rpe":8.0,"rest":180},{"reps":8,"pct":null,"weight":null,"rpe":8.0,"rest":180}]},{"name":"Larsen Press","liftType":"bench","series":[{"reps":1,"pct":75,"weight":75.0,"rpe":null,"rest":180},{"reps":1,"pct":82,"weight":82.0,"rpe":6.0,"rest":180},{"reps":1,"pct":87,"weight":87.0,"rpe":8.0,"rest":180},{"reps":5,"pct":77,"weight":77.0,"rpe":8.0,"rest":180},{"reps":5,"pct":77,"weight":77.0,"rpe":8.0,"rest":180},{"reps":5,"pct":77,"weight":77.0,"rpe":8.0,"rest":180}]},{"name":"Extension triceps","liftType":"","series":[{"reps":12,"pct":null,"weight":null,"rpe":8.0,"rest":180},{"reps":12,"pct":null,"weight":null,"rpe":8.0,"rest":180},{"reps":12,"pct":null,"weight":null,"rpe":8.0,"rest":180}]}]},{"id":2,"name":"3ème Seance","exercises":[{"name":"TEMPO SQUAT 3:1:3","liftType":"squat","series":[{"reps":3,"pct":75,"weight":138.75,"rpe":null,"rest":180},{"reps":3,"pct":75,"weight":138.75,"rpe":null,"rest":180},{"reps":3,"pct":75,"weight":138.75,"rpe":null,"rest":180}]},{"name":"TEMPO 4:2:0 Bench","liftType":"bench","series":[{"reps":2,"pct":70,"weight":70.0,"rpe":null,"rest":180},{"reps":2,"pct":78,"weight":78.0,"rpe":null,"rest":180},{"reps":2,"pct":83,"weight":83.0,"rpe":null,"rest":180},{"reps":2,"pct":83,"weight":83.0,"rpe":null,"rest":180}]}]},{"id":3,"name":"4ème Seance","exercises":[{"name":"SQUAT","liftType":"squat","series":[{"reps":1,"pct":77,"weight":140.53,"rpe":null,"rest":180},{"reps":1,"pct":84,"weight":153.3,"rpe":5.0,"rest":180},{"reps":1,"pct":90,"weight":164.25,"rpe":7.5,"rest":180},{"reps":1,"pct":90,"weight":164.25,"rpe":7.5,"rest":180},{"reps":3,"pct":86,"weight":156.95,"rpe":8.0,"rest":180}]},{"name":"BENCH","liftType":"bench","series":[{"reps":1,"pct":79,"weight":79.0,"rpe":null,"rest":180},{"reps":1,"pct":86,"weight":86.0,"rpe":6.0,"rest":180},{"reps":1,"pct":93,"weight":93.0,"rpe":8.0,"rest":180},{"reps":1,"pct":93,"weight":93.0,"rpe":8.0,"rest":180},{"reps":7,"pct":72,"weight":72.0,"rpe":7.0,"rest":180},{"reps":7,"pct":72,"weight":72.0,"rpe":7.0,"rest":180}]},{"name":"DEADLIFT","liftType":"deadlift","series":[{"reps":1,"pct":77,"weight":150.15,"rpe":null,"rest":180},{"reps":1,"pct":84,"weight":163.8,"rpe":5.0,"rest":180},{"reps":1,"pct":89,"weight":173.55,"rpe":7.0,"rest":180},{"reps":1,"pct":89,"weight":173.55,"rpe":7.0,"rest":180}]}]}]},{"weekNum":2,"sessions":[{"id":100,"name":"1ere Seance","exercises":[{"name":"SQUAT","liftType":"squat","series":[{"reps":5,"pct":65,"weight":118.62},{"reps":5,"pct":75,"weight":136.88},{"reps":5,"pct":82,"weight":149.65,"rpe":8.0},{"reps":5,"pct":82,"weight":149.65,"rpe":8.0},{"reps":5,"pct":82,"weight":149.65,"rpe":8.0}]},{"name":"BENCH 2CT PAUSE","liftType":"bench","series":[{"reps":3,"pct":74,"weight":74.0},{"reps":3,"pct":82,"weight":82.0,"rpe":6.0},{"reps":3,"pct":86,"weight":86.0,"rpe":8.0},{"reps":3,"pct":86,"weight":86.0,"rpe":8.0},{"reps":3,"pct":86,"weight":86.0,"rpe":8.0}]}]},{"id":101,"name":"2ème Seance","exercises":[{"name":"DEADLIFT","liftType":"deadlift","series":[{"reps":5,"pct":65,"weight":126.75},{"reps":5,"pct":75,"weight":146.25},{"reps":5,"pct":82,"weight":159.9,"rpe":8.0},{"reps":5,"pct":82,"weight":159.9,"rpe":8.0},{"reps":5,"pct":72,"weight":140.4}]},{"name":"Larsen Press","liftType":"bench","series":[{"reps":1,"pct":75,"weight":71.25},{"reps":1,"pct":82,"weight":77.9,"rpe":6.0},{"reps":1,"pct":87,"weight":82.65,"rpe":8.0},{"reps":5,"pct":77,"weight":73.15,"rpe":8.0},{"reps":5,"pct":77,"weight":73.15,"rpe":8.0}]},{"name":"Extension triceps","liftType":"","series":[{"reps":12},{"reps":12},{"reps":12}]}]},{"id":102,"name":"3ème Seance","exercises":[{"name":"TEMPO SQUAT 3:1:3","liftType":"squat","series":[{"reps":3,"pct":80,"weight":146.0},{"reps":3,"pct":80,"weight":146.0},{"reps":3,"pct":80,"weight":146.0}]},{"name":"TEMPO 4:2:0 Bench","liftType":"bench","series":[{"reps":2,"pct":70,"weight":66.5},{"reps":2,"pct":78,"weight":74.1},{"reps":2,"pct":83,"weight":78.85},{"reps":2,"pct":83,"weight":78.85}]}]},{"id":103,"name":"4ème Seance","exercises":[{"name":"SQUAT","liftType":"squat","series":[{"reps":1,"pct":86,"weight":156.95,"rpe":6.0},{"reps":1,"pct":93,"weight":169.72,"rpe":8.0},{"reps":1,"pct":93,"weight":169.72,"rpe":8.0},{"reps":3,"pct":86,"weight":156.95,"rpe":8.0}]},{"name":"BENCH","liftType":"bench","series":[{"reps":1,"pct":79,"weight":75.05},{"reps":1,"pct":86,"weight":81.7,"rpe":6.0},{"reps":1,"pct":93,"weight":88.35,"rpe":8.0},{"reps":7,"pct":72,"weight":68.4,"rpe":7.0},{"reps":7,"pct":72,"weight":68.4,"rpe":7.0}]},{"name":"DEADLIFT","liftType":"deadlift","series":[{"reps":1,"pct":79,"weight":154.05},{"reps":1,"pct":86,"weight":167.7,"rpe":5.0},{"reps":1,"pct":93,"weight":181.35,"rpe":8.0},{"reps":1,"pct":93,"weight":181.35,"rpe":8.0}]}]}]},{"weekNum":3,"sessions":[{"id":200,"name":"1ere Seance","exercises":[{"name":"SQUAT","liftType":"squat","series":[{"reps":3,"pct":74,"weight":135.05},{"reps":3,"pct":82,"weight":149.65,"rpe":6.0},{"reps":3,"pct":86,"weight":156.95,"rpe":8.0},{"reps":3,"pct":86,"weight":156.95,"rpe":8.0},{"reps":3,"pct":86,"weight":156.95,"rpe":8.0}]},{"name":"BENCH 2CT PAUSE","liftType":"bench","series":[{"reps":3,"pct":74,"weight":74.0},{"reps":3,"pct":82,"weight":82.0,"rpe":6.0},{"reps":3,"pct":86,"weight":86.0,"rpe":8.0},{"reps":3,"pct":86,"weight":86.0,"rpe":8.0},{"reps":3,"pct":86,"weight":86.0,"rpe":8.0}]}]},{"id":201,"name":"2ème Seance","exercises":[{"name":"DEADLIFT","liftType":"deadlift","series":[{"reps":3,"pct":74,"weight":144.3},{"reps":3,"pct":82,"weight":159.9,"rpe":6.0},{"reps":3,"pct":86,"weight":167.7,"rpe":8.0},{"reps":3,"pct":86,"weight":167.7,"rpe":8.0}]},{"name":"Larsen Press","liftType":"bench","series":[{"reps":1,"pct":75,"weight":71.25},{"reps":1,"pct":82,"weight":77.9,"rpe":6.0},{"reps":1,"pct":87,"weight":82.65,"rpe":8.0},{"reps":5,"pct":77,"weight":73.15,"rpe":8.0},{"reps":5,"pct":77,"weight":73.15,"rpe":8.0}]}]}]},{"weekNum":4,"sessions":[{"id":300,"name":"1ere Seance","exercises":[{"name":"SQUAT","liftType":"squat","series":[{"reps":3,"pct":74,"weight":135.05},{"reps":3,"pct":82,"weight":149.65,"rpe":6.0},{"reps":3,"pct":86,"weight":156.95,"rpe":8.0},{"reps":3,"pct":86,"weight":156.95,"rpe":8.0}]},{"name":"BENCH 2CT PAUSE","liftType":"bench","series":[{"reps":3,"pct":74,"weight":70.3},{"reps":3,"pct":82,"weight":77.9,"rpe":6.0},{"reps":3,"pct":86,"weight":81.7,"rpe":8.0}]}]},{"id":301,"name":"2ème Seance","exercises":[{"name":"DEADLIFT","liftType":"deadlift","series":[{"reps":3,"pct":74,"weight":144.3},{"reps":3,"pct":82,"weight":159.9,"rpe":6.0},{"reps":3,"pct":86,"weight":167.7,"rpe":8.0},{"reps":3,"pct":86,"weight":167.7,"rpe":8.0}]},{"name":"Extension triceps","liftType":"","series":[{"reps":12},{"reps":12},{"reps":12}]}]}]},{"weekNum":5,"sessions":[{"id":400,"name":"1ere Seance","exercises":[{"name":"SQUAT","liftType":"squat","series":[{"reps":3,"pct":70,"weight":127.75},{"reps":3,"pct":76,"weight":138.7,"rpe":5.0},{"reps":3,"pct":80,"weight":146.0,"rpe":7.0},{"reps":3,"pct":80,"weight":146.0,"rpe":7.0}]},{"name":"BENCH 2CT PAUSE","liftType":"bench","series":[{"reps":3,"pct":70,"weight":66.5},{"reps":3,"pct":76,"weight":72.2,"rpe":5.0},{"reps":3,"pct":80,"weight":76.0,"rpe":7.0}]}]},{"id":403,"name":"4ème Seance","exercises":[{"name":"SQUAT","liftType":"squat","series":[{"reps":1,"pct":83,"weight":153.55,"rpe":5.0},{"reps":1,"pct":89,"weight":164.65,"rpe":7.0},{"reps":1,"pct":95,"weight":175.75,"rpe":8.5},{"reps":1,"pct":100,"weight":185.0,"rpe":10.0}]},{"name":"BENCH","liftType":"bench","series":[{"reps":1,"pct":83,"weight":83.0,"rpe":5.0},{"reps":1,"pct":89,"weight":89.0,"rpe":7.0},{"reps":1,"pct":95,"weight":95.0,"rpe":8.5},{"reps":1,"pct":100,"weight":100.0,"rpe":10.0}]},{"name":"DEADLIFT","liftType":"deadlift","series":[{"reps":1,"pct":79,"weight":158.0},{"reps":1,"pct":86,"weight":172.0,"rpe":6.0},{"reps":1,"pct":93,"weight":186.0,"rpe":8.0},{"reps":1,"pct":100,"weight":200.0,"rpe":10.0}]}]}]}]};
+}
+
+// ── PWA ───────────────────────────────────────────────────
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferredPrompt=e;
+  document.getElementById('install-banner').style.display='flex';
+});
+window.addEventListener('appinstalled',()=>{
+  document.getElementById('install-banner').style.display='none';
+});
+function installApp(){
+  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;});
+  document.getElementById('install-banner').style.display='none';}
+}
+
+// Register SW
+if('serviceWorker' in navigator){
+  const sw=`const CACHE='sg-v1';self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/']))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
+  const blob=new Blob([sw],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+}
+</script>
+</body>
+</html>
