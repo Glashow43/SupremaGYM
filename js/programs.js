@@ -52,24 +52,32 @@ function renderProgDetail() {
   document.getElementById('detail-prog-name').textContent = prog.name;
   const el = document.getElementById('detail-weeks-content');
   el.innerHTML = prog.weeks.map((w, wi) => `
-    <div class="wcard" style="margin-bottom:10px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div style="font-size:13px;font-weight:800;color:var(--purple);">Semaine ${w.weekNum}</div>
-        <button class="btn r sm" onclick="deleteWeek(${wi})">🗑 Semaine</button>
-      </div>
-      ${w.sessions.map((s, si) => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;">
-          <div>
-            <div style="font-size:13px;font-weight:700;">${s.name}</div>
-            <div style="font-size:11px;color:var(--text2);">${s.exercises.length} exercice${s.exercises.length !== 1 ? 's' : ''}</div>
-          </div>
-          <div style="display:flex;gap:6px;">
-            <button class="btn b sm" onclick="openExEditor(${dpid},${wi},${si})">✏️ Éditer</button>
-            <button class="btn r sm" onclick="deleteSess(${wi},${si})">🗑</button>
-          </div>
+    <div class="wcard" style="margin-bottom:10px;padding:0;overflow:hidden;">
+      <!-- En-tête cliquable -->
+      <div onclick="toggleProgWeek(this)" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;user-select:none;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;color:var(--text2);transition:transform 0.2s;" class="week-chevron">›</span>
+          <span style="font-size:13px;font-weight:800;color:var(--purple);">Semaine ${w.weekNum}</span>
+          <span style="font-size:11px;color:var(--text2);">${w.sessions.length} séance${w.sessions.length !== 1 ? 's' : ''}</span>
         </div>
-      `).join('')}
-      <button onclick="addSessToWeek(${dpid},${wi})" style="width:100%;padding:7px;background:none;border:1.5px dashed var(--border);border-radius:8px;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-top:2px;">＋ Ajouter une séance</button>
+        <button class="btn r sm" onclick="event.stopPropagation();deleteWeek(${wi})">🗑 Supprimer</button>
+      </div>
+      <!-- Corps repliable (masqué par défaut) -->
+      <div class="week-body" style="display:none;padding:0 14px 12px;">
+        ${w.sessions.map((s, si) => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;">
+            <div>
+              <div style="font-size:13px;font-weight:700;">${s.name}</div>
+              <div style="font-size:11px;color:var(--text2);">${s.exercises.length} exercice${s.exercises.length !== 1 ? 's' : ''}</div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn b sm" onclick="openExEditor(${dpid},${wi},${si})">✏️ Éditer</button>
+              <button class="btn r sm" onclick="deleteSess(${wi},${si})">🗑</button>
+            </div>
+          </div>
+        `).join('')}
+        <button onclick="addSessToWeek(${dpid},${wi})" style="width:100%;padding:7px;background:none;border:1.5px dashed var(--border);border-radius:8px;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-top:2px;">＋ Ajouter une séance</button>
+      </div>
     </div>
   `).join('');
 }
@@ -137,6 +145,15 @@ function activateProgram(pid) {
   sv('activeProgram', S.ap);
   renderProgList();
   notify('Programme activé ! 💪');
+}
+
+/** Toggle l'accordéon d'une semaine dans le détail programme */
+function toggleProgWeek(hdr) {
+  const body    = hdr.nextElementSibling;
+  const chevron = hdr.querySelector('.week-chevron');
+  const open    = body.style.display === 'block';
+  body.style.display    = open ? 'none' : 'block';
+  chevron.style.transform = open ? '' : 'rotate(90deg)';
 }
 
 /** Supprime une semaine entière (avec confirmation) */
