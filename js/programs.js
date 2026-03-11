@@ -53,19 +53,17 @@ function renderProgDetail() {
   const el = document.getElementById('detail-weeks-content');
   el.innerHTML = prog.weeks.map((w, wi) => `
     <div class="wcard" style="margin-bottom:10px;padding:0;overflow:hidden;">
-      <!-- En-tête cliquable -->
-      <div onclick="toggleProgWeek(this)" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;user-select:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;user-select:none;" onclick="toggleProgWeek(this)">
         <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:12px;color:var(--text2);transition:transform 0.2s;" class="week-chevron">›</span>
+          <span style="font-size:14px;color:var(--text2);display:inline-block;transition:transform 0.2s;">›</span>
           <span style="font-size:13px;font-weight:800;color:var(--purple);">Semaine ${w.weekNum}</span>
           <span style="font-size:11px;color:var(--text2);">${w.sessions.length} séance${w.sessions.length !== 1 ? 's' : ''}</span>
         </div>
         <button class="btn r sm" onclick="event.stopPropagation();deleteWeek(${wi})">🗑 Supprimer</button>
       </div>
-      <!-- Corps repliable (masqué par défaut) -->
-      <div class="week-body" style="display:none;padding:0 14px 12px;">
+      <div style="display:none;padding:0 14px 12px;">
         ${w.sessions.map((s, si) => `
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;margin-top:6px;">
             <div>
               <div style="font-size:13px;font-weight:700;">${s.name}</div>
               <div style="font-size:11px;color:var(--text2);">${s.exercises.length} exercice${s.exercises.length !== 1 ? 's' : ''}</div>
@@ -76,7 +74,7 @@ function renderProgDetail() {
             </div>
           </div>
         `).join('')}
-        <button onclick="addSessToWeek(${dpid},${wi})" style="width:100%;padding:7px;background:none;border:1.5px dashed var(--border);border-radius:8px;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-top:2px;">＋ Ajouter une séance</button>
+        <button onclick="addSessToWeek(${dpid},${wi})" style="width:100%;padding:7px;background:none;border:1.5px dashed var(--border);border-radius:8px;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-top:4px;">＋ Ajouter une séance</button>
       </div>
     </div>
   `).join('');
