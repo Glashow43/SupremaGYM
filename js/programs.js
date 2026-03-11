@@ -148,9 +148,9 @@ function activateProgram(pid) {
 /** Toggle l'accordéon d'une semaine dans le détail programme */
 function toggleProgWeek(hdr) {
   const body    = hdr.nextElementSibling;
-  const chevron = hdr.querySelector('.week-chevron');
+  const chevron = hdr.querySelector('span');
   const open    = body.style.display === 'block';
-  body.style.display    = open ? 'none' : 'block';
+  body.style.display      = open ? 'none' : 'block';
   chevron.style.transform = open ? '' : 'rotate(90deg)';
 }
 
