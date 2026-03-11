@@ -53,7 +53,10 @@ function renderProgDetail() {
   const el = document.getElementById('detail-weeks-content');
   el.innerHTML = prog.weeks.map((w, wi) => `
     <div class="wcard" style="margin-bottom:10px;">
-      <div style="font-size:13px;font-weight:800;margin-bottom:8px;color:var(--purple);">Semaine ${w.weekNum}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:800;color:var(--purple);">Semaine ${w.weekNum}</div>
+        <button class="btn r sm" onclick="deleteWeek(${wi})">🗑 Semaine</button>
+      </div>
       ${w.sessions.map((s, si) => `
         <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;">
           <div>
@@ -62,7 +65,7 @@ function renderProgDetail() {
           </div>
           <div style="display:flex;gap:6px;">
             <button class="btn b sm" onclick="openExEditor(${dpid},${wi},${si})">✏️ Éditer</button>
-            <button class="btn g sm" onclick="startSess(${dpid},${wi},${si})">▶ Lancer</button>
+            <button class="btn r sm" onclick="deleteSess(${wi},${si})">🗑</button>
           </div>
         </div>
       `).join('')}
@@ -136,7 +139,30 @@ function activateProgram(pid) {
   notify('Programme activé ! 💪');
 }
 
-/** Supprime un programme (avec confirmation) */
+/** Supprime une semaine entière (avec confirmation) */
+function deleteWeek(wi) {
+  const p = S.progs.find(p => p.id === dpid);
+  if (!p) return;
+  if (!confirm(`Supprimer la semaine ${wi + 1} et toutes ses séances ?`)) return;
+  p.weeks.splice(wi, 1);
+  // Renumérote les semaines
+  p.weeks.forEach((w, i) => w.weekNum = i + 1);
+  sv('programs', S.progs);
+  renderProgDetail();
+}
+
+/** Supprime une séance d'une semaine (avec confirmation) */
+function deleteSess(wi, si) {
+  const p = S.progs.find(p => p.id === dpid);
+  if (!p) return;
+  const sessName = p.weeks[wi].sessions[si].name;
+  if (!confirm(`Supprimer "${sessName}" ?`)) return;
+  p.weeks[wi].sessions.splice(si, 1);
+  sv('programs', S.progs);
+  renderProgDetail();
+}
+
+
 function deleteProgram(pid) {
   if (!confirm('Supprimer ce programme ?')) return;
   S.progs = S.progs.filter(p => p.id !== pid);
