@@ -455,7 +455,7 @@ body {
 .ex-editor.open { display: flex; }
 .ex-editor-hdr  { background: var(--nav-bg); color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; position: sticky; top: 0; z-index: 1; }
 .ex-editor-hdr h2 { font-size: 16px; font-weight: 800; }
-.ee-ex-item  { background: var(--surface); border-radius: 12px; margin: 25px 25px; overflow: hidden; box-shadow: var(--sh); }
+.ee-ex-item  { background: var(--surface); border-radius: 12px; margin: 8px 14px; overflow: hidden; box-shadow: var(--sh); }
 .ee-ex-hdr   { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--border); }
 .ee-ex-name  { font-size: 13px; font-weight: 700; }
 .ee-set-row  { display: grid; grid-template-columns: 10px 40px 50px 60px 55px 2px; gap: 6px; align-items: center; padding: 7px 12px; border-bottom: 1px solid var(--border); }
