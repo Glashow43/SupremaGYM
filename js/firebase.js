@@ -133,6 +133,7 @@ auth.onAuthStateChanged(async user => {
     // Rendre le dashboard et la séance en cours
     renderDash();
     renderSess();
+    renderProgList();
 
   } else {
     currentUser = null;
