@@ -451,81 +451,20 @@ body {
 /* ══════════════════════════════════════════════════════
    ÉDITEUR DE SÉANCE (plein écran)
    ══════════════════════════════════════════════════════ */
-.ex-editor {
-  position: fixed; inset: 0;
-  background: var(--bg);
-  z-index: 300;
-  display: none;
-  flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
+.ex-editor      { position: fixed; inset: 0; background: var(--bg); z-index: 300; display: none; flex-direction: column; overflow-y: auto; }
 .ex-editor.open { display: flex; }
-
-.ex-editor-hdr {
-  background: var(--nav-bg); color: #fff;
-  padding: 14px 16px;
-  display: flex; align-items: center; justify-content: space-between;
-  flex-shrink: 0;
-  position: sticky; top: 0; z-index: 1;
-}
+.ex-editor-hdr  { background: var(--nav-bg); color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; position: sticky; top: 0; z-index: 1; }
 .ex-editor-hdr h2 { font-size: 16px; font-weight: 800; }
-
-.ee-ex-item {
-  background: var(--surface);
-  border-radius: 12px;
-  margin: 8px 12px;
-  overflow: hidden;
-  box-shadow: var(--sh);
-  /* Largeur explicite pour éviter tout débordement */
-  width: calc(100% - 24px);
-}
-
-.ee-ex-hdr {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
-}
-.ee-ex-name { font-size: 13px; font-weight: 700; }
-
-/* Labels colonnes et lignes séries : colonnes IDENTIQUES */
-.ee-hdr-labels,
-.ee-set-row {
-  display: grid;
-  grid-template-columns: 20px 1fr 1fr 1fr 1fr 28px;
-  gap: 4px;
-  align-items: center;
-  width: 100%;
-}
-
-.ee-hdr-labels {
-  padding: 5px 10px 4px;
-  background: var(--surface2);
-}
-
-.ee-set-row {
-  padding: 7px 10px;
-  border-bottom: 1px solid var(--border);
-}
+.ee-ex-item  { background: var(--surface); border-radius: 12px; margin: 8px 14px; overflow: hidden; box-shadow: var(--sh); }
+.ee-ex-hdr   { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.ee-ex-name  { font-size: 13px; font-weight: 700; }
+.ee-set-row  { display: grid; grid-template-columns: 10px 40px 50px 60px 55px 2px; gap: 6px; align-items: center; padding: 7px 12px; border-bottom: 1px solid var(--border); }
 .ee-set-row:last-child { border-bottom: none; }
-
-.ee-set-num { font-size: 10px; color: var(--text2); font-weight: 700; text-align: center; }
-.ee-lbl     { font-size: 9px; color: var(--text2); font-weight: 700; text-align: center; text-transform: uppercase; }
-
-.ee-inp {
-  width: 100%;
-  border: 1.5px solid var(--border);
-  border-radius: 7px;
-  padding: 6px 4px;
-  font-size: 12px;
-  font-family: 'Inter', sans-serif;
-  text-align: center;
-  outline: none;
-  background: var(--surface2);
-  color: var(--text);
-  min-width: 0; /* important pour que les inputs respectent la grille */
-}
+.ee-set-num  { font-size: 10px; color: var(--text2); font-weight: 700; text-align: center; }
+.ee-inp      { width: 100%; border: 1.5px solid var(--border); border-radius: 7px; padding: 5px 6px; font-size: 12px; font-family: 'Inter', sans-serif; text-align: center; outline: none; background: var(--surface2); color: var(--text); }
 .ee-inp:focus { border-color: var(--purple); }
+.ee-hdr-labels { display: grid; grid-template-columns: 24px 60px 70px 60px 60px 32px; gap: 6px; padding: 4px 12px 2px; background: var(--surface2); }
+.ee-lbl        { font-size: 9px; color: var(--text2); font-weight: 700; text-align: center; text-transform: uppercase; }
 
 /* ══════════════════════════════════════════════════════
    MODAL AJOUT RAPIDE EXERCICE
