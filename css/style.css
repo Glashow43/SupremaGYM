@@ -458,12 +458,12 @@ body {
 .ee-ex-item  { background: var(--surface); border-radius: 12px; margin: 8px 14px; overflow: hidden; box-shadow: var(--sh); }
 .ee-ex-hdr   { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--border); }
 .ee-ex-name  { font-size: 13px; font-weight: 700; }
-.ee-set-row { grid-template-columns: 20px 1fr 1fr 1fr 1fr 28px; gap: 4px; padding: 7px 8px;; border-bottom: 1px solid var(--border); }
+.ee-set-row { grid-template-columns: 18px 42px 42px 58px 42px 28px;gap: 3px; padding: 7px 6px; border-bottom: 1px solid var(--border); }
 .ee-set-row:last-child { border-bottom: none; }
 .ee-set-num  { font-size: 10px; color: var(--text2); font-weight: 700; text-align: center; }
 .ee-inp      { width: 100%; border: 1.5px solid var(--border); border-radius: 7px; padding: 5px 6px; font-size: 12px; font-family: 'Inter', sans-serif; text-align: center; outline: none; background: var(--surface2); color: var(--text); }
 .ee-inp:focus { border-color: var(--purple); }
-.ee-hdr-labels { grid-template-columns: 20px 1fr 1fr 1fr 1fr 28px; gap: 4px; padding: 4px 8px 2px; background: var(--surface2); }
+.ee-hdr-labels { grid-template-columns: 18px 42px 42px 58px 42px 28px; gap: 3px; padding: 4px 6px 2px; background: var(--surface2); }
 .ee-lbl        { font-size: 9px; color: var(--text2); font-weight: 700; text-align: center; text-transform: uppercase; }
 
 /* ══════════════════════════════════════════════════════
