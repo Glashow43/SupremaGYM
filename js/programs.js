@@ -1,300 +1,576 @@
-// ══════════════════════════════════════════════════════════
-// js/programs.js — Gestion des programmes + Éditeur de séance
-// ══════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════
+   SupremaGym — Feuille de style principale
+   ══════════════════════════════════════════════════════════ */
 
-// ── ID du programme affiché en détail ────────────────────
-let dpid = null;
-
-// ════════════════════════════════════════════════════════
-// LISTE DES PROGRAMMES
-// ════════════════════════════════════════════════════════
-
-/** Rend la liste de tous les programmes */
-function renderProgList() {
-  const el = document.getElementById('prog-list-content');
-  if (!S.progs.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>Aucun programme</p></div>';
-    return;
-  }
-  el.innerHTML = S.progs.map(p => {
-    const isActive = S.ap && S.ap.programId === p.id;
-    return `
-      <div class="prog-item${isActive ? ' active-prog' : ''}" onclick="openProgDetail(${p.id})">
-        <div class="prog-icon" style="background:rgba(139,108,247,0.15);">📋</div>
-        <div class="prog-info">
-          <div class="prog-name">${p.name}</div>
-          <div class="prog-meta">${p.weeks.length} semaines · ${p.weeks[0]?.sessions.length || 0} séances/sem</div>
-          ${isActive ? '<span class="bdg g">ACTIF</span>' : ''}
-        </div>
-        ${!isActive ? `<button class="btn g sm" onclick="event.stopPropagation();activateProgram(${p.id})">Activer</button>` : ''}
-      </div>`;
-  }).join('');
+/* ── Variables CSS (thème sombre) ────────────────────── */
+:root {
+  --bg:       #0e0f17;
+  --surface:  #181a27;
+  --surface2: #1f2133;
+  --border:   #2a2d42;
+  --nav-bg:   #12131f;
+  --purple:   #8b6cf7;
+  --purple2:  #a78bfa;
+  --green:    #22c55e;
+  --red:      #f43f5e;
+  --blue:     #3b82f6;
+  --orange:   #f97316;
+  --yellow:   #fbbf24;
+  --text:     #e8eaf6;
+  --text2:    #8b8fa8;
+  --text3:    #4a4e6a;
+  --squat:    #f87171;
+  --bench:    #60a5fa;
+  --deadlift: #4ade80;
+  --r:    14px;
+  --sh:   0 2px 16px rgba(0,0,0,0.4);
+  --grad: linear-gradient(135deg,#4c3fa0,#6b52d1,#8b6cf7);
 }
 
-/** Affiche la sous-page liste (masque la sous-page détail) */
-function showProgList() {
-  document.getElementById('prog-list').classList.add('active');
-  document.getElementById('prog-detail').classList.remove('active');
+/* ── Reset ───────────────────────────────────────────── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  min-height: 100dvh;
+  color: var(--text);
 }
 
-/** Affiche la sous-page détail d'un programme */
-function openProgDetail(pid) {
-  dpid = pid;
-  document.getElementById('prog-list').classList.remove('active');
-  document.getElementById('prog-detail').classList.add('active');
-  renderProgDetail();
+/* ══════════════════════════════════════════════════════
+   ÉCRAN DE CONNEXION
+   ══════════════════════════════════════════════════════ */
+#login-screen {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: var(--grad);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+.login-logo  { font-size: 60px; margin-bottom: 16px; }
+.login-title { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+.login-sub   { font-size: 14px; color: rgba(255,255,255,0.75); margin-bottom: 48px; text-align: center; }
+.login-btn {
+  display: flex; align-items: center; gap: 12px;
+  background: #fff; border: none; border-radius: 12px;
+  padding: 14px 24px; font-size: 15px; font-weight: 700;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  width: 100%; max-width: 300px; justify-content: center;
+}
+#login-loading { display: none; margin-top: 20px; color: #fff; font-size: 13px; }
+#login-error   { display: none; color: rgba(255,255,255,0.85); font-size: 12px; margin-top: 16px; text-align: center; }
+#login-loading-spinner {
+  display: inline-block; width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+  margin-right: 8px; vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ══════════════════════════════════════════════════════
+   NAVIGATION HAUTE
+   ══════════════════════════════════════════════════════ */
+.topnav {
+  background: var(--nav-bg);
+  padding: 0 14px;
+  display: flex; align-items: center;
+  height: 50px;
+  position: sticky; top: 0; z-index: 100;
+}
+.topnav-links {
+  display: flex; gap: 2px;
+  overflow-x: auto; flex: 1;
+  scrollbar-width: none;
+}
+.topnav-links::-webkit-scrollbar { display: none; }
+.tnl {
+  background: none; border: none;
+  color: rgba(255,255,255,0.6);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; padding: 6px 10px;
+  border-radius: 8px; white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+}
+.tnl.active { color: #fff; background: rgba(255,255,255,0.15); }
+.topnav-user { display: none; align-items: center; gap: 6px; margin-left: 8px; flex-shrink: 0; }
+.topnav-user.visible { display: flex; }
+#user-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.3); display: none;
+}
+#user-name {
+  font-size: 11px; color: rgba(255,255,255,0.75); font-weight: 600;
+  max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sign-out-btn {
+  background: none; border: 1px solid rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.7); font-size: 10px; font-weight: 600;
+  padding: 3px 7px; border-radius: 6px; cursor: pointer;
+  font-family: 'Inter', sans-serif;
 }
 
-/** Rend le détail d'un programme (semaines, séances, boutons Éditer/Lancer) */
-function renderProgDetail() {
-  const prog = S.progs.find(p => p.id === dpid);
-  if (!prog) return;
-  document.getElementById('detail-prog-name').textContent = prog.name;
-  const el = document.getElementById('detail-weeks-content');
-  el.innerHTML = prog.weeks.map((w, wi) => `
-    <div class="wcard" style="margin-bottom:10px;padding:0;overflow:hidden;">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;user-select:none;" onclick="toggleProgWeek(this)">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:14px;color:var(--text2);display:inline-block;transition:transform 0.2s;">›</span>
-          <span style="font-size:13px;font-weight:800;color:var(--purple);">Semaine ${w.weekNum}</span>
-          <span style="font-size:11px;color:var(--text2);">${w.sessions.length} séance${w.sessions.length !== 1 ? 's' : ''}</span>
-        </div>
-        <button class="btn r sm" onclick="event.stopPropagation();deleteWeek(${wi})">🗑 Supprimer</button>
-      </div>
-      <div style="display:none;padding:0 14px 12px;">
-        ${w.sessions.map((s, si) => `
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;margin-top:6px;">
-            <div>
-              <div style="font-size:13px;font-weight:700;">${s.name}</div>
-              <div style="font-size:11px;color:var(--text2);">${s.exercises.length} exercice${s.exercises.length !== 1 ? 's' : ''}</div>
-            </div>
-            <div style="display:flex;gap:6px;">
-              <button class="btn b sm" onclick="openExEditor(${dpid},${wi},${si})">✏️ Éditer</button>
-              <button class="btn r sm" onclick="deleteSess(${wi},${si})">🗑</button>
-            </div>
-          </div>
-        `).join('')}
-        <button onclick="addSessToWeek(${dpid},${wi})" style="width:100%;padding:7px;background:none;border:1.5px dashed var(--border);border-radius:8px;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-top:4px;">＋ Ajouter une séance</button>
-      </div>
-    </div>
-  `).join('');
+/* ══════════════════════════════════════════════════════
+   PAGES
+   ══════════════════════════════════════════════════════ */
+.page         { display: none; padding: 0 0 110px; }
+.page.active  { display: block; }
+#page-session { padding-bottom: 170px; }
+.pc    { max-width: 680px; margin: 0 auto; padding: 14px 13px; }
+.ptitle { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 14px; }
+
+/* ══════════════════════════════════════════════════════
+   NAVIGATION BASSE
+   ══════════════════════════════════════════════════════ */
+.botnav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--nav-bg);
+  display: flex; z-index: 100;
+  padding-bottom: max(env(safe-area-inset-bottom), 8px);
+}
+.bnb {
+  flex: 1; background: none; border: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 8px; font-weight: 600; cursor: pointer;
+  padding: 8px 2px 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-family: 'Inter', sans-serif; min-height: 52px;
+}
+.bnb svg { width: 20px; height: 20px; }
+.bnb.active { color: #fff; }
+.bnb.active svg { filter: drop-shadow(0 0 4px rgba(167,139,250,0.8)); }
+
+/* ══════════════════════════════════════════════════════
+   CARTES GÉNÉRIQUES
+   ══════════════════════════════════════════════════════ */
+.wcard {
+  background: var(--surface);
+  border-radius: var(--r);
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: var(--sh);
+}
+.wcard-title {
+  font-size: 13px; font-weight: 800; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;
+}
+.wcard .btn { margin-top: 6px; }
+
+/* ══════════════════════════════════════════════════════
+   BOUTONS
+   ══════════════════════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 8px 16px; border-radius: 20px; border: none;
+  font-size: 13px; font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer; transition: opacity 0.15s;
+}
+.btn:active { opacity: 0.7; }
+.btn.g    { background: var(--green);  color: #fff; }
+.btn.r    { background: var(--red);    color: #fff; }
+.btn.b    { background: var(--blue);   color: #fff; }
+.btn.p    { background: var(--purple); color: #fff; }
+.btn.out  { background: none; border: 2px solid rgba(255,255,255,0.4); color: #fff; }
+.btn.full { width: 100%; justify-content: center; }
+.btn.sm   { padding: 5px 10px; font-size: 11px; }
+
+/* ══════════════════════════════════════════════════════
+   MODALS
+   ══════════════════════════════════════════════════════ */
+.mo {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 200;
+  display: none; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.mo.open { display: flex; }
+.mdl {
+  background: var(--surface);
+  border-radius: var(--r);
+  padding: 20px;
+  width: 100%; max-width: 420px;
+  max-height: 80vh; overflow-y: auto;
+}
+.mdl-title {
+  font-size: 16px; font-weight: 800;
+  margin-bottom: 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.mclose { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text2); line-height: 1; }
+
+/* Champs de formulaire */
+.fg { margin-bottom: 14px; }
+.fl {
+  font-size: 11px; font-weight: 700; color: var(--text2);
+  display: block; margin-bottom: 5px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.fi {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px; font-family: 'Inter', sans-serif;
+  outline: none;
+  background: var(--surface2); color: var(--text);
+}
+.fi:focus { border-color: var(--purple); }
+
+/* ══════════════════════════════════════════════════════
+   CARTES 1RM (accueil)
+   ══════════════════════════════════════════════════════ */
+.rm-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.rm-card {
+  background: var(--surface); border-radius: 12px;
+  padding: 12px 8px; text-align: center; box-shadow: var(--sh);
+}
+.rm-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.rm-val   { font-size: 22px; font-weight: 800; }
+.rm-unit  { font-size: 10px; color: var(--text2); }
+.rm-card.squat   .rm-label, .rm-card.squat   .rm-val { color: var(--squat); }
+.rm-card.bench   .rm-label, .rm-card.bench   .rm-val { color: var(--bench); }
+.rm-card.deadlift .rm-label,.rm-card.deadlift .rm-val { color: var(--deadlift); }
+
+/* Total */
+.home-total       { font-size: 28px; font-weight: 900; color: var(--purple); }
+.home-total-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ══════════════════════════════════════════════════════
+   NOTIFICATION TOAST
+   ══════════════════════════════════════════════════════ */
+#notif {
+  position: fixed; top: 60px; left: 50%;
+  transform: translateX(-50%) translateY(-80px);
+  background: #1a1d2e; color: #fff;
+  padding: 10px 20px; border-radius: 20px;
+  font-size: 13px; font-weight: 600;
+  z-index: 9999; transition: transform 0.3s;
+  white-space: nowrap;
+}
+#notif.show { transform: translateX(-50%) translateY(0); }
+
+/* ══════════════════════════════════════════════════════
+   ÉTATS VIDES
+   ══════════════════════════════════════════════════════ */
+.empty       { text-align: center; padding: 40px 20px; color: var(--text2); }
+.empty-icon  { font-size: 40px; margin-bottom: 10px; }
+
+/* ══════════════════════════════════════════════════════
+   EN-TÊTES DE SECTION
+   ══════════════════════════════════════════════════════ */
+.sh {
+  font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text2);
+  margin: 16px 0 8px;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 5px;
+}
+.sh.p { color: var(--purple); border-color: var(--purple); }
+
+/* ══════════════════════════════════════════════════════
+   BADGES
+   ══════════════════════════════════════════════════════ */
+.bdg { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 800; letter-spacing: 0.04em; }
+.bdg.g { background: rgba(34,197,94,0.2);   color: var(--green); }
+.bdg.r { background: rgba(244,63,94,0.2);   color: var(--red); }
+.bdg.b { background: rgba(59,130,246,0.2);  color: var(--blue); }
+.bdg.p { background: rgba(139,108,247,0.2); color: var(--purple2); }
+.bdg.o { background: rgba(249,115,22,0.2);  color: var(--orange); }
+
+/* ══════════════════════════════════════════════════════
+   BANNIÈRE INSTALLATION PWA
+   ══════════════════════════════════════════════════════ */
+#install-banner {
+  display: none;
+  background: var(--purple); color: #fff;
+  padding: 10px 14px;
+  align-items: center; justify-content: space-between;
+  font-size: 12px; font-weight: 600; gap: 10px;
+}
+#install-banner button {
+  background: rgba(255,255,255,0.25); border: none; color: #fff;
+  font-size: 11px; font-weight: 700; padding: 5px 10px;
+  border-radius: 8px; cursor: pointer; font-family: 'Inter', sans-serif;
 }
 
-// ── CRUD Programmes ───────────────────────────────────────
+/* ══════════════════════════════════════════════════════
+   LOGGER DE SÉANCE
+   ══════════════════════════════════════════════════════ */
+.sess-hdr {
+  background: var(--grad); border-radius: var(--r);
+  padding: 14px; color: #fff; margin-bottom: 14px;
+}
+.sess-ex { background: var(--surface); border-radius: var(--r); margin-bottom: 12px; overflow: hidden; box-shadow: var(--sh); }
+.sess-ex-hdr { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.sess-ex-name { font-size: 14px; font-weight: 700; }
+.sess-set-row {
+  display: grid; grid-template-columns: 28px 1fr 1fr 1fr 32px;
+  gap: 6px; align-items: center;
+  padding: 8px 12px; border-bottom: 1px solid var(--border);
+}
+.sess-set-row:last-child { border-bottom: none; }
+.set-num  { font-size: 11px; color: var(--text2); font-weight: 700; text-align: center; }
+.set-lbl  { font-size: 9px; color: var(--text2); font-weight: 600; text-align: center; text-transform: uppercase; }
+.set-inp  {
+  width: 100%; border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 6px 8px; font-size: 13px; font-family: 'Inter', sans-serif;
+  text-align: center; outline: none;
+  background: var(--surface2); color: var(--text);
+}
+.set-inp:focus  { border-color: var(--purple); }
+.set-done {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid var(--border); background: none;
+  cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+.set-done.done { background: var(--green); border-color: var(--green); color: #fff; }
 
-/** Crée un nouveau programme vide à partir du modal */
-function createProgram() {
-  const name = document.getElementById('prog-name-input').value.trim();
-  const nw   = parseInt(document.getElementById('prog-weeks-input').value) || 4;
-  const ns   = parseInt(document.getElementById('prog-sessions-input').value) || 4;
-  if (!name) { notify('Entre un nom'); return; }
-
-  S.progs.push({
-    id: Date.now(),
-    name,
-    weeks: Array(nw).fill(null).map((_, wi) => ({
-      weekNum: wi + 1,
-      sessions: Array(ns).fill(null).map((_, si) => ({
-        id:        Date.now() + wi * 100 + si,
-        name:      `Séance ${si + 1}`,
-        exercises: []
-      }))
-    }))
-  });
-  sv('programs', S.progs);
-  closeModal('modal-create-prog');
-  document.getElementById('prog-name-input').value = '';
-  renderProgList();
-  openProgDetail(S.progs[S.progs.length - 1].id);
-  notify('Programme créé ! 🎉');
+/* ══════════════════════════════════════════════════════
+   PROGRAMMES
+   ══════════════════════════════════════════════════════ */
+.psp        { display: none; }
+.psp.active { display: block; }
+.prog-item {
+  background: var(--surface); border-radius: var(--r);
+  padding: 14px; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: var(--sh); cursor: pointer;
+}
+.prog-item.active-prog { border: 2px solid var(--green); background: rgba(34,197,94,0.07); }
+.prog-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.prog-info  { flex: 1; }
+.prog-name  { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+.prog-meta  { font-size: 11px; color: var(--text2); }
+.back-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: none; border: none; color: var(--text2);
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  padding: 8px 0 12px; font-family: 'Inter', sans-serif;
 }
 
-/** Ajoute une semaine vide au programme affiché */
-function addWeek() {
-  const p = S.progs.find(p => p.id === dpid);
-  if (!p) return;
-  p.weeks.push({
-    weekNum: p.weeks.length + 1,
-    sessions: [{ id: Date.now(), name: 'Séance 1', exercises: [] }]
-  });
-  sv('programs', S.progs);
-  renderProgDetail();
+/* Arbre semaines/séances */
+.sess-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: var(--surface); border-radius: 10px;
+  margin-top: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.sess-item.suggested { background: rgba(34,197,94,0.1); border: 1.5px solid var(--green); }
+.sess-item-info { flex: 1; }
+.sess-item-name { font-size: 13px; font-weight: 700; }
+.sess-item-meta { font-size: 11px; color: var(--text2); }
+
+/* ══════════════════════════════════════════════════════
+   PAGE EXERCICES
+   ══════════════════════════════════════════════════════ */
+.expage-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.excat-section { margin-bottom: 6px; }
+.excat-title {
+  font-size: 13px; font-weight: 800; color: var(--purple2);
+  border-bottom: 2px solid var(--purple);
+  padding-bottom: 5px; margin-bottom: 8px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.exrow {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 11px 12px; margin-bottom: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.exrow-thumb {
+  width: 54px; height: 54px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; flex-shrink: 0;
+}
+.exrow-body    { flex: 1; min-width: 0; }
+.exrow-name    { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.exrow-desc    { font-size: 11px; color: var(--text2); margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.exrow-weight  { font-size: 11px; color: var(--text2); }
+.exrow-actions { display: flex; gap: 5px; flex-shrink: 0; }
+.exbtn-edit { background: #2980b9; color: #fff; border: none; border-radius: 8px; padding: 6px 10px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; }
+.exbtn-del  { background: #e74c3c; color: #fff; border: none; border-radius: 8px; padding: 6px 10px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; }
+.ex-list-custom { font-size: 9px; background: var(--purple); color: #fff; border-radius: 4px; padding: 1px 5px; margin-left: 6px; font-weight: 700; }
+
+/* Recherche & filtres exercices */
+.ex-page-search          { padding: 0 0 10px; }
+.ex-page-search input    { width: 100%; box-sizing: border-box; border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 14px; font-family: 'Inter', sans-serif; outline: none; background: var(--surface2); color: var(--text); }
+.ex-page-search input:focus { border-color: var(--purple); }
+.ex-cats-row             { display: flex; gap: 6px; padding: 0 0 10px; overflow-x: auto; scrollbar-width: none; }
+.ex-cats-row::-webkit-scrollbar { display: none; }
+.ex-cat-btn {
+  background: none; border: 1.5px solid var(--border);
+  border-radius: 20px; padding: 5px 12px;
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  font-family: 'Inter', sans-serif; white-space: nowrap; color: var(--text2);
+}
+.ex-cat-btn.active { background: var(--purple); border-color: var(--purple); color: #fff; }
+
+/* ══════════════════════════════════════════════════════
+   EXERCISE PICKER (bottom sheet)
+   ══════════════════════════════════════════════════════ */
+.ex-picker-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 9999; display: none; align-items: flex-end; }
+.ex-picker-overlay.open { display: flex; }
+.ex-picker-sheet {
+  background: var(--surface); border-radius: 20px 20px 0 0;
+  width: 100%; max-height: 85vh;
+  display: flex; flex-direction: column;
+  padding-bottom: max(env(safe-area-inset-bottom), 16px);
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.5);
+}
+.ex-picker-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 10px; border-bottom: 1px solid var(--border); }
+.ex-picker-title { font-size: 16px; font-weight: 800; color: var(--text); }
+.ex-picker-close {
+  background: var(--surface2); border: none; font-size: 18px; cursor: pointer;
+  color: var(--text2); line-height: 1;
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.ex-picker-search       { padding: 10px 14px 6px; }
+.ex-picker-search input { width: 100%; border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 14px; font-size: 14px; font-family: 'Inter', sans-serif; outline: none; background: var(--surface2); color: var(--text); }
+.ex-picker-search input:focus { border-color: var(--purple); }
+.ex-picker-cats { display: flex; gap: 6px; padding: 6px 14px 10px; overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
+.ex-picker-cats::-webkit-scrollbar { display: none; }
+.ex-picker-list { overflow-y: auto; flex: 1; }
+.ex-pick-item   { display: flex; align-items: center; gap: 13px; padding: 11px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
+.ex-pick-item:hover, .ex-pick-item:active { background: rgba(139,108,247,0.1); }
+.ex-pick-icon   { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.ex-pick-name   { font-size: 14px; font-weight: 700; color: var(--text); }
+.ex-pick-cat    { font-size: 11px; color: var(--text2); margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+.ex-pick-lift   { font-size: 9px; background: rgba(139,108,247,0.2); color: var(--purple2); border-radius: 4px; padding: 1px 5px; font-weight: 700; text-transform: uppercase; }
+
+/* ══════════════════════════════════════════════════════
+   ÉDITEUR DE SÉANCE (plein écran)
+   ══════════════════════════════════════════════════════ */
+.ex-editor {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 300;
+  display: none;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.ex-editor.open { display: flex; }
+
+.ex-editor-hdr {
+  background: var(--nav-bg); color: #fff;
+  padding: 14px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+  position: sticky; top: 0; z-index: 1;
+}
+.ex-editor-hdr h2 { font-size: 16px; font-weight: 800; }
+
+.ee-ex-item {
+  background: var(--surface);
+  border-radius: 12px;
+  margin: 8px 12px;
+  overflow: hidden;
+  box-shadow: var(--sh);
+  /* Largeur explicite pour éviter tout débordement */
+  width: calc(100% - 24px);
 }
 
-/** Ajoute une séance à une semaine donnée */
-function addSessToWeek(pid, wi) {
-  const p = S.progs.find(p => p.id === pid);
-  if (!p) return;
-  p.weeks[wi].sessions.push({
-    id:        Date.now(),
-    name:      `Séance ${p.weeks[wi].sessions.length + 1}`,
-    exercises: []
-  });
-  sv('programs', S.progs);
-  renderProgDetail();
+.ee-ex-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.ee-ex-name { font-size: 13px; font-weight: 700; }
+
+/* Labels colonnes et lignes séries : colonnes IDENTIQUES */
+.ee-hdr-labels,
+.ee-set-row {
+  display: grid;
+  grid-template-columns: 20px 1fr 1fr 1fr 1fr 28px;
+  gap: 4px;
+  align-items: center;
+  width: 100%;
 }
 
-/**
- * Active un programme : remet le compteur à Sem1 / Séance1.
- * @param {number} pid - ID du programme
- */
-function activateProgram(pid) {
-  S.ap = { programId: pid, weekIdx: 0, sessionIdx: 0 };
-  sv('activeProgram', S.ap);
-  renderProgList();
-  notify('Programme activé ! 💪');
+.ee-hdr-labels {
+  padding: 5px 10px 4px;
+  background: var(--surface2);
 }
 
-/** Toggle l'accordéon d'une semaine dans le détail programme */
-function toggleProgWeek(hdr) {
-  const body    = hdr.nextElementSibling;
-  const chevron = hdr.querySelector('span');
-  const open    = body.style.display === 'block';
-  body.style.display      = open ? 'none' : 'block';
-  chevron.style.transform = open ? '' : 'rotate(90deg)';
+.ee-set-row {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border);
 }
+.ee-set-row:last-child { border-bottom: none; }
 
-/** Supprime une semaine entière (avec confirmation) */
-function deleteWeek(wi) {
-  const p = S.progs.find(p => p.id === dpid);
-  if (!p) return;
-  if (!confirm(`Supprimer la semaine ${wi + 1} et toutes ses séances ?`)) return;
-  p.weeks.splice(wi, 1);
-  // Renumérote les semaines
-  p.weeks.forEach((w, i) => w.weekNum = i + 1);
-  sv('programs', S.progs);
-  renderProgDetail();
+.ee-set-num { font-size: 10px; color: var(--text2); font-weight: 700; text-align: center; }
+.ee-lbl     { font-size: 9px; color: var(--text2); font-weight: 700; text-align: center; text-transform: uppercase; }
+
+.ee-inp {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  padding: 6px 4px;
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  text-align: center;
+  outline: none;
+  background: var(--surface2);
+  color: var(--text);
+  min-width: 0; /* important pour que les inputs respectent la grille */
 }
+.ee-inp:focus { border-color: var(--purple); }
 
-/** Supprime une séance d'une semaine (avec confirmation) */
-function deleteSess(wi, si) {
-  const p = S.progs.find(p => p.id === dpid);
-  if (!p) return;
-  const sessName = p.weeks[wi].sessions[si].name;
-  if (!confirm(`Supprimer "${sessName}" ?`)) return;
-  p.weeks[wi].sessions.splice(si, 1);
-  sv('programs', S.progs);
-  renderProgDetail();
+/* ══════════════════════════════════════════════════════
+   MODAL AJOUT RAPIDE EXERCICE
+   ══════════════════════════════════════════════════════ */
+#modal-quick-ex {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7); z-index: 9999;
+  align-items: center; justify-content: center; padding: 16px;
 }
+#modal-quick-ex.open { display: flex; }
+#modal-quick-ex .mdl { max-width: 340px; }
 
+/* ══════════════════════════════════════════════════════
+   PAGE TRAIN
+   ══════════════════════════════════════════════════════ */
+.train-prog     { background: var(--surface); border-radius: var(--r); margin-bottom: 10px; overflow: hidden; box-shadow: var(--sh); }
+.train-prog-hdr { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; font-weight: 700; font-size: 14px; }
+.train-prog-hdr .chevron { transition: transform 0.2s; font-size: 12px; color: var(--text2); }
+.train-prog-hdr.open .chevron { transform: rotate(90deg); }
+.train-prog-body      { display: none; padding: 0 14px 12px; }
+.train-prog-body.open { display: block; }
 
-function deleteProgram(pid) {
-  if (!confirm('Supprimer ce programme ?')) return;
-  S.progs = S.progs.filter(p => p.id !== pid);
-  if (S.ap && S.ap.programId === pid) { S.ap = null; sv('activeProgram', null); }
-  sv('programs', S.progs);
-  showProgList();
-  renderProgList();
-}
+/* ══════════════════════════════════════════════════════
+   CALCULATEUR 1RM
+   ══════════════════════════════════════════════════════ */
+.calc-result-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.calc-result-row:last-child { border-bottom: none; }
+.calc-pct  { font-size: 13px; color: var(--text2); font-weight: 600; }
+.calc-kg   { font-size: 15px; font-weight: 800; }
+.calc-reps { font-size: 11px; color: var(--text2); }
 
-// ════════════════════════════════════════════════════════
-// ÉDITEUR DE SÉANCE (overlay plein écran)
-// ════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════
+   HISTORIQUE / PROGRESSION
+   ══════════════════════════════════════════════════════ */
+.hist-item  { background: var(--surface); border-radius: var(--r); padding: 14px; margin-bottom: 10px; box-shadow: var(--sh); }
+.hist-date  { font-size: 11px; color: var(--text2); font-weight: 600; margin-bottom: 4px; }
+.hist-name  { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.hist-tags  { display: flex; flex-wrap: wrap; gap: 4px; }
+.hist-tag   { font-size: 10px; background: rgba(139,108,247,0.15); color: var(--purple); border-radius: 6px; padding: 2px 7px; font-weight: 700; }
 
-/**
- * État de l'éditeur de séance.
- * pid, wi, si : localisation dans S.progs
- * exs : copie profonde des exercices en cours d'édition
- */
-let eeState = { pid: null, wi: null, si: null, exs: [] };
-
-/**
- * Normalise un exercice : s'assure qu'il a au moins une série.
- * @param {object} ex
- */
-function normEx(ex) {
-  if (!ex.series || !ex.series.length)
-    ex.series = [{ reps: 5, pct: null, weight: null, rpe: null, rest: 180 }];
-  return ex;
-}
-
-/**
- * Ouvre l'éditeur pour la séance [wi][si] du programme pid.
- */
-function openExEditor(pid, wi, si) {
-  const prog = S.progs.find(p => p.id === pid);
-  if (!prog) return;
-  const sess = prog.weeks[wi].sessions[si];
-  eeState = {
-    pid, wi, si,
-    exs: sess.exercises.map(ex => normEx(JSON.parse(JSON.stringify(ex))))
-  };
-  document.getElementById('ee-title').textContent = `${prog.name} · S${wi + 1}.${si + 1} — ${sess.name}`;
-  renderExEditor();
-  document.getElementById('ex-editor').classList.add('open');
-}
-
-/** Ferme l'éditeur */
-function closeExEditor() {
-  document.getElementById('ex-editor').classList.remove('open');
-}
-
-/** Rend le corps de l'éditeur (tous les exercices et leurs séries) */
-function renderExEditor() {
-  const el = document.getElementById('ee-body');
-  if (!eeState.exs.length) {
-    el.innerHTML = '<div class="empty" style="margin-top:20px;"><p>Aucun exercice<br>Ajouter avec le bouton + Exercice</p></div>';
-    return;
-  }
-  el.innerHTML = eeState.exs.map((ex, ei) => `
-    <div class="ee-ex-item">
-      <div class="ee-ex-hdr">
-        <div class="ee-ex-name">${ex.name}</div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn g sm" onclick="addSetToEE(${ei})">＋ Série</button>
-          <button class="btn r sm" onclick="removeExFromEE(${ei})">✕</button>
-        </div>
-      </div>
-      <div class="ee-hdr-labels">
-        <span class="ee-lbl">#</span>
-        <span class="ee-lbl">Reps</span>
-        <span class="ee-lbl">%1RM</span>
-        <span class="ee-lbl">Poids</span>
-        <span class="ee-lbl">RPE</span>
-        <span class="ee-lbl"></span>
-      </div>
-      ${ex.series.map((s, si) => `
-        <div class="ee-set-row">
-          <span class="ee-set-num">${si + 1}</span>
-          <input class="ee-inp" type="number" value="${s.reps  || ''}" placeholder="5" oninput="eeUpdate(${ei},${si},'reps',this.value)">
-          <input class="ee-inp" type="number" value="${s.pct   || ''}" placeholder="—" oninput="eeUpdate(${ei},${si},'pct',this.value)">
-          <input class="ee-inp" type="number" value="${s.weight|| ''}" placeholder="—" oninput="eeUpdate(${ei},${si},'weight',this.value)">
-          <input class="ee-inp" type="number" value="${s.rpe   || ''}" placeholder="—" oninput="eeUpdate(${ei},${si},'rpe',this.value)">
-          <button onclick="removeSetFromEE(${ei},${si})" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;">✕</button>
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
-}
-
-/** Met à jour une valeur dans eeState */
-function eeUpdate(ei, si, key, val) {
-  eeState.exs[ei].series[si][key] = val === '' ? null : parseFloat(val) || parseInt(val) || val;
-}
-
-/** Ajoute une série (copie la dernière) */
-function addSetToEE(ei) {
-  const last = eeState.exs[ei].series.slice(-1)[0] || {};
-  eeState.exs[ei].series.push({
-    reps: last.reps || 5, pct: last.pct || null,
-    weight: last.weight || null, rpe: last.rpe || null, rest: 180
-  });
-  renderExEditor();
-}
-
-/** Supprime une série */
-function removeSetFromEE(ei, si) { eeState.exs[ei].series.splice(si, 1); renderExEditor(); }
-
-/** Supprime un exercice de l'éditeur */
-function removeExFromEE(ei) { eeState.exs.splice(ei, 1); renderExEditor(); }
-
-/** Sauvegarde les modifications dans S.progs et ferme l'éditeur */
-function saveExEditor() {
-  const prog = S.progs.find(p => p.id === eeState.pid);
-  if (!prog) return;
-  prog.weeks[eeState.wi].sessions[eeState.si].exercises = eeState.exs;
-  sv('programs', S.progs);
-  closeExEditor();
-  renderProgDetail();
-  notify('✅ Séance sauvegardée !');
-}
+/* ══════════════════════════════════════════════════════
+   RÉGLAGES
+   ══════════════════════════════════════════════════════ */
+.settings-section { background: var(--surface); border-radius: var(--r); margin-bottom: 12px; overflow: hidden; box-shadow: var(--sh); }
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 16px; border-bottom: 1px solid var(--border); }
+.settings-row:last-child { border-bottom: none; }
+.settings-row-label { font-size: 14px; font-weight: 600; }
+.settings-row-sub   { font-size: 11px; color: var(--text2); margin-top: 1px; }
