@@ -463,7 +463,7 @@ body {
 .ee-set-num  { font-size: 10px; color: var(--text2); font-weight: 700; text-align: center; }
 .ee-inp      { width: 100%; border: 1.5px solid var(--border); border-radius: 7px; padding: 5px 6px; font-size: 12px; font-family: 'Inter', sans-serif; text-align: center; outline: none; background: var(--surface2); color: var(--text); }
 .ee-inp:focus { border-color: var(--purple); }
-.ee-hdr-labels { grid-template-columns: 20px 1fr 1fr 1fr 1fr 32px; gap: 4px; padding: 4px 8px 2px;; background: var(--surface2); }
+.ee-hdr-labels { grid-template-columns: 20px 1fr 1fr 1fr 1fr 32px; gap: 6px; padding: 4px 8px 2px;; background: var(--surface2); }
 .ee-lbl        { font-size: 9px; color: var(--text2); font-weight: 700; text-align: center; text-transform: uppercase; }
 
 /* ══════════════════════════════════════════════════════
