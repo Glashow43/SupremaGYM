@@ -458,7 +458,7 @@ body {
 .ee-ex-item  { background: var(--surface); border-radius: 12px; margin: 25px 25px; overflow: hidden; box-shadow: var(--sh); }
 .ee-ex-hdr   { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--border); }
 .ee-ex-name  { font-size: 13px; font-weight: 700; }
-.ee-set-row  { display: grid; grid-template-columns: 24px 60px 70px 60px 60px 32px; gap: 6px; align-items: center; padding: 7px 12px; border-bottom: 1px solid var(--border); }
+.ee-set-row  { display: grid; grid-template-columns: 10px 40px 50px 60px 55px 2px; gap: 6px; align-items: center; padding: 7px 12px; border-bottom: 1px solid var(--border); }
 .ee-set-row:last-child { border-bottom: none; }
 .ee-set-num  { font-size: 10px; color: var(--text2); font-weight: 700; text-align: center; }
 .ee-inp      { width: 100%; border: 1.5px solid var(--border); border-radius: 7px; padding: 5px 6px; font-size: 12px; font-family: 'Inter', sans-serif; text-align: center; outline: none; background: var(--surface2); color: var(--text); }
