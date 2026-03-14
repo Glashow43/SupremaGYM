@@ -2,7 +2,7 @@
 // js/data.js — Données exercices et programme par défaut
 // ══════════════════════════════════════════════════════════
 
-const GITHUB_IMG = 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/';
+const GITHUB_IMG = 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercices/';
 
 // ── Icônes / couleurs par catégorie ───────────────────────
 const CAT_ICONS = {
@@ -111,9 +111,9 @@ async function loadApiExercises() {
       return {
         name:    ex.name.charAt(0).toUpperCase() + ex.name.slice(1),
         lift:    '',
-        cat:     API_CAT_MAP[ex.bodyPart] || 'Personnalisé',
-        image:   GITHUB_IMG + ex.id + '.gif',
-        desc:    ex.target + (ex.equipment !== 'body weight' ? ' · ' + ex.equipment : ''),
+        cat:     API_CAT_MAP[(ex.bodyParts && ex.bodyParts[0]) || ex.bodyPart] || 'Personnalisé',
+        image:   GITHUB_IMG + (ex.exerciseId || ex.id) + '.gif',
+        desc:    (ex.targetMuscles || [ex.target] || []).join(', '),
         fromApi: true
       };
     });
