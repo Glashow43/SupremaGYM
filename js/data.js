@@ -3,14 +3,6 @@
 // ══════════════════════════════════════════════════════════
 
 const RAPIDAPI_KEY = '3e24d81530mshcafeab04111d0edp18126bjsn5a1f916e200f';
-const IMG_BASE = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
-
-function nameToImgId(name) {
-  // "barbell squat" → "Barbell_Squat"
-  return name.split(' ').map(function(w) {
-    return w.charAt(0).toUpperCase() + w.slice(1);
-  }).join('_');
-}
 
 // ── Icônes / couleurs par catégorie ───────────────────────
 const CAT_ICONS = {
@@ -26,16 +18,16 @@ const CAT_ICONS = {
 
 // ── Mapping bodyPart/target ExerciseDB → catégories app ──
 const API_CAT_MAP = {
-  'chest':          'Pectoraux',
-  'back':           'Dos',
-  'upper legs':     'Jambes',
-  'lower legs':     'Jambes',
-  'upper arms':     'Bras',
-  'lower arms':     'Bras',
-  'shoulders':      'Épaules',
-  'waist':          'Abdominaux',
-  'cardio':         'Personnalisé',
-  'neck':           'Personnalisé',
+  'chest':        'Pectoraux',
+  'back':         'Dos',
+  'upper legs':   'Jambes',
+  'lower legs':   'Jambes',
+  'upper arms':   'Bras',
+  'lower arms':   'Bras',
+  'shoulders':    'Épaules',
+  'waist':        'Abdominaux',
+  'cardio':       'Personnalisé',
+  'neck':         'Personnalisé',
 };
 
 // ── Exercices intégrés powerlifting (toujours présents) ──
@@ -107,25 +99,28 @@ async function loadApiExercises() {
     return _apiExercises;
   }
 
-  // 3. Appel API
+  // 3. Appel API exercisedb.dev (gratuit, pas de clé, GIFs inclus)
   try {
-    const res = await fetch('https://exercisedb.p.rapidapi.com/exercises?limit=1300&offset=0', {
-      headers: {
-        'X-RapidAPI-Key':  RAPIDAPI_KEY,
-        'X-RapidAPI-Host': 'exercisedb.p.rapidapi.com'
-      }
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
+    var allExercises = [];
+    var limit = 100;
+    var totalPages = 15; // 1500 exercices / 100
+    for (var page = 0; page < totalPages; page++) {
+      var res = await fetch('https://exercisedb.dev/api/v1/exercises?limit=' + limit + '&offset=' + (page * limit));
+      if (!res.ok) break;
+      var json = await res.json();
+      if (!json.data || !json.data.length) break;
+      allExercises = allExercises.concat(json.data);
+    }
 
     // Convertir au format app
-    _apiExercises = data.map(function(ex) {
+    _apiExercises = allExercises.map(function(ex) {
+      var bp = ex.bodyParts && ex.bodyParts[0] ? ex.bodyParts[0].toLowerCase() : '';
       return {
         name:    ex.name.charAt(0).toUpperCase() + ex.name.slice(1),
         lift:    '',
-        cat:     API_CAT_MAP[ex.bodyPart] || 'Personnalisé',
-        image:   'https://corsproxy.io/?' + encodeURIComponent('https://exercisedb.p.rapidapi.com/image?exerciseId=' + ex.id + '&resolution=180&rapidapi-key=' + RAPIDAPI_KEY),
-        desc:    ex.target + (ex.equipment !== 'body weight' ? ' · ' + ex.equipment : ''),
+        cat:     API_CAT_MAP[bp] || 'Personnalisé',
+        image:   ex.gifUrl || '',
+        desc:    (ex.targetMuscles || []).join(', ') + (ex.equipments && ex.equipments[0] !== 'body weight' ? ' · ' + ex.equipments[0] : ''),
         fromApi: true
       };
     });
