@@ -3,6 +3,14 @@
 // ══════════════════════════════════════════════════════════
 
 const RAPIDAPI_KEY = '3e24d81530mshcafeab04111d0edp18126bjsn5a1f916e200f';
+const IMG_BASE = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
+
+function nameToImgId(name) {
+  // "barbell squat" → "Barbell_Squat"
+  return name.split(' ').map(function(w) {
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  }).join('_');
+}
 
 // ── Icônes / couleurs par catégorie ───────────────────────
 const CAT_ICONS = {
@@ -116,7 +124,7 @@ async function loadApiExercises() {
         name:    ex.name.charAt(0).toUpperCase() + ex.name.slice(1),
         lift:    '',
         cat:     API_CAT_MAP[ex.bodyPart] || 'Personnalisé',
-        image:   'https://exercisedb.p.rapidapi.com/image?exerciseId=' + ex.id + '&resolution=180&rapidapi-key=' + RAPIDAPI_KEY,
+        image:   IMG_BASE + nameToImgId(ex.name) + '/0.jpg',
         desc:    ex.target + (ex.equipment !== 'body weight' ? ' · ' + ex.equipment : ''),
         fromApi: true
       };
