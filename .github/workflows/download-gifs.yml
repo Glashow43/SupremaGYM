@@ -10,50 +10,82 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Download exercise data and GIFs
+      - name: Download GIFs from exercisedb-api
         run: |
           mkdir -p images/exercises
-          
-          # Télécharger la liste des exercices depuis free-exercise-db
-          curl -L "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/dist/exercises.json" -o exercises.json
-          
-          # Extraire les IDs et télécharger les images
           node << 'EOF'
-          const fs = require('fs');
           const https = require('https');
+          const http = require('http');
+          const fs = require('fs');
           const path = require('path');
 
-          const exercises = JSON.parse(fs.readFileSync('exercises.json', 'utf8'));
-          console.log('Total exercises:', exercises.length);
+          function fetchJSON(url) {
+            return new Promise((resolve, reject) => {
+              const client = url.startsWith('https') ? https : http;
+              client.get(url, (res) => {
+                if (res.statusCode === 301 || res.statusCode === 302) {
+                  return fetchJSON(res.headers.location).then(resolve).catch(reject);
+                }
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('end', () => {
+                  try { resolve(JSON.parse(data)); }
+                  catch(e) { reject(e); }
+                });
+              }).on('error', reject);
+            });
+          }
 
-          function download(url, dest) {
+          function downloadFile(url, dest) {
             return new Promise((resolve) => {
-              if (fs.existsSync(dest)) { resolve(); return; }
-              const file = fs.createWriteStream(dest);
-              https.get(url, (res) => {
-                if (res.statusCode !== 200) { file.close(); fs.unlinkSync(dest); resolve(); return; }
+              if (fs.existsSync(dest) && fs.statSync(dest).size > 0) { resolve(); return; }
+              const client = url.startsWith('https') ? https : http;
+              client.get(url, (res) => {
+                if (res.statusCode === 301 || res.statusCode === 302) {
+                  return downloadFile(res.headers.location, dest).then(resolve);
+                }
+                if (res.statusCode !== 200) { resolve(); return; }
+                const file = fs.createWriteStream(dest);
                 res.pipe(file);
                 file.on('finish', () => { file.close(); resolve(); });
-              }).on('error', () => { resolve(); });
+              }).on('error', () => resolve());
             });
           }
 
           async function main() {
-            for (const ex of exercises) {
-              const id = ex.id;
+            const BASE = 'https://exercisedb-api-mu.vercel.app/api/v1/exercises';
+            let all = [];
+            let offset = 0;
+            const limit = 100;
+
+            while (true) {
+              const url = BASE + '?limit=' + limit + '&offset=' + offset;
+              console.log('Fetching:', url);
+              const res = await fetchJSON(url);
+              if (!res.data || !res.data.length) break;
+              all = all.concat(res.data);
+              console.log('Total fetched:', all.length);
+              if (all.length >= res.metadata.totalExercises) break;
+              offset += limit;
+            }
+
+            console.log('Total exercises:', all.length);
+
+            for (const ex of all) {
+              const id = ex.exerciseId;
               const dest = path.join('images/exercises', id + '.gif');
-              const url = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/' + id + '/0.gif';
-              await download(url, dest);
-              // Essayer aussi en .jpg si pas de gif
-              if (!fs.existsSync(dest) || fs.statSync(dest).size === 0) {
-                const destJpg = path.join('images/exercises', id + '.jpg');
-                const urlJpg = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/' + id + '/0.jpg';
-                await download(urlJpg, destJpg);
+              if (ex.gifUrl) {
+                await downloadFile(ex.gifUrl, dest);
+                if (fs.existsSync(dest) && fs.statSync(dest).size > 0) {
+                  console.log('✅', id);
+                } else {
+                  console.log('❌', id);
+                }
               }
-              console.log('Done:', id);
             }
             console.log('All done!');
           }
+
           main().catch(console.error);
           EOF
 
@@ -62,5 +94,5 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add images/exercises/
-          git diff --staged --quiet || git commit -m "Add exercise images"
+          git diff --staged --quiet || git commit -m "Add exercise GIFs from exercisedb-api"
           git push
