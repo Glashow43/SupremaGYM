@@ -9,7 +9,6 @@ let dpid = null;
 // LISTE DES PROGRAMMES
 // ════════════════════════════════════════════════════════
 
-/** Rend la liste de tous les programmes */
 function renderProgList() {
   const el = document.getElementById('prog-list-content');
   if (!S.progs.length) {
@@ -31,13 +30,11 @@ function renderProgList() {
   }).join('');
 }
 
-/** Affiche la sous-page liste (masque la sous-page détail) */
 function showProgList() {
   document.getElementById('prog-list').classList.add('active');
   document.getElementById('prog-detail').classList.remove('active');
 }
 
-/** Affiche la sous-page détail d'un programme */
 function openProgDetail(pid) {
   dpid = pid;
   document.getElementById('prog-list').classList.remove('active');
@@ -45,7 +42,6 @@ function openProgDetail(pid) {
   renderProgDetail();
 }
 
-/** Rend le détail d'un programme (semaines, séances, boutons Éditer/Lancer) */
 function renderProgDetail() {
   const prog = S.progs.find(p => p.id === dpid);
   if (!prog) return;
@@ -82,13 +78,11 @@ function renderProgDetail() {
 
 // ── CRUD Programmes ───────────────────────────────────────
 
-/** Crée un nouveau programme vide à partir du modal */
 function createProgram() {
   const name = document.getElementById('prog-name-input').value.trim();
   const nw   = parseInt(document.getElementById('prog-weeks-input').value) || 4;
   const ns   = parseInt(document.getElementById('prog-sessions-input').value) || 4;
   if (!name) { notify('Entre un nom'); return; }
-
   S.progs.push({
     id: Date.now(),
     name,
@@ -109,7 +103,6 @@ function createProgram() {
   notify('Programme créé ! 🎉');
 }
 
-/** Ajoute une semaine vide au programme affiché */
 function addWeek() {
   const p = S.progs.find(p => p.id === dpid);
   if (!p) return;
@@ -121,7 +114,6 @@ function addWeek() {
   renderProgDetail();
 }
 
-/** Ajoute une séance à une semaine donnée */
 function addSessToWeek(pid, wi) {
   const p = S.progs.find(p => p.id === pid);
   if (!p) return;
@@ -134,10 +126,6 @@ function addSessToWeek(pid, wi) {
   renderProgDetail();
 }
 
-/**
- * Active un programme : remet le compteur à Sem1 / Séance1.
- * @param {number} pid - ID du programme
- */
 function activateProgram(pid) {
   S.ap = { programId: pid, weekIdx: 0, sessionIdx: 0 };
   sv('activeProgram', S.ap);
@@ -145,7 +133,6 @@ function activateProgram(pid) {
   notify('Programme activé ! 💪');
 }
 
-/** Toggle l'accordéon d'une semaine dans le détail programme */
 function toggleProgWeek(hdr) {
   const body    = hdr.nextElementSibling;
   const chevron = hdr.querySelector('span');
@@ -154,19 +141,16 @@ function toggleProgWeek(hdr) {
   chevron.style.transform = open ? '' : 'rotate(90deg)';
 }
 
-/** Supprime une semaine entière (avec confirmation) */
 function deleteWeek(wi) {
   const p = S.progs.find(p => p.id === dpid);
   if (!p) return;
   if (!confirm(`Supprimer la semaine ${wi + 1} et toutes ses séances ?`)) return;
   p.weeks.splice(wi, 1);
-  // Renumérote les semaines
   p.weeks.forEach((w, i) => w.weekNum = i + 1);
   sv('programs', S.progs);
   renderProgDetail();
 }
 
-/** Supprime une séance d'une semaine (avec confirmation) */
 function deleteSess(wi, si) {
   const p = S.progs.find(p => p.id === dpid);
   if (!p) return;
@@ -176,7 +160,6 @@ function deleteSess(wi, si) {
   sv('programs', S.progs);
   renderProgDetail();
 }
-
 
 function deleteProgram(pid) {
   if (!confirm('Supprimer ce programme ?')) return;
@@ -191,26 +174,14 @@ function deleteProgram(pid) {
 // ÉDITEUR DE SÉANCE (overlay plein écran)
 // ════════════════════════════════════════════════════════
 
-/**
- * État de l'éditeur de séance.
- * pid, wi, si : localisation dans S.progs
- * exs : copie profonde des exercices en cours d'édition
- */
 let eeState = { pid: null, wi: null, si: null, exs: [] };
 
-/**
- * Normalise un exercice : s'assure qu'il a au moins une série.
- * @param {object} ex
- */
 function normEx(ex) {
   if (!ex.series || !ex.series.length)
     ex.series = [{ reps: 5, pct: null, weight: null, rpe: null, rest: 180 }];
   return ex;
 }
 
-/**
- * Ouvre l'éditeur pour la séance [wi][si] du programme pid.
- */
 function openExEditor(pid, wi, si) {
   const prog = S.progs.find(p => p.id === pid);
   if (!prog) return;
@@ -224,12 +195,10 @@ function openExEditor(pid, wi, si) {
   document.getElementById('ex-editor').classList.add('open');
 }
 
-/** Ferme l'éditeur */
 function closeExEditor() {
   document.getElementById('ex-editor').classList.remove('open');
 }
 
-/** Rend le corps de l'éditeur (tous les exercices et leurs séries) */
 function renderExEditor() {
   const el = document.getElementById('ee-body');
   if (!eeState.exs.length) {
@@ -240,10 +209,7 @@ function renderExEditor() {
     <div class="ee-ex-item">
       <div class="ee-ex-hdr">
         <div class="ee-ex-name">${ex.name}</div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn g sm" onclick="addSetToEE(${ei})">＋ Série</button>
-          <button class="btn r sm" onclick="removeExFromEE(${ei})">✕</button>
-        </div>
+        <button class="btn r sm" onclick="removeExFromEE(${ei})">✕</button>
       </div>
       <div class="ee-hdr-labels">
         <span class="ee-lbl">#</span>
@@ -256,23 +222,24 @@ function renderExEditor() {
       ${ex.series.map((s, si) => `
         <div class="ee-set-row">
           <span class="ee-set-num">${si + 1}</span>
-          <input class="ee-inp" type="number" value="${s.reps  || ''}" placeholder="5" oninput="eeUpdate(${ei},${si},'reps',this.value)">
-          <input class="ee-inp" type="number" value="${s.pct   || ''}" placeholder="—" oninput="eeUpdate(${ei},${si},'pct',this.value)">
-          <input class="ee-inp" type="number" value="${s.weight|| ''}" placeholder="—" oninput="eeUpdate(${ei},${si},'weight',this.value)">
-          <input class="ee-inp" type="number" value="${s.rpe   || ''}" placeholder="—" oninput="eeUpdate(${ei},${si},'rpe',this.value)">
+          <input class="ee-inp" type="number" value="${s.reps   || ''}" placeholder="5"  oninput="eeUpdate(${ei},${si},'reps',this.value)">
+          <input class="ee-inp" type="number" value="${s.pct    || ''}" placeholder="—"  oninput="eeUpdate(${ei},${si},'pct',this.value)">
+          <input class="ee-inp" type="number" value="${s.weight || ''}" placeholder="—"  oninput="eeUpdate(${ei},${si},'weight',this.value)">
+          <input class="ee-inp" type="number" value="${s.rpe    || ''}" placeholder="—"  oninput="eeUpdate(${ei},${si},'rpe',this.value)">
           <button onclick="removeSetFromEE(${ei},${si})" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;">✕</button>
         </div>
       `).join('')}
+      <div style="padding:8px 10px;">
+        <button class="btn g sm full" onclick="addSetToEE(${ei})">＋ Série</button>
+      </div>
     </div>
   `).join('');
 }
 
-/** Met à jour une valeur dans eeState */
 function eeUpdate(ei, si, key, val) {
   eeState.exs[ei].series[si][key] = val === '' ? null : parseFloat(val) || parseInt(val) || val;
 }
 
-/** Ajoute une série (copie la dernière) */
 function addSetToEE(ei) {
   const last = eeState.exs[ei].series.slice(-1)[0] || {};
   eeState.exs[ei].series.push({
@@ -282,13 +249,9 @@ function addSetToEE(ei) {
   renderExEditor();
 }
 
-/** Supprime une série */
 function removeSetFromEE(ei, si) { eeState.exs[ei].series.splice(si, 1); renderExEditor(); }
+function removeExFromEE(ei)       { eeState.exs.splice(ei, 1);            renderExEditor(); }
 
-/** Supprime un exercice de l'éditeur */
-function removeExFromEE(ei) { eeState.exs.splice(ei, 1); renderExEditor(); }
-
-/** Sauvegarde les modifications dans S.progs et ferme l'éditeur */
 function saveExEditor() {
   const prog = S.progs.find(p => p.id === eeState.pid);
   if (!prog) return;
