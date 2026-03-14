@@ -205,10 +205,21 @@ function renderExEditor() {
     el.innerHTML = '<div class="empty" style="margin-top:20px;"><p>Aucun exercice<br>Ajouter avec le bouton + Exercice</p></div>';
     return;
   }
-  el.innerHTML = eeState.exs.map((ex, ei) => `
+  const allEx = getAllExercises();
+  el.innerHTML = eeState.exs.map((ex, ei) => {
+    const found = allEx.find(e => e.name.toLowerCase() === ex.name.toLowerCase());
+    const cat   = found?.cat || 'Personnalisé';
+    const icon  = CAT_ICONS[cat] || CAT_ICONS['Personnalisé'];
+    return `
     <div class="ee-ex-item">
       <div class="ee-ex-hdr">
-        <div class="ee-ex-name">${ex.name}</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;border-radius:9px;background:${icon.bg};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${icon.emoji}</div>
+          <div>
+            <div class="ee-ex-name">${ex.name}</div>
+            <div style="font-size:10px;color:${icon.color};font-weight:600;">${cat}</div>
+          </div>
+        </div>
         <button class="btn r sm" onclick="removeExFromEE(${ei})">✕</button>
       </div>
       <div class="ee-hdr-labels">
