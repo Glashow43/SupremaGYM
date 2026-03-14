@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════════════════════
 
 const RAPIDAPI_KEY = '3e24d81530mshcafeab04111d0edp18126bjsn5a1f916e200f';
-const PROXY_URL = 'https://snowy-bird-d625.glashow43.workers.dev';
+const PROXY_URL    = 'https://snowy-bird-d625.glashow43.workers.dev';
 
 // ── Icônes / couleurs par catégorie ───────────────────────
 const CAT_ICONS = {
@@ -17,7 +17,7 @@ const CAT_ICONS = {
   'Personnalisé': { emoji: '✏️', color: '#94a3b8', bg: 'rgba(148,163,184,0.15)' },
 };
 
-// ── Mapping bodyPart/target ExerciseDB → catégories app ──
+// ── Mapping bodyPart ExerciseDB → catégories app ──────────
 const API_CAT_MAP = {
   'chest':        'Pectoraux',
   'back':         'Dos',
@@ -31,7 +31,7 @@ const API_CAT_MAP = {
   'neck':         'Personnalisé',
 };
 
-// ── Exercices intégrés powerlifting (toujours présents) ──
+// ── Exercices intégrés (lecture seule) ────────────────────
 const BUILTIN_EXERCISES = [
   { name: 'Squat',                        lift: 'squat',    cat: 'Powerlifting' },
   { name: 'Bench Press',                  lift: 'bench',    cat: 'Powerlifting' },
@@ -43,7 +43,7 @@ const BUILTIN_EXERCISES = [
   { name: 'Soulevé de terre roumain',     lift: 'deadlift', cat: 'Powerlifting' },
   { name: 'Leg Press',                    lift: '',         cat: 'Jambes'       },
   { name: 'Leg Curl',                     lift: '',         cat: 'Jambes'       },
-  { name: 'Leg Extension',               lift: '',         cat: 'Jambes'       },
+  { name: 'Leg Extension',                lift: '',         cat: 'Jambes'       },
   { name: 'Fentes',                       lift: '',         cat: 'Jambes'       },
   { name: 'Hip Thrust',                   lift: '',         cat: 'Jambes'       },
   { name: 'Bulgare (Split Squat)',         lift: '',         cat: 'Jambes'       },
@@ -82,46 +82,39 @@ const BUILTIN_EXERCISES = [
 ];
 
 // ── Cache ExerciseDB ──────────────────────────────────────
-let _apiExercises = null; // cache mémoire
+let _apiExercises = null;
 
-/**
- * Charge les exercices depuis ExerciseDB et les met en cache
- * dans localStorage (valable 7 jours).
- */
 async function loadApiExercises() {
-  // 1. Cache mémoire
   if (_apiExercises) return _apiExercises;
 
-  // 2. Cache localStorage (7 jours)
-  const cached   = localStorage.getItem('apiExercises');
-  const cachedAt = localStorage.getItem('apiExercisesAt');
-  if (cached && cachedAt && Date.now() - +cachedAt < 7 * 24 * 3600 * 1000) {
-    _apiExercises = JSON.parse(cached);
-    return _apiExercises;
-  }
-
-  // 3. Appel API exercisedb.dev (gratuit, pas de clé, GIFs inclus)
+  // Cache localStorage 7 jours
   try {
-    var allExercises = [];
-    var limit = 100;
-    var totalPages = 15; // 1500 exercices / 100
-    for (var page = 0; page < totalPages; page++) {
-      var res = await fetch('https://exercisedb.dev/api/v1/exercises?limit=' + limit + '&offset=' + (page * limit));
-      if (!res.ok) break;
-      var json = await res.json();
-      if (!json.data || !json.data.length) break;
-      allExercises = allExercises.concat(json.data);
+    var cached   = localStorage.getItem('apiExercises');
+    var cachedAt = localStorage.getItem('apiExercisesAt');
+    if (cached && cachedAt && Date.now() - +cachedAt < 7 * 24 * 3600 * 1000) {
+      _apiExercises = JSON.parse(cached);
+      return _apiExercises;
     }
+  } catch(e) {}
 
-    // Convertir au format app
-    _apiExercises = allExercises.map(function(ex) {
-      var bp = ex.bodyParts && ex.bodyParts[0] ? ex.bodyParts[0].toLowerCase() : '';
+  // Appel API RapidAPI ExerciseDB via proxy Cloudflare
+  try {
+    var res = await fetch('https://exercisedb.p.rapidapi.com/exercises?limit=1300&offset=0', {
+      headers: {
+        'X-RapidAPI-Key':  RAPIDAPI_KEY,
+        'X-RapidAPI-Host': 'exercisedb.p.rapidapi.com'
+      }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+
+    _apiExercises = data.map(function(ex) {
       return {
         name:    ex.name.charAt(0).toUpperCase() + ex.name.slice(1),
         lift:    '',
-        cat:     API_CAT_MAP[bp] || 'Personnalisé',
-        image:   ex.gifUrl || '',
-        desc:    (ex.targetMuscles || []).join(', ') + (ex.equipments && ex.equipments[0] !== 'body weight' ? ' · ' + ex.equipments[0] : ''),
+        cat:     API_CAT_MAP[ex.bodyPart] || 'Personnalisé',
+        image:   PROXY_URL + '?exerciseId=' + ex.id + '&resolution=180',
+        desc:    ex.target + (ex.equipment !== 'body weight' ? ' · ' + ex.equipment : ''),
         fromApi: true
       };
     });
@@ -129,29 +122,22 @@ async function loadApiExercises() {
     localStorage.setItem('apiExercises',   JSON.stringify(_apiExercises));
     localStorage.setItem('apiExercisesAt', Date.now().toString());
     return _apiExercises;
-  } catch (e) {
+  } catch(e) {
     console.error('ExerciseDB API:', e);
     return [];
   }
 }
 
-/**
- * Retourne tous les exercices :
- * builtin + API (si chargés) + custom localStorage.
- */
 function getAllExercises() {
-  var custom = (ld('customExercises', []) || []).map(function(e) { return Object.assign({}, e, { custom: true }); });
-  var api    = _apiExercises || [];
+  var custom = (ld('customExercises', []) || []).map(function(e) {
+    return Object.assign({}, e, { custom: true });
+  });
+  var api = _apiExercises || [];
   return BUILTIN_EXERCISES.concat(api).concat(custom);
 }
 
-/**
- * Initialise le chargement API en arrière-plan.
- * Appelé depuis firebase.js après le login.
- */
 async function initApiExercises() {
   await loadApiExercises();
-  // Re-rend la page exercices si elle est active
   if (document.getElementById('page-exercises').classList.contains('active')) {
     renderExPage();
   }
