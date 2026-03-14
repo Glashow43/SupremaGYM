@@ -95,4 +95,5 @@ jobs:
           git config user.email "actions@github.com"
           git add images/exercises/
           git diff --staged --quiet || git commit -m "Add exercise GIFs from exercisedb-api"
+          git pull --rebase origin main
           git push
