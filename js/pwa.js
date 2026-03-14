@@ -21,16 +21,16 @@ function installApp() {
   }
 }
 
-// ── Service Worker avec version — vide le cache à chaque update ──
+// ── Service Worker avec version — ne cache jamais les JS/CSS ──
 if ('serviceWorker' in navigator) {
-  const CACHE_VERSION = 'sg-v10'; // ← incrémente ce numéro à chaque déploiement
+  const CACHE_VERSION = 'sg-v11';
   const swCode = `
     const CACHE = '${CACHE_VERSION}';
     self.addEventListener('install', e => {
       e.waitUntil(
         caches.keys().then(keys =>
           Promise.all(keys.map(k => caches.delete(k)))
-        ).then(() => caches.open(CACHE).then(c => c.addAll(['/')]))
+        ).then(() => caches.open(CACHE).then(c => c.addAll(['/'])))
       );
       self.skipWaiting();
     });
@@ -43,7 +43,6 @@ if ('serviceWorker' in navigator) {
       self.clients.claim();
     });
     self.addEventListener('fetch', e => {
-      // Ne jamais cacher les fichiers JS et CSS — toujours réseau
       if (e.request.url.match(/\\.(js|css)$/)) {
         e.respondWith(fetch(e.request));
         return;
