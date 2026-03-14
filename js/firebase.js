@@ -134,6 +134,7 @@ auth.onAuthStateChanged(async user => {
     renderDash();
     renderSess();
     renderProgList();
+    initApiExercises();
 
   } else {
     currentUser = null;
