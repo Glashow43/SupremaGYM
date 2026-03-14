@@ -124,7 +124,7 @@ async function loadApiExercises() {
         name:    ex.name.charAt(0).toUpperCase() + ex.name.slice(1),
         lift:    '',
         cat:     API_CAT_MAP[ex.bodyPart] || 'Personnalisé',
-        image:   IMG_BASE + nameToImgId(ex.name) + '/0.jpg',
+        image:   'https://corsproxy.io/?' + encodeURIComponent('https://exercisedb.p.rapidapi.com/image?exerciseId=' + ex.id + '&resolution=180&rapidapi-key=' + RAPIDAPI_KEY),
         desc:    ex.target + (ex.equipment !== 'body weight' ? ' · ' + ex.equipment : ''),
         fromApi: true
       };
