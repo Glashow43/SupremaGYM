@@ -113,11 +113,11 @@ async function loadApiExercises() {
     // Convertir au format app
     _apiExercises = data.map(function(ex) {
       return {
-        name:  ex.name.charAt(0).toUpperCase() + ex.name.slice(1),
-        lift:  '',
-        cat:   API_CAT_MAP[ex.bodyPart] || 'Personnalisé',
-        image: ex.gifUrl,
-        desc:  ex.target + (ex.equipment !== 'body weight' ? ' · ' + ex.equipment : ''),
+        name:    ex.name.charAt(0).toUpperCase() + ex.name.slice(1),
+        lift:    '',
+        cat:     API_CAT_MAP[ex.bodyPart] || 'Personnalisé',
+        image:   'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/' + ex.id + '/0.jpg',
+        desc:    ex.target + (ex.equipment !== 'body weight' ? ' · ' + ex.equipment : ''),
         fromApi: true
       };
     });
