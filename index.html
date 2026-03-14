@@ -312,6 +312,11 @@
       </select>
     </div>
     <div class="fg"><label class="fl">Poids par défaut (kg)</label><input type="number" class="fi" id="edit-ex-weight" value="0" min="0"></div>
+    <div class="fg">
+      <label class="fl">Image / GIF (URL)</label>
+      <input class="fi" type="url" id="edit-ex-image" placeholder="https://..." oninput="renderImagePreview(this.value)">
+      <div id="edit-ex-image-preview"></div>
+    </div>
     <button class="btn g full" onclick="saveEditEx()">✅ Enregistrer</button>
   </div>
 </div>
