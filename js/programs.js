@@ -210,6 +210,15 @@ function renderExEditor() {
     const found = allEx.find(e => e.name.toLowerCase() === ex.name.toLowerCase());
     const cat   = found?.cat || 'Personnalisé';
     const icon  = CAT_ICONS[cat] || CAT_ICONS['Personnalisé'];
+    const rows  = ex.series.map((s, si) => `
+        <div class="ee-set-row">
+          <span class="ee-set-num">${si + 1}</span>
+          <input class="ee-inp" type="number" value="${s.reps   || ''}" placeholder="5"  oninput="eeUpdate(${ei},${si},'reps',this.value)">
+          <input class="ee-inp" type="number" value="${s.pct    || ''}" placeholder="—"  oninput="eeUpdate(${ei},${si},'pct',this.value)">
+          <input class="ee-inp" type="number" value="${s.weight || ''}" placeholder="—"  oninput="eeUpdate(${ei},${si},'weight',this.value)">
+          <input class="ee-inp" type="number" value="${s.rpe    || ''}" placeholder="—"  oninput="eeUpdate(${ei},${si},'rpe',this.value)">
+          <button onclick="removeSetFromEE(${ei},${si})" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;">✕</button>
+        </div>`).join('');
     return `
     <div class="ee-ex-item">
       <div class="ee-ex-hdr">
@@ -222,6 +231,20 @@ function renderExEditor() {
         </div>
         <button class="btn r sm" onclick="removeExFromEE(${ei})">✕</button>
       </div>
+      <div class="ee-hdr-labels">
+        <span class="ee-lbl">#</span>
+        <span class="ee-lbl">Reps</span>
+        <span class="ee-lbl">%1RM</span>
+        <span class="ee-lbl">Poids</span>
+        <span class="ee-lbl">RPE</span>
+        <span class="ee-lbl"></span>
+      </div>
+      ${rows}
+      <div style="padding:8px 10px;">
+        <button class="btn g sm full" onclick="addSetToEE(${ei})">＋ Série</button>
+      </div>
+    </div>`;
+  }).join('');
       <div class="ee-hdr-labels">
         <span class="ee-lbl">#</span>
         <span class="ee-lbl">Reps</span>
