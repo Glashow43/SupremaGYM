@@ -47,7 +47,7 @@ function renderExPicker() {
   exs.forEach(function(e, i) {
     var ic   = CAT_ICONS[e.cat] || CAT_ICONS['Personnalisé'];
     var thumb = e.image
-      ? '<div class="ex-pick-icon" style="padding:0;overflow:hidden;"><img src="' + e.image + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px;" onerror="this.parentElement.innerHTML=\'' + ic.emoji + '\'"></div>'
+      ? '<div class="ex-pick-icon" style="padding:0;overflow:hidden;"><img src="' + e.image + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px;" onerror="this.src=\'\';this.style.display=\'none\'"></div>'
       : '<div class="ex-pick-icon" style="background:' + ic.bg + ';color:' + ic.color + ';">' + ic.emoji + '</div>';
     var div = document.createElement('div');
     div.className = 'ex-pick-item';
@@ -127,7 +127,7 @@ function renderExPage() {
       var w = e.defaultWeight || 0;
       var d = e.desc || '';
       var thumb = e.image
-        ? '<div class="exrow-thumb" style="padding:0;overflow:hidden;"><img src="' + e.image + '" style="width:100%;height:100%;object-fit:cover;border-radius:9px;" onerror="this.parentElement.innerHTML=\'' + ic.emoji + '\';this.parentElement.style.background=\'' + ic.bg + '\';"></div>'
+        ? '<div class="exrow-thumb" style="padding:0;overflow:hidden;"><img src="' + e.image + '" style="width:100%;height:100%;object-fit:cover;border-radius:9px;" onerror="this.src=\'\';this.style.display=\'none\'"></div>'
         : '<div class="exrow-thumb" style="background:' + ic.bg + ';color:' + ic.color + ';">' + ic.emoji + '</div>';
       out += '<div class="exrow">'
         + thumb
