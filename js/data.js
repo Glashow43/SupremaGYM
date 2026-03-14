@@ -116,7 +116,7 @@ async function loadApiExercises() {
         name:    ex.name.charAt(0).toUpperCase() + ex.name.slice(1),
         lift:    '',
         cat:     API_CAT_MAP[ex.bodyPart] || 'Personnalisé',
-        image:   'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/' + ex.id + '/0.jpg',
+        image:   'https://exercisedb.p.rapidapi.com/image/' + ex.id,
         desc:    ex.target + (ex.equipment !== 'body weight' ? ' · ' + ex.equipment : ''),
         fromApi: true
       };
