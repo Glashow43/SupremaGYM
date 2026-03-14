@@ -2,8 +2,7 @@
 // js/data.js — Données exercices et programme par défaut
 // ══════════════════════════════════════════════════════════
 
-const RAPIDAPI_KEY = '3e24d81530mshcafeab04111d0edp18126bjsn5a1f916e200f';
-const PROXY_URL    = 'https://snowy-bird-d625.glashow43.workers.dev';
+const GITHUB_IMG = 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/';
 
 // ── Icônes / couleurs par catégorie ───────────────────────
 const CAT_ICONS = {
@@ -113,7 +112,7 @@ async function loadApiExercises() {
         name:    ex.name.charAt(0).toUpperCase() + ex.name.slice(1),
         lift:    '',
         cat:     API_CAT_MAP[ex.bodyPart] || 'Personnalisé',
-        image:   PROXY_URL + '?exerciseId=' + ex.id + '&resolution=180',
+        image:   GITHUB_IMG + ex.id + '.gif',
         desc:    ex.target + (ex.equipment !== 'body weight' ? ' · ' + ex.equipment : ''),
         fromApi: true
       };
