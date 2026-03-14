@@ -1,99 +1,30 @@
-name: Download Exercise GIFs
+name: Move GIFs to images/exercises
 
 on:
   workflow_dispatch:
 
 jobs:
-  download:
+  move:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Download GIFs from exercisedb-api
+      - name: Move GIFs
         run: |
           mkdir -p images/exercises
-          node << 'EOF'
-          const https = require('https');
-          const http = require('http');
-          const fs = require('fs');
-          const path = require('path');
+          # Déplacer tous les GIFs de la racine vers images/exercises/
+          find . -maxdepth 1 -name "*.gif" -exec mv {} images/exercises/ \;
+          find . -maxdepth 1 -name "*.jpg" -exec mv {} images/exercises/ \;
+          echo "GIFs moved:"
+          ls images/exercises/ | wc -l
 
-          function fetchJSON(url) {
-            return new Promise((resolve, reject) => {
-              const client = url.startsWith('https') ? https : http;
-              client.get(url, (res) => {
-                if (res.statusCode === 301 || res.statusCode === 302) {
-                  return fetchJSON(res.headers.location).then(resolve).catch(reject);
-                }
-                let data = '';
-                res.on('data', chunk => data += chunk);
-                res.on('end', () => {
-                  try { resolve(JSON.parse(data)); }
-                  catch(e) { reject(e); }
-                });
-              }).on('error', reject);
-            });
-          }
-
-          function downloadFile(url, dest) {
-            return new Promise((resolve) => {
-              if (fs.existsSync(dest) && fs.statSync(dest).size > 0) { resolve(); return; }
-              const client = url.startsWith('https') ? https : http;
-              client.get(url, (res) => {
-                if (res.statusCode === 301 || res.statusCode === 302) {
-                  return downloadFile(res.headers.location, dest).then(resolve);
-                }
-                if (res.statusCode !== 200) { resolve(); return; }
-                const file = fs.createWriteStream(dest);
-                res.pipe(file);
-                file.on('finish', () => { file.close(); resolve(); });
-              }).on('error', () => resolve());
-            });
-          }
-
-          async function main() {
-            const BASE = 'https://exercisedb-api-mu.vercel.app/api/v1/exercises';
-            let all = [];
-            let offset = 0;
-            const limit = 100;
-
-            while (true) {
-              const url = BASE + '?limit=' + limit + '&offset=' + offset;
-              console.log('Fetching:', url);
-              const res = await fetchJSON(url);
-              if (!res.data || !res.data.length) break;
-              all = all.concat(res.data);
-              console.log('Total fetched:', all.length);
-              if (all.length >= res.metadata.totalExercises) break;
-              offset += limit;
-            }
-
-            console.log('Total exercises:', all.length);
-
-            for (const ex of all) {
-              const id = ex.exerciseId;
-              const dest = path.join('images/exercises', id + '.gif');
-              if (ex.gifUrl) {
-                await downloadFile(ex.gifUrl, dest);
-                if (fs.existsSync(dest) && fs.statSync(dest).size > 0) {
-                  console.log('✅', id);
-                } else {
-                  console.log('❌', id);
-                }
-              }
-            }
-            console.log('All done!');
-          }
-
-          main().catch(console.error);
-          EOF
-
-      - name: Commit images
+      - name: Commit
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add images/exercises/
-          git diff --staged --quiet || git commit -m "Add exercise GIFs from exercisedb-api"
+          git add -u
+          git diff --staged --quiet || git commit -m "Move GIFs to images/exercises"
           git pull --rebase origin main
           git push
