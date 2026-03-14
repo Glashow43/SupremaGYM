@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════════════════
 
 const RAPIDAPI_KEY = '3e24d81530mshcafeab04111d0edp18126bjsn5a1f916e200f';
+const PROXY_URL = 'https://snowy-bird-d625.glashow43.workers.dev';
 
 // ── Icônes / couleurs par catégorie ───────────────────────
 const CAT_ICONS = {
