@@ -2,7 +2,7 @@
 // js/data.js — Données exercices et programme par défaut
 // ══════════════════════════════════════════════════════════
 
-const GITHUB_IMG = 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercices/';
+const GITHUB_IMG = 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/';
 
 // ── Icônes / couleurs par catégorie ───────────────────────
 const CAT_ICONS = {
