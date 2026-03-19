@@ -193,7 +193,7 @@ function renderSess() {
       + '<span class="set-lbl">✓</span>'
       + '</div>'
       + setsHTML
-      + '<div style="display:flex;gap:6px;padding:8px 12px;">'
+      + '<div style="display:flex;gap:6px;padding:8px 12px;justify-content:center;">'
       + '<button class="btn g sm" onclick="addSetToSess(' + ei + ')">＋ Ajouter série</button>'
       + '<button class="btn r sm" onclick="removeExFromSess(' + ei + ')">✕</button>'
       + '</div>'
