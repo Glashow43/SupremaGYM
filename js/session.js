@@ -87,6 +87,13 @@ function renderTrain() {
   }).join('');
 }
 
+function activateProgram(pid) {
+  S.ap = { programId: pid, weekIdx: 0, sessionIdx: 0 };
+  sv('activeProgram', S.ap);
+  renderTrain();
+  notify('Programme activé ! 💪');
+}
+
 function toggleTrainProg(hdr) {
   hdr.classList.toggle('open');
   hdr.nextElementSibling.classList.toggle('open');
