@@ -75,7 +75,7 @@ function renderTrain() {
         + '</div>';
     }).join('');
 
-    return '<div class="train-prog">'
+    return '<div class="train-prog" style="' + (isActive ? 'border:2px solid var(--green);background:rgba(34,197,94,0.07);' : '') + '">'
       + '<div class="train-prog-hdr" onclick="toggleTrainProg(this)">'
       + '<span>📋</span>'
       + '<span style="flex:1;">' + p.name + '</span>'
