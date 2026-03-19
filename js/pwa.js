@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════
-// js/pwa.js — PWA : bannière d'installation
+// js/pwa.js — PWA : bannière d'installation + Service Worker
 // ══════════════════════════════════════════════════════════
 let deferredPrompt = null;
 
@@ -21,9 +21,34 @@ function installApp() {
   }
 }
 
-// Désinstalle tout Service Worker existant
+// ── Service Worker — ne cache JAMAIS les JS/CSS ───────────
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function(regs) {
-    regs.forEach(function(r) { r.unregister(); });
-  });
+  const CACHE_VERSION = 'sg-v20'; // ← incrémente à chaque déploiement
+  const swCode = `
+    const CACHE = '${CACHE_VERSION}';
+    self.addEventListener('install', e => {
+      e.waitUntil(
+        caches.keys().then(keys =>
+          Promise.all(keys.map(k => caches.delete(k)))
+        )
+      );
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(self.clients.claim());
+    });
+    self.addEventListener('fetch', e => {
+      // Ne jamais cacher JS, CSS — toujours depuis le réseau
+      if (e.request.url.match(/\\.(js|css)(\?.*)?$/)) {
+        e.respondWith(fetch(e.request));
+        return;
+      }
+      // Pour le reste, réseau en priorité
+      e.respondWith(
+        fetch(e.request).catch(() => caches.match(e.request))
+      );
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
 }
