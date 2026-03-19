@@ -128,7 +128,9 @@
     <div class="pc">
       <div class="ptitle">📋 Mes Programmes</div>
       <div class="wcard" style="text-align:center;">
-        <button class="btn g full" onclick="openModal('modal-create-prog')">✚ Créer un programme</button>
+        <div style="text-align:center;">
+        <button class="btn g" onclick="openModal('modal-create-prog')">✚ Créer un programme</button>
+        </div>
       </div>
       <div id="prog-list-content"></div>
     </div>
@@ -168,10 +170,12 @@
       <div style="font-size:12px;opacity:0.8;" id="sess-subtitle"></div>
     </div>
     <div id="sess-exercises"></div>
-    <button class="btn g full" style="margin-bottom:8px;" onclick="openExPicker('session')">＋ Ajouter un exercice</button>
+    <div style="text-align:center;">
+    <button class="btn g" style="margin-bottom:8px;" onclick="openExPicker('session')">＋ Ajouter un exercice</button>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
-      <button class="btn r full" onclick="clearSession()">✕ Annuler</button>
-      <button class="btn g full" onclick="saveSession()">✓ Terminer</button>
+      <button class="btn r" onclick="clearSession()">✕ Annuler</button>
+      <button class="btn g" onclick="saveSession()">✓ Terminer</button>
     </div>
   </div>
 </div>
@@ -297,7 +301,9 @@
     <div class="fg"><label class="fl">Nom du programme</label><input class="fi" id="prog-name-input" placeholder="Ex: POWER RUSH"></div>
     <div class="fg"><label class="fl">Nombre de semaines</label><input type="number" class="fi" id="prog-weeks-input" value="4" min="1" max="20"></div>
     <div class="fg"><label class="fl">Séances par semaine</label><input type="number" class="fi" id="prog-sessions-input" value="4" min="1" max="7"></div>
-    <button class="btn g full" onclick="createProgram()">✚ Créer</button>
+    <div style="text-align:center;">
+    <button class="btn g" onclick="createProgram()">✚ Créer</button>
+    </div>
   </div>
 </div>
 
@@ -320,7 +326,9 @@
       <input class="fi" type="url" id="edit-ex-image" placeholder="https://..." oninput="renderImagePreview(this.value)">
       <div id="edit-ex-image-preview"></div>
     </div>
-    <button class="btn g full" onclick="saveEditEx()">✅ Enregistrer</button>
+    <div style="text-align:center;">
+    <button class="btn g" onclick="saveEditEx()">✅ Enregistrer</button>
+    </div>
   </div>
 </div>
 
@@ -333,7 +341,9 @@
       <div class="fg"><label class="fl">Séries</label><input type="number" class="fi" id="qex-sets" value="4" min="1"></div>
       <div class="fg"><label class="fl">Répétitions</label><input type="number" class="fi" id="qex-reps" value="5" min="1"></div>
     </div>
-    <button class="btn g full" onclick="confirmQuickEx()">✅ Ajouter</button>
+    <div style="text-align:center;">
+    <button class="btn g" onclick="confirmQuickEx()">✅ Ajouter</button>
+    </div>
   </div>
 </div>
 
