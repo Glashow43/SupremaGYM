@@ -14,8 +14,8 @@ function renderProgList() {
     el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>Aucun programme</p></div>';
     return;
   }
-  el.innerHTML = S.progs.map(p => {
-    const isActive = S.ap && S.ap.programId === p.id;
+  el.innerHTML = S.progs.map(function(p) {
+    var isActive = S.ap && S.ap.programId === p.id;
     return '<div class="prog-item' + (isActive ? ' active-prog' : '') + '" onclick="openProgDetail(' + p.id + ')">'
       + '<div class="prog-icon" style="background:rgba(139,108,247,0.15);">📋</div>'
       + '<div class="prog-info">'
@@ -23,7 +23,7 @@ function renderProgList() {
       + '<div class="prog-meta">' + p.weeks.length + ' semaines · ' + (p.weeks[0] && p.weeks[0].sessions.length || 0) + ' séances/sem</div>'
       + (isActive ? '<span class="bdg g">ACTIF</span>' : '')
       + '</div>'
-      + (!isActive ? '<button class="btn g sm" onclick="event.stopPropagation();activateProgram(' + p.id + ')">Activer</button>' : '')
+      + '<button class="btn r sm" onclick="event.stopPropagation();deleteProgram(' + p.id + ')">🗑</button>'
       + '</div>';
   }).join('');
 }
