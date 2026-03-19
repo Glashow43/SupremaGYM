@@ -44,21 +44,35 @@
 
 <!-- ── TOP NAV ────────────────────────────────────────── -->
 <nav class="topnav">
-  <div class="topnav-links">
-    <button class="tnl active" onclick="showPage('home',0)">🏠 Accueil</button>
-    <button class="tnl" onclick="showPage('exercises',1)">💪 Exercices</button>
-    <button class="tnl" onclick="showPage('programs',2)">📋 Programmes</button>
-    <button class="tnl" onclick="showPage('train',3)">⚡ S'entraîner</button>
-    <button class="tnl" onclick="showPage('calc',4)">🏆 1RM</button>
-    <button class="tnl" onclick="showPage('progress',5)">📈 Historique</button>
-    <button class="tnl" onclick="showPage('settings',6)">⚙️ Réglages</button>
-  </div>
-  <div class="topnav-user" id="user-badge">
-    <img id="user-avatar" src="" alt="">
-    <span id="user-name"></span>
-    <button class="sign-out-btn" onclick="signOut()">Déco</button>
-  </div>
+  <div class="topnav-title">🏋️ SupremaGym</div>
+  <button class="hamburger" onclick="openDrawer()">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<!-- Drawer -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <img class="drawer-avatar" id="drawer-avatar" src="" alt="">
+    <div>
+      <div class="drawer-username" id="drawer-username">Utilisateur</div>
+      <div class="drawer-email" id="drawer-email"></div>
+    </div>
+  </div>
+  <nav class="drawer-nav">
+    <button class="drawer-item active" onclick="navTo('home',0)"><span class="drawer-item-icon">🏠</span> Accueil</button>
+    <button class="drawer-item" onclick="navTo('exercises',1)"><span class="drawer-item-icon">💪</span> Exercices</button>
+    <button class="drawer-item" onclick="navTo('programs',2)"><span class="drawer-item-icon">📋</span> Programmes</button>
+    <button class="drawer-item" onclick="navTo('train',3)"><span class="drawer-item-icon">⚡</span> S'entraîner</button>
+    <button class="drawer-item" onclick="navTo('calc',4)"><span class="drawer-item-icon">🏆</span> Calculateur 1RM</button>
+    <button class="drawer-item" onclick="navTo('progress',5)"><span class="drawer-item-icon">📈</span> Historique</button>
+    <button class="drawer-item" onclick="navTo('settings',6)"><span class="drawer-item-icon">⚙️</span> Réglages</button>
+  </nav>
+  <div class="drawer-footer">
+    <button class="drawer-signout" onclick="signOut()">🚪 Se déconnecter</button>
+  </div>
+</div>
 
 <!-- ════════════════════════════════════════════════════ -->
 <!-- ── PAGE : ACCUEIL ────────────────────────────────── -->
@@ -258,38 +272,6 @@
     <div class="wcard" id="settings-info"></div>
   </div>
 </div>
-
-<!-- ── BOTTOM NAV ─────────────────────────────────────── -->
-<nav class="botnav">
-  <button class="bnb active" onclick="showPage('home',0)">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-    Accueil
-  </button>
-  <button class="bnb" onclick="showPage('exercises',1)">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/><circle cx="17" cy="18" r="3"/></svg>
-    Exos
-  </button>
-  <button class="bnb" onclick="showPage('programs',2)">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-    Prog
-  </button>
-  <button class="bnb" onclick="showPage('train',3)">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-    Train
-  </button>
-  <button class="bnb" onclick="showPage('calc',4)">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 7H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-    1RM
-  </button>
-  <button class="bnb" onclick="showPage('progress',5)">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 17l4-8 4 5 4-3 4 6"/></svg>
-    Stats
-  </button>
-  <button class="bnb" onclick="showPage('settings',6)">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
-    Réglages
-  </button>
-</nav>
 
 <!-- ════════════════════════════════════════════════════ -->
 <!-- ── MODALS ────────────────────────────────────────── -->
