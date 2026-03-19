@@ -244,12 +244,12 @@ body {
    NOTIFICATION TOAST
    ══════════════════════════════════════════════════════ */
 #notif {
-  position: fixed; top: 60px; left: 50%;
-  transform: translateX(-50%) translateY(-80px);
+  position: fixed; top: 70px; left: 50%;
+  transform: translateX(-50%) translateY(-200px);
   background: #1a1d2e; color: #fff;
   padding: 10px 20px; border-radius: 20px;
   font-size: 13px; font-weight: 600;
-  z-index: 9999; transition: transform 0.3s;
+  z-index: 9999; transition: transform 0.4s;
   white-space: nowrap;
 }
 #notif.show { transform: translateX(-50%) translateY(0); }
