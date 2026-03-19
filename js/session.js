@@ -183,10 +183,6 @@ function renderSess() {
       + '<div style="font-size:10px;color:' + icon.color + ';font-weight:600;">' + cat + '</div>'
       + '</div>'
       + '</div>'
-      + '<div style="display:flex;gap:6px;">'
-      + '<button class="btn g sm" onclick="addSetToSess(' + ei + ')">＋ Ajouter série</button>'
-      + '<button class="btn r sm" onclick="removeExFromSess(' + ei + ')">✕</button>'
-      + '</div>'
       + '</div>'
       + '<div style="display:grid;grid-template-columns:28px 1fr 1fr 1fr 1fr 32px;gap:6px;padding:4px 12px 2px;background:var(--surface2);">'
       + '<span class="set-lbl">#</span>'
@@ -195,10 +191,12 @@ function renderSess() {
       + '<span class="set-lbl">Poids</span>'
       + '<span class="set-lbl">RPE</span>'
       + '<span class="set-lbl">✓</span>'
+      + '</div>'
+      + setsHTML
+      + '<div style="display:flex;gap:6px;padding:8px 12px;">'
       + '<button class="btn g sm" onclick="addSetToSess(' + ei + ')">＋ Ajouter série</button>'
       + '<button class="btn r sm" onclick="removeExFromSess(' + ei + ')">✕</button>'
       + '</div>'
-      + setsHTML
       + '</div>';
   }).join('');
 }
