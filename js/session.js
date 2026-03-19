@@ -182,6 +182,7 @@ function renderSess() {
       + '<div class="sess-ex-name">' + ex.name + '</div>'
       + '<div style="font-size:10px;color:' + icon.color + ';font-weight:600;">' + cat + '</div>'
       + '</div>'
+      + '<button class="btn r sm" onclick="removeExFromSess(' + ei + ')">✕</button>'
       + '</div>'
       + '</div>'
       + '<div style="display:grid;grid-template-columns:28px 1fr 1fr 1fr 1fr 32px;gap:6px;padding:4px 12px 2px;background:var(--surface2);">'
@@ -195,7 +196,7 @@ function renderSess() {
       + setsHTML
       + '<div style="display:flex;gap:6px;padding:8px 12px;justify-content:center;">'
       + '<button class="btn g sm" onclick="addSetToSess(' + ei + ')">＋ Ajouter série</button>'
-      + '<button class="btn r sm" onclick="removeExFromSess(' + ei + ')">✕</button>'
+      + '<button class="btn r sm" onclick="removeSetToSess(' + ei + ')">✕ Supprimer série</button>'
       + '</div>'
       + '</div>';
   }).join('');
