@@ -175,16 +175,18 @@ function renderSess() {
     }).join('');
 
     return '<div class="sess-ex">'
-      + '<div class="sess-ex-hdr">'
+      // Header : thumb + nom à gauche, bouton ✕ exercice à droite
+      + '<div class="sess-ex-hdr" style="display:flex;align-items:center;justify-content:space-between;">'
       + '<div style="display:flex;align-items:center;gap:10px;">'
       + thumb
       + '<div>'
       + '<div class="sess-ex-name">' + ex.name + '</div>'
       + '<div style="font-size:10px;color:' + icon.color + ';font-weight:600;">' + cat + '</div>'
       + '</div>'
+      + '</div>'
       + '<button class="btn r sm" onclick="removeExFromSess(' + ei + ')">✕</button>'
       + '</div>'
-      + '</div>'
+      // Header colonnes
       + '<div style="display:grid;grid-template-columns:28px 1fr 1fr 1fr 1fr 32px;gap:6px;padding:4px 12px 2px;background:var(--surface2);">'
       + '<span class="set-lbl">#</span>'
       + '<span class="set-lbl">Reps</span>'
@@ -193,7 +195,9 @@ function renderSess() {
       + '<span class="set-lbl">RPE</span>'
       + '<span class="set-lbl">✓</span>'
       + '</div>'
+      // Séries
       + setsHTML
+      // Boutons sous les séries, centrés
       + '<div style="display:flex;gap:6px;padding:8px 12px;justify-content:center;">'
       + '<button class="btn g sm" onclick="addSetToSess(' + ei + ')">＋ Ajouter série</button>'
       + '<button class="btn r sm" onclick="removeSetToSess(' + ei + ')">✕ Supprimer série</button>'
@@ -216,6 +220,13 @@ function toggleDone(ei, si) {
 function addSetToSess(ei) {
   var last = S.cur[ei].sets.slice(-1)[0] || { reps: 5, weight: '' };
   S.cur[ei].sets.push({ reps: last.reps, pct: null, weight: last.weight, rpe: null, done: false });
+  sv('currentSession', S.cur);
+  renderSess();
+}
+
+function removeSetToSess(ei) {
+  if (S.cur[ei].sets.length <= 1) { notify('Il faut au moins une série !'); return; }
+  S.cur[ei].sets.pop();
   sv('currentSession', S.cur);
   renderSess();
 }
