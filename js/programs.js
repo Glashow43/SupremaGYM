@@ -114,12 +114,7 @@ function addSessToWeek(pid, wi) {
   renderProgDetail();
 }
 
-function activateProgram(pid) {
-  S.ap = { programId: pid, weekIdx: 0, sessionIdx: 0 };
-  sv('activeProgram', S.ap);
-  renderProgList();
-  notify('Programme activé ! 💪');
-}
+
 
 function toggleProgWeek(hdr) {
   var body    = hdr.nextElementSibling;
