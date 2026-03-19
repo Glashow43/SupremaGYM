@@ -160,8 +160,8 @@ function renderSess() {
     var cat   = (found && found.cat) || 'Personnalisé';
     var icon  = CAT_ICONS[cat] || CAT_ICONS['Personnalisé'];
     var thumb = (found && found.image)
-      ? '<div style="width:36px;height:36px;border-radius:9px;overflow:hidden;flex-shrink:0;"><img src="' + found.image + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove()"></div>'
-      : '<div style="width:36px;height:36px;border-radius:9px;background:' + icon.bg + ';display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">' + icon.emoji + '</div>';
+      ? '<div style="width:64px;height:64px;border-radius:9px;overflow:hidden;flex-shrink:0;"><img src="' + found.image + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove()"></div>'
+      : '<div style="width:64px;height:64px;border-radius:9px;background:' + icon.bg + ';display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">' + icon.emoji + '</div>';
 
     var setsHTML = ex.sets.map(function(s, si) {
       return '<div class="sess-set-row" style="grid-template-columns:28px 1fr 1fr 1fr 1fr 32px;">'
