@@ -2,7 +2,6 @@
 // js/firebase.js — Configuration Firebase, Auth et Sync Cloud
 // ══════════════════════════════════════════════════════════
 
-// ── Config Firebase ───────────────────────────────────────
 const firebaseConfig = {
   apiKey:            "AIzaSyCk_HK6USgcJQl_J4rcBkkQtUR2cdDnfks",
   authDomain:        "supermagym.firebaseapp.com",
@@ -15,34 +14,24 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
-// ── Variables globales d'auth ─────────────────────────────
 let currentUser = null;
 let syncTimer   = null;
 
-// ── Sync Cloud ────────────────────────────────────────────
-
-/**
- * Planifie une sync debounce 1500ms après chaque sv().
- * Annule la sync précédente si une nouvelle arrive.
- */
 function scheduleSyncToCloud() {
   if (!currentUser) return;
   clearTimeout(syncTimer);
   syncTimer = setTimeout(syncToCloud, 1500);
 }
 
-/**
- * Écrit tout l'état S dans Firestore (users/{uid}).
- */
 async function syncToCloud() {
   if (!currentUser) return;
   try {
     await db.collection('users').doc(currentUser.uid).set({
-      oneRMs:               S.rm,
-      sessions:             S.sessions,
-      programs:             S.progs,
-      activeProgram:        S.ap,
-      currentSession:       S.cur,
+      oneRMs:                S.rm,
+      sessions:              S.sessions,
+      programs:              S.progs,
+      activeProgram:         S.ap,
+      currentSession:        S.cur,
       currentSessionContext: S.ctx,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -51,23 +40,18 @@ async function syncToCloud() {
   }
 }
 
-/**
- * Charge les données depuis Firestore vers S + localStorage.
- * Retourne true si un document existait, false sinon.
- */
 async function loadFromCloud() {
   if (!currentUser) return false;
   try {
     const doc = await db.collection('users').doc(currentUser.uid).get();
     if (!doc.exists) return false;
     const d = doc.data();
-    if (d.oneRMs)                   S.rm       = d.oneRMs;
-    if (d.sessions)                 S.sessions = d.sessions;
-    if (d.programs)                 S.progs    = d.programs;
-    if (d.activeProgram !== undefined) S.ap    = d.activeProgram;
-    if (d.currentSession)           S.cur      = d.currentSession;
-    if (d.currentSessionContext !== undefined) S.ctx = d.currentSessionContext;
-    // Miroir localStorage
+    if (d.oneRMs)                              S.rm       = d.oneRMs;
+    if (d.sessions)                            S.sessions = d.sessions;
+    if (d.programs)                            S.progs    = d.programs;
+    if (d.activeProgram !== undefined)         S.ap       = d.activeProgram;
+    if (d.currentSession)                      S.cur      = d.currentSession;
+    if (d.currentSessionContext !== undefined) S.ctx      = d.currentSessionContext;
     localStorage.setItem('oneRMs',                JSON.stringify(S.rm));
     localStorage.setItem('sessions',              JSON.stringify(S.sessions));
     localStorage.setItem('programs',              JSON.stringify(S.progs));
@@ -81,9 +65,6 @@ async function loadFromCloud() {
   }
 }
 
-// ── Auth ──────────────────────────────────────────────────
-
-/** Ouvre la popup Google Sign-In */
 function signInWithGoogle() {
   document.getElementById('login-loading').style.display = 'block';
   document.getElementById('login-error').style.display   = 'none';
@@ -95,15 +76,10 @@ function signInWithGoogle() {
   });
 }
 
-/** Déconnexion */
 function signOut() {
   if (confirm('Se déconnecter ?')) auth.signOut();
 }
 
-/**
- * Observateur d'état de connexion.
- * Appelé par Firebase à chaque changement (login / logout / refresh).
- */
 auth.onAuthStateChanged(async user => {
   if (user) {
     currentUser = user;
@@ -111,7 +87,6 @@ auth.onAuthStateChanged(async user => {
 
     const loaded = await loadFromCloud();
     if (!loaded) {
-      // Premier login : injecter le programme par défaut
       const defProg = getDefaultProgram();
       if (!S.progs.find(p => p.name === defProg.name)) {
         S.progs.push(defProg);
@@ -123,14 +98,13 @@ auth.onAuthStateChanged(async user => {
     // Masquer l'écran de login
     document.getElementById('login-screen').style.display = 'none';
 
-    // Afficher badge utilisateur
-    const badge = document.getElementById('user-badge');
-    badge.classList.add('visible');
-    const av = document.getElementById('user-avatar');
-    if (user.photoURL) { av.src = user.photoURL; av.style.display = 'block'; }
-    document.getElementById('user-name').textContent = user.displayName || user.email || '';
+    // Mettre à jour le drawer avec les infos utilisateur
+    var dav = document.getElementById('drawer-avatar');
+    if (user.photoURL) { dav.src = user.photoURL; dav.style.display = 'block'; }
+    document.getElementById('drawer-username').textContent = user.displayName || user.email || '';
+    document.getElementById('drawer-email').textContent    = user.email || '';
 
-    // Rendre le dashboard et la séance en cours
+    // Render initial
     renderDash();
     renderSess();
     renderProgList();
@@ -139,7 +113,6 @@ auth.onAuthStateChanged(async user => {
   } else {
     currentUser = null;
     document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('user-badge').classList.remove('visible');
     document.getElementById('login-loading').style.display = 'none';
   }
 });
