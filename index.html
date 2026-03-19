@@ -182,30 +182,31 @@
 <div class="page" id="page-calc">
   <div class="pc">
     <div class="ptitle">🏆 Calculateur 1RM</div>
-    <div class="wcard">
-      <div class="fg">
-        <label class="fl">Type de levé</label>
-        <select class="fi" id="calc-lift" onchange="renderCalc()">
-          <option value="squat">Squat</option>
-          <option value="bench">Bench Press</option>
-          <option value="deadlift">Deadlift</option>
-        </select>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div id="calc-rm-cards"></div>
+      <div class="wcard">
         <div class="fg">
-          <label class="fl">Poids (kg)</label>
-          <input type="number" class="fi" id="calc-weight" placeholder="100" oninput="renderCalc()" min="0">
+          <label class="fl">Type de levé</label>
+          <select class="fi" id="calc-lift" onchange="renderCalc()">
+            <option value="squat">Squat</option>
+            <option value="bench">Bench Press</option>
+            <option value="deadlift">Deadlift</option>
+          </select>
         </div>
-        <div class="fg">
-          <label class="fl">Répétitions</label>
-          <input type="number" class="fi" id="calc-reps" placeholder="5" oninput="renderCalc()" min="1" max="20">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="fg">
+            <label class="fl">Poids (kg)</label>
+            <input type="number" class="fi" id="calc-weight" placeholder="100" oninput="renderCalc()" min="0">
+          </div>
+          <div class="fg">
+            <label class="fl">Répétitions</label>
+            <input type="number" class="fi" id="calc-reps" placeholder="5" oninput="renderCalc()" min="1" max="20">
+          </div>
         </div>
+        <button class="btn p full" onclick="save1RM()">💾 Sauvegarder comme 1RM</button>
       </div>
-      <button class="btn p full" onclick="save1RM()">💾 Sauvegarder comme 1RM</button>
+      <div id="calc-results"></div>
     </div>
-    <div id="calc-results"></div>
   </div>
-</div>
 
 <!-- ════════════════════════════════════════════════════ -->
 <!-- ── PAGE : HISTORIQUE ─────────────────────────────── -->
