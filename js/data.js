@@ -6,7 +6,6 @@ const GITHUB_IMG = 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/
 
 // ── Icônes / couleurs par catégorie ───────────────────────
 const CAT_ICONS = {
-  'Powerlifting': { emoji: '🏆', color: '#a78bfa', bg: 'rgba(139,108,247,0.18)' },
   'Jambes':       { emoji: '🦵', color: '#fb923c', bg: 'rgba(249,115,22,0.18)'  },
   'Pectoraux':    { emoji: '💪', color: '#f87171', bg: 'rgba(248,113,113,0.18)' },
   'Dos':          { emoji: '🏋️', color: '#60a5fa', bg: 'rgba(96,165,250,0.18)'  },
@@ -32,14 +31,14 @@ const API_CAT_MAP = {
 
 // ── Exercices intégrés (lecture seule) ────────────────────
 const BUILTIN_EXERCISES = [
-  { name: 'Squat',                        lift: 'squat',    cat: 'Powerlifting', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/Gnfo4FM.gif' },
-  { name: 'Bench Press',                  lift: 'bench',    cat: 'Powerlifting', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/EIeI8Vf.gif' },
-  { name: 'Deadlift',                     lift: 'deadlift', cat: 'Powerlifting', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/ila4NZS.gif' },
-  { name: 'Squat Barre Haute',            lift: 'squat',    cat: 'Powerlifting', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/Gnfo4FM.gif' },
-  { name: 'Squat Tempo',                  lift: 'squat',    cat: 'Powerlifting', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/Gnfo4FM.gif' },
-  { name: 'Bench Pause 2ct',              lift: 'bench',    cat: 'Powerlifting', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/EIeI8Vf.gif' },
-  { name: 'Larsen Press',                 lift: 'bench',    cat: 'Powerlifting', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/Elel9Vp.gif' },
-  { name: 'RDL (Haltères)',               lift: 'deadlift', cat: 'Powerlifting', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/rR0LJzx.gif' },
+  { name: 'Squat',                        lift: 'squat',    cat: 'Jambes',    image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/Gnfo4FM.gif' },
+  { name: 'Bench Press',                  lift: 'bench',    cat: 'Pectoraux', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/EIeI8Vf.gif' },
+  { name: 'Deadlift',                     lift: 'deadlift', cat: 'Dos',       image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/ila4NZS.gif' },
+  { name: 'Squat Barre Haute',            lift: 'squat',    cat: 'Jambes',    image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/Gnfo4FM.gif' },
+  { name: 'Squat Tempo',                  lift: 'squat',    cat: 'Jambes',    image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/Gnfo4FM.gif' },
+  { name: 'Bench Pause 2ct',              lift: 'bench',    cat: 'Pectoraux', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/EIeI8Vf.gif' },
+  { name: 'Larsen Press',                 lift: 'bench',    cat: 'Pectoraux', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/Elel9Vp.gif' },
+  { name: 'RDL (Haltères)',               lift: 'deadlift', cat: 'Dos',       image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/rR0LJzx.gif' },
   { name: 'Leg Press',                    lift: '',         cat: 'Jambes'       },
   { name: 'Leg Curl',                     lift: '',         cat: 'Jambes'       },
   { name: 'Leg Extension',                lift: '',         cat: 'Jambes'       },
