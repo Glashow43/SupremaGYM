@@ -81,6 +81,7 @@ function renderProgList() {
       + (locked
         ? '<button class="btn b sm" onclick="event.stopPropagation();duplicateProgram(' + p.id + ')">📋 Copier</button>'
         : '<div style="display:flex;gap:6px;">'
+          + '<button class="btn b sm" onclick="event.stopPropagation();renameProg(' + p.id + ')">✏️</button>'
           + '<button class="btn r sm" onclick="event.stopPropagation();deleteProgram(' + p.id + ')">🗑</button>'
           + '</div>')
       + '</div>';
@@ -140,7 +141,7 @@ function renderProgDetail() {
         + '<div style="font-size:13px;font-weight:700;">' + sess.name + '</div>'
         + '<div style="font-size:11px;color:var(--text2);">' + sess.exercises.length + ' exercice' + (sess.exercises.length !== 1 ? 's' : '') + '</div>'
         + '</div>'
-        + (locked ? '' : '<button onclick="renameSess(' + wi + ',' + sIdx + ')" class="btn b sm" style="padding:3px 7px;flex-shrink:0;">✏️</button>')
+
         + '</div>'
         + '<div style="display:flex;gap:6px;flex-shrink:0;">'
         + (locked
