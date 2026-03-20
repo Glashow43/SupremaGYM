@@ -291,7 +291,21 @@ function openExEditor(pid, wi, sessIdx) {
     pid:    pid,
     wi:     wi,
     si:     sessIdx,
-    exs:    sess.exercises.map(function(ex) { return normEx(JSON.parse(JSON.stringify(ex))); }),
+    exs:    sess.exercises.map(function(ex) {
+      var copy = normEx(JSON.parse(JSON.stringify(ex)));
+      // Calcul auto du poids depuis le % si weight est null
+      var allEx = getAllExercises();
+      var found = allEx.find(function(e) { return e.name.toLowerCase() === copy.name.toLowerCase(); });
+      var cat   = (found && found.cat) || 'Personnalisé';
+      var rm    = get1RMForLift(getLiftForCat(cat));
+      copy.series = copy.series.map(function(s) {
+        if ((!s.weight) && s.pct && rm) {
+          s.weight = Math.round((rm * s.pct / 100) * 4) / 4;
+        }
+        return s;
+      });
+      return copy;
+    }),
     locked: isPreset(pid)
   };
   var titleEl = document.getElementById('ee-title');
