@@ -26,24 +26,41 @@ function get1RMForLift(liftType) {
 // ════════════════════════════════════════════════════════
 
 function renderProgList() {
-  var el = document.getElementById('prog-list-content');
-  if (!S.progs.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>Aucun programme</p></div>';
-    return;
-  }
-  el.innerHTML = S.progs.map(function(p) {
+  var el       = document.getElementById('prog-list-content');
+  var presets  = S.progs.filter(function(p) { return isPreset(p.id); });
+  var customs  = S.progs.filter(function(p) { return !isPreset(p.id); });
+
+  function progCard(p) {
     var locked = isPreset(p.id);
     return '<div class="prog-item" onclick="openProgDetail(' + p.id + ')">'
       + '<div class="prog-icon" style="background:rgba(139,108,247,0.15);">' + (locked ? '🔒' : '📋') + '</div>'
       + '<div class="prog-info">'
-      + '<div class="prog-name">' + p.name + (locked ? ' <span class="bdg p" style="font-size:9px;">OFFICIEL</span>' : '') + '</div>'
+      + '<div class="prog-name">' + p.name + '</div>'
       + '<div class="prog-meta">' + p.weeks.length + ' semaines · ' + (p.weeks[0] && p.weeks[0].sessions.length || 0) + ' séances/sem</div>'
       + '</div>'
       + (locked
         ? '<button class="btn b sm" onclick="event.stopPropagation();duplicateProgram(' + p.id + ')">📋 Copier</button>'
         : '<button class="btn r sm" onclick="event.stopPropagation();deleteProgram(' + p.id + ')">🗑</button>')
       + '</div>';
-  }).join('');
+  }
+
+  var html = '';
+
+  // ── Programmes personnalisés ──
+  html += '<div class="sh p" style="margin-top:4px;">🎯 Mes Programmes Personnalisés</div>';
+  if (!customs.length) {
+    html += '<div style="font-size:12px;color:var(--text2);padding:8px 4px;">Aucun programme personnalisé — crée-en un ou copie un programme prédéfini.</div>';
+  } else {
+    html += customs.map(progCard).join('');
+  }
+
+  // ── Programmes prédéfinis ──
+  if (presets.length) {
+    html += '<div class="sh p" style="margin-top:16px;">🏅 Programmes Prédéfinis</div>';
+    html += presets.map(progCard).join('');
+  }
+
+  el.innerHTML = html || '<div class="empty"><div class="empty-icon">📋</div><p>Aucun programme</p></div>';
 }
 
 function showProgList() {
