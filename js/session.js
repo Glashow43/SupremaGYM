@@ -55,9 +55,13 @@ function renderTrain() {
     }
   }
 
-  // Liste complète
-  el.innerHTML = S.progs.map(function(p) {
+  // Liste complète — séparée en deux sections
+  var customs = S.progs.filter(function(p) { return !isPreset(p.id); });
+  var presets = S.progs.filter(function(p) { return isPreset(p.id); });
+
+  function progBlock(p) {
     var isActive = S.ap && S.ap.programId === p.id;
+    var locked   = isPreset(p.id);
     var weeksHTML = p.weeks.map(function(w, wi) {
       var sessHTML = w.sessions.map(function(s, si) {
         var isSug = isActive && S.ap.weekIdx === wi && S.ap.sessionIdx === si;
@@ -77,14 +81,25 @@ function renderTrain() {
 
     return '<div class="train-prog" style="' + (isActive ? 'border:2px solid var(--green);background:rgba(34,197,94,0.07);' : '') + '">'
       + '<div class="train-prog-hdr" onclick="toggleTrainProg(this)">'
-      + '<span>📋</span>'
+      + '<span>' + (locked ? '🔒' : '📋') + '</span>'
       + '<span style="flex:1;">' + p.name + '</span>'
       + (isActive ? '<span class="bdg g">ACTIF</span>' : '<button class="btn g sm" onclick="event.stopPropagation();activateProgram(' + p.id + ')">Activer</button>')
       + '<span class="chevron">›</span>'
       + '</div>'
       + '<div class="train-prog-body">' + weeksHTML + '</div>'
       + '</div>';
-  }).join('');
+  }
+
+  var html = '';
+  if (customs.length) {
+    html += '<div class="sh p" style="margin-top:4px;">🎯 Mes Programmes</div>';
+    html += customs.map(progBlock).join('');
+  }
+  if (presets.length) {
+    html += '<div class="sh p" style="margin-top:16px;">🏅 Programmes Prédéfinis</div>';
+    html += presets.map(progBlock).join('');
+  }
+  el.innerHTML = html;
 }
 
 function activateProgram(pid) {
