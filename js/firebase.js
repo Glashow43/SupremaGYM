@@ -87,13 +87,18 @@ auth.onAuthStateChanged(async user => {
 
     const loaded = await loadFromCloud();
     if (!loaded) {
+      // Premier chargement : injecter le programme par défaut
       const defProg = getDefaultProgram();
-      if (!S.progs.find(p => p.name === defProg.name)) {
-        S.progs.push(defProg);
+      if (!S.progs.find(p => p.id === defProg.id)) {
+        S.progs.unshift(defProg);
         localStorage.setItem('programs', JSON.stringify(S.progs));
       }
       await syncToCloud();
     }
+
+    // Toujours mettre à jour le programme prédéfini avec la dernière version
+    resetDefaultProgram();
+    await syncToCloud();
 
     // Masquer l'écran de login
     document.getElementById('login-screen').style.display = 'none';
