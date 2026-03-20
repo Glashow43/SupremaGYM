@@ -81,7 +81,6 @@ function renderProgList() {
       + (locked
         ? '<button class="btn b sm" onclick="event.stopPropagation();duplicateProgram(' + p.id + ')">📋 Copier</button>'
         : '<div style="display:flex;gap:6px;">'
-          + '<button class="btn b sm" onclick="event.stopPropagation();renameProg(' + p.id + ')">✏️</button>'
           + '<button class="btn r sm" onclick="event.stopPropagation();deleteProgram(' + p.id + ')">🗑</button>'
           + '</div>')
       + '</div>';
