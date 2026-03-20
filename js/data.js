@@ -564,37 +564,77 @@ function getDefaultProgram() {
         // S5.1
         { id: 400, name: "1ere Seance", exercises: [
           { name: "Squat", liftType: "squat", series: [
-            { reps: 3, pct: 70, weight: 127.75, rpe: null, rest: 180 },
-            { reps: 3, pct: 76, weight: 138.7,  rpe: 5.0,  rest: 180 },
-            { reps: 3, pct: 80, weight: 146.0,  rpe: 7.0,  rest: 180 },
-            { reps: 3, pct: 80, weight: 146.0,  rpe: 7.0,  rest: 180 },
+            { reps: 3, pct: 70, weight: null, rpe: null, rest: 180 },
+            { reps: 3, pct: 76, weight: null,  rpe: 5.0,  rest: 180 },
+            { reps: 3, pct: 80, weight: null,  rpe: 7.0,  rest: 180 },
+            { reps: 3, pct: 80, weight: null,  rpe: 7.0,  rest: 180 },
+            { reps: 3, pct: 80, weight: null,  rpe: 7.0,  rest: 180 },
           ]},
           { name: "Bench Pause 2CT", liftType: "bench", series: [
-            { reps: 3, pct: 70, weight: 66.5,  rpe: null, rest: 180 },
-            { reps: 3, pct: 76, weight: 72.2,  rpe: 5.0,  rest: 180 },
-            { reps: 3, pct: 80, weight: 76.0,  rpe: 7.0,  rest: 180 },
+            { reps: 3, pct: 70, weight: null,  rpe: null, rest: 180 },
+            { reps: 3, pct: 76, weight: null,  rpe: 5.0,  rest: 180 },
+            { reps: 3, pct: 80, weight: null,  rpe: 7.0,  rest: 180 },
+            { reps: 3, pct: 80, weight: null,  rpe: 7.0,  rest: 180 },
+            { reps: 3, pct: 80, weight: null,  rpe: 7.0,  rest: 180 },
           ]},
         ]},
-
+        
+        // S5.2
+        { id: 301, name: "2ème Seance", exercises: [
+          { name: "Deadlift", liftType: "deadlift", series: [
+            { reps: 3, pct: 70, weight: null,  rpe: null, rest: 180 },
+            { reps: 3, pct: 76, weight: null,  rpe: 5.0,  rest: 180 },
+            { reps: 3, pct: 80, weight: null,  rpe: 7.0,  rest: 180 },
+            { reps: 3, pct: 80, weight: null,  rpe: 7.0,  rest: 180 },
+         ]},
+          { name: "RDL (Haltères)", liftType: "deadlift", series: [
+            { reps: 10, pct: null, weight: null, rpe: null, rest: 180 },
+            { reps: 10, pct: null, weight: null, rpe: null,  rest: 180 },
+            { reps: 10, pct: null, weight: null, rpe: null,  rest: 180 },
+            { reps: 10, pct: null, weight: null, rpe: null,  rest: 180 },
+          ]},
+          { name: "Larsen Press", liftType: "bench", series: [
+            { reps: 1, pct: 70, weight: null, rpe: null, rest: 180 },
+            { reps: 1, pct: 77, weight: null, rpe: 5.0,  rest: 180 },
+            { reps: 1, pct: 84, weight: null, rpe: 7.0,  rest: 180 },
+            { reps: 5, pct: 67, weight: null, rpe: 6.0,  rest: 180 },
+            { reps: 5, pct: 67, weight: null, rpe: 6.0,  rest: 180 },
+            { reps: 5, pct: 67, weight: null, rpe: 6.0,  rest: 180 },
+          ]},
+            
+        // S5.3
+        { id: 102, name: "3ème Seance", exercises: [
+          { name: "TEMPO SQUAT 3:1:3", liftType: "squat", series: [
+            { reps: 3, pct: 60, weight: null, rpe: null, rest: 180 },
+            { reps: 3, pct: 60, weight: null, rpe: null, rest: 180 },
+            { reps: 3, pct: 60, weight: null, rpe: null, rest: 180 },
+          ]},
+          { name: "TEMPO Bench 4:2:0", liftType: "bench", series: [
+            { reps: 2, pct: 75, weight: null, rpe: null, rest: 180 },
+            { reps: 2, pct: 75, weight: null, rpe: null, rest: 180 },
+            { reps: 2, pct: 75, weight: null, rpe: null, rest: 180 },
+          ]},
+        ]},
+            
         // S5.4
         { id: 403, name: "4ème Seance", exercises: [
           { name: "Squat", liftType: "squat", series: [
-            { reps: 1, pct: 83,  weight: 153.55, rpe: 5.0,  rest: 180 },
-            { reps: 1, pct: 89,  weight: 164.65, rpe: 7.0,  rest: 180 },
-            { reps: 1, pct: 95,  weight: 175.75, rpe: 8.5,  rest: 180 },
-            { reps: 1, pct: 100, weight: 185.0,  rpe: 10.0, rest: 180 },
+            { reps: 1, pct: 83,  weight: null, rpe: 5.0,  rest: 180 },
+            { reps: 1, pct: 89,  weight: null, rpe: 7.0,  rest: 180 },
+            { reps: 1, pct: 95,  weight: null, rpe: 8.5,  rest: 180 },
+            { reps: 1, pct: 100, weight: null, rpe: 10.0, rest: 180 },
           ]},
           { name: "Bench Press", liftType: "bench", series: [
-            { reps: 1, pct: 83,  weight: 83.0,  rpe: 5.0,  rest: 180 },
-            { reps: 1, pct: 89,  weight: 89.0,  rpe: 7.0,  rest: 180 },
-            { reps: 1, pct: 95,  weight: 95.0,  rpe: 8.5,  rest: 180 },
-            { reps: 1, pct: 100, weight: 100.0, rpe: 10.0, rest: 180 },
+            { reps: 1, pct: 83,  weight: null,  rpe: 5.0,  rest: 180 },
+            { reps: 1, pct: 89,  weight: null,  rpe: 7.0,  rest: 180 },
+            { reps: 1, pct: 95,  weight: null,  rpe: 8.5,  rest: 180 },
+            { reps: 1, pct: 100, weight: null, rpe: 10.0, rest: 180 },
           ]},
           { name: "Deadlift", liftType: "deadlift", series: [
-            { reps: 1, pct: 79,  weight: 158.0,  rpe: null, rest: 180 },
-            { reps: 1, pct: 86,  weight: 172.0,  rpe: 6.0,  rest: 180 },
-            { reps: 1, pct: 93,  weight: 186.0,  rpe: 8.0,  rest: 180 },
-            { reps: 1, pct: 100, weight: 200.0,  rpe: 10.0, rest: 180 },
+            { reps: 1, pct: 79,  weight: null,  rpe: null, rest: 180 },
+            { reps: 1, pct: 86,  weight: null,  rpe: 6.0,  rest: 180 },
+            { reps: 1, pct: 93,  weight: null,  rpe: 8.0,  rest: 180 },
+            { reps: 1, pct: 100, weight: null,  rpe: 10.0, rest: 180 },
           ]},
         ]},
 
