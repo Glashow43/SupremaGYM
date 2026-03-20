@@ -37,14 +37,6 @@ function renderProgress() {
     }, 0);
     var totalSets = s.exercises.reduce(function(a, e) { return a + e.sets.length; }, 0);
 
-    // Miniatures des exercices (max 4 affichées)
-    var thumbsHTML = s.exercises.slice(0, 4).map(function(e) {
-      return '<div style="flex-shrink:0;">' + getExThumb(e.name, 36) + '</div>';
-    }).join('');
-    var extra = s.exercises.length > 4
-      ? '<div style="width:36px;height:36px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text2);flex-shrink:0;">+' + (s.exercises.length - 4) + '</div>'
-      : '';
-
     return '<div class="hist-item" onclick="openSessDetail(' + idx + ')" style="cursor:pointer;">'
       + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">'
       + '<div style="flex:1;min-width:0;">'
@@ -52,9 +44,6 @@ function renderProgress() {
       + '<div class="hist-name">' + (s.context && s.context.sessionName ? s.context.sessionName : 'Séance libre') + '</div>'
       + '<div style="font-size:11px;color:var(--text2);margin-top:2px;">'
       + s.exercises.length + ' exercice' + (s.exercises.length !== 1 ? 's' : '') + ' · ' + totalSets + ' séries · ' + totalVol.toFixed(0) + ' kg'
-      + '</div>'
-      + '<div style="display:flex;gap:5px;margin-top:8px;align-items:center;">'
-      + thumbsHTML + extra
       + '</div>'
       + '</div>'
       + '<span style="font-size:18px;color:var(--text3);flex-shrink:0;">›</span>'
@@ -100,7 +89,7 @@ function openSessDetail(idx) {
 
     return '<div class="det-ex">'
       + '<div class="det-ex-name" style="display:flex;align-items:center;gap:10px;">'
-      + getExThumb(e.name, 44)
+      + getExThumb(e.name, 64)
       + '<div>'
       + '<div style="font-size:14px;font-weight:800;">' + e.name + '</div>'
       + '<div style="font-size:10px;color:var(--text2);margin-top:1px;">' + exReps + ' reps · max ' + exMax + ' kg</div>'
