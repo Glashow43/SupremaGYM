@@ -71,7 +71,7 @@ function renderProgList() {
 
   function progCard(p) {
     var locked = isPreset(p.id);
-    var border = locked ? '0.5px solid var(--blue)' : '0.5px solid var(--green)';
+    var border = locked ? '2px solid var(--blue)' : '2px solid var(--green)';
     return '<div class="prog-item" onclick="openProgDetail(' + p.id + ')" style="border:' + border + ';">'
       + '<div class="prog-icon" style="background:' + (locked ? 'rgba(59,130,246,0.15)' : 'rgba(34,197,94,0.15)') + ';">' + (locked ? '🔒' : '📋') + '</div>'
       + '<div class="prog-info">'
@@ -294,9 +294,21 @@ function openExEditor(pid, wi, sessIdx) {
     exs:    sess.exercises.map(function(ex) { return normEx(JSON.parse(JSON.stringify(ex))); }),
     locked: isPreset(pid)
   };
-  document.getElementById('ee-title').textContent = prog.name + ' · S' + (wi + 1) + '.' + (sessIdx + 1) + ' — ' + sess.name;
+  var titleEl = document.getElementById('ee-title');
+  titleEl.innerHTML = '<span style="opacity:0.6;font-size:13px;font-weight:600;">' + prog.name + ' · S' + (wi + 1) + '.' + (sessIdx + 1) + ' — </span>'
+    + (eeState.locked
+        ? '<span>' + sess.name + '</span>'
+        : '<span contenteditable="true" id="ee-sess-name" style="outline:none;border-bottom:2px solid var(--purple);padding-bottom:2px;cursor:text;" onblur="saveEESessName(' + wi + ',' + sessIdx + ',this.textContent.trim())" onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}">' + sess.name + '</span>');
   renderExEditor();
   document.getElementById('ex-editor').classList.add('open');
+}
+
+function saveEESessName(wi, sIdx, val) {
+  if (!val) return;
+  var prog = S.progs.find(function(p) { return p.id === eeState.pid; });
+  if (!prog || isPreset(prog.id)) return;
+  prog.weeks[wi].sessions[sIdx].name = val;
+  sv('programs', S.progs);
 }
 
 function closeExEditor() {
