@@ -12,6 +12,13 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <!-- App Styles -->
 <link rel="stylesheet" href="css/style.css">
+<!-- Thème appliqué avant le rendu pour éviter le flash -->
+<script>
+  (function() {
+    var t = localStorage.getItem('theme');
+    document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+  })();
+</script>
 </head>
 <body>
 
@@ -79,7 +86,6 @@
 <!-- ════════════════════════════════════════════════════ -->
 <div class="page active" id="page-home">
   <div class="pc">
-    <!-- Cartes 1RM -->
     <div class="rm-row">
       <div class="rm-card squat">
         <div class="rm-label">Squat</div>
@@ -97,20 +103,16 @@
         <div class="rm-unit">kg</div>
       </div>
     </div>
-    <!-- Total -->
     <div class="wcard" style="text-align:center;padding:16px;">
       <div class="home-total-label">Total powerlifting</div>
       <div class="home-total" id="home-total">— kg</div>
     </div>
-    <!-- Programme actif & dernière séance (injectés par renderDash) -->
     <div id="home-active-prog"></div>
     <div id="home-last-sess"></div>
-    <!-- Actions rapides -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
       <button class="btn g full" onclick="showPage('train',3)">🏋️ S'entraîner</button>
       <button class="btn b full" onclick="showPage('programs',2)">📋 Programmes</button>
     </div>
-    <!-- Séances récentes (injectées par renderDash) -->
     <div class="sh p" style="margin-top:16px;">Séances récentes</div>
     <div id="home-recent-sess"></div>
   </div>
@@ -137,7 +139,6 @@
 <!-- ── PAGE : PROGRAMMES ─────────────────────────────── -->
 <!-- ════════════════════════════════════════════════════ -->
 <div class="page" id="page-programs">
-  <!-- Sous-page : liste -->
   <div class="psp active" id="prog-list">
     <div class="pc">
       <div class="ptitle">📋 Mes Programmes</div>
@@ -149,7 +150,6 @@
       <div id="prog-list-content"></div>
     </div>
   </div>
-  <!-- Sous-page : détail programme -->
   <div class="psp" id="prog-detail">
     <div class="pc">
       <button class="back-btn" onclick="showProgList()">← Retour</button>
@@ -245,6 +245,14 @@
   <div class="pc">
     <div class="ptitle">⚙️ Réglages</div>
     <div class="settings-section">
+      <!-- Toggle thème -->
+      <div class="settings-row">
+        <div>
+          <div class="settings-row-label">🌙 Thème</div>
+          <div class="settings-row-sub">Sombre ou clair</div>
+        </div>
+        <button class="btn p sm" id="theme-toggle-btn" onclick="toggleTheme()">☀️ Thème clair</button>
+      </div>
       <div class="settings-row">
         <div>
           <div class="settings-row-label">📤 Exporter les données</div>
@@ -276,7 +284,6 @@
 <!-- ── MODALS ────────────────────────────────────────── -->
 <!-- ════════════════════════════════════════════════════ -->
 
-<!-- Modal : Créer un programme -->
 <div class="mo" id="modal-create-prog">
   <div class="mdl">
     <div class="mdl-title">Nouveau programme <button class="mclose" onclick="closeModal('modal-create-prog')">×</button></div>
@@ -289,7 +296,6 @@
   </div>
 </div>
 
-<!-- Modal : Éditer / Créer un exercice custom -->
 <div class="mo" id="modal-edit-ex">
   <div class="mdl">
     <div class="mdl-title">✏️ Exercice <button class="mclose" onclick="closeModal('modal-edit-ex')">×</button></div>
@@ -314,7 +320,6 @@
   </div>
 </div>
 
-<!-- Modal : Ajout rapide exercice en séance -->
 <div id="modal-quick-ex">
   <div class="mdl">
     <div class="mdl-title">Ajouter l'exercice <button class="mclose" onclick="document.getElementById('modal-quick-ex').classList.remove('open')">×</button></div>
@@ -375,6 +380,7 @@
 <script src="js/progress.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/pwa.js"></script>
+<script>initTheme();</script>
 
 </body>
 </html>
