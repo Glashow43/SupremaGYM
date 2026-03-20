@@ -32,14 +32,14 @@ const API_CAT_MAP = {
 
 // ── Exercices intégrés (lecture seule) ────────────────────
 const BUILTIN_EXERCISES = [
-  { name: 'Squat',                        lift: 'squat',    cat: 'Powerlifting' },
-  { name: 'Bench Press',                  lift: 'bench',    cat: 'Powerlifting' },
-  { name: 'Deadlift',                     lift: 'deadlift', cat: 'Powerlifting' },
-  { name: 'Squat Barre Haute',            lift: 'squat',    cat: 'Powerlifting' },
-  { name: 'Squat Tempo',                  lift: 'squat',    cat: 'Powerlifting' },
-  { name: 'Bench Pause 2ct',              lift: 'bench',    cat: 'Powerlifting' },
-  { name: 'Larsen Press',                 lift: 'bench',    cat: 'Powerlifting' },
-  { name: 'Soulevé de terre roumain',     lift: 'deadlift', cat: 'Powerlifting' },
+  { name: 'Squat',                        lift: 'squat',    cat: 'Powerlifting', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/Gnfo4FM.gif' },
+  { name: 'Bench Press',                  lift: 'bench',    cat: 'Powerlifting', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/EIeI8Vf.gif' },
+  { name: 'Deadlift',                     lift: 'deadlift', cat: 'Powerlifting', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/ila4NZS.gif' },
+  { name: 'Squat Barre Haute',            lift: 'squat',    cat: 'Powerlifting', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/Gnfo4FM.gif' },
+  { name: 'Squat Tempo',                  lift: 'squat',    cat: 'Powerlifting', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/Gnfo4FM.gif' },
+  { name: 'Bench Pause 2ct',              lift: 'bench',    cat: 'Powerlifting', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/EIeI8Vf.gif' },
+  { name: 'Larsen Press',                 lift: 'bench',    cat: 'Powerlifting', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/Elel9Vp.gif' },
+  { name: 'RDL (Haltères)',               lift: 'deadlift', cat: 'Powerlifting', image: 'https://raw.githubusercontent.com/Glashow43/SupremaGYM/main/images/exercises/rR0LJzx.gif' },
   { name: 'Leg Press',                    lift: '',         cat: 'Jambes'       },
   { name: 'Leg Curl',                     lift: '',         cat: 'Jambes'       },
   { name: 'Leg Extension',                lift: '',         cat: 'Jambes'       },
