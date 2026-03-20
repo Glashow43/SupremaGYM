@@ -433,6 +433,13 @@
 <script src="js/settings.js"></script>
 <script src="js/pwa.js"></script>
 <script>initTheme();</script>
+<script>
+  window.addEventListener('scroll', function() {
+    var btn = document.getElementById('scroll-top-btn');
+    var onEx = document.getElementById('page-exercises').classList.contains('active');
+    btn.style.display = (window.scrollY > 300 && onEx) ? 'flex' : 'none';
+  });
+</script>
 
 </body>
 </html>
