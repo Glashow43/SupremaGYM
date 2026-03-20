@@ -1,8 +1,32 @@
 // ══════════════════════════════════════════════════════════
-// js/settings.js — Page Réglages (export / import / reset)
+// js/settings.js — Page Réglages (export / import / reset / thème)
 // ══════════════════════════════════════════════════════════
 
-/** Rend les infos de la page réglages (stats utilisateur) */
+// ════════════════════════════════════════════════════════
+// THÈME
+// ════════════════════════════════════════════════════════
+
+function initTheme() {
+  var dark = localStorage.getItem('theme') !== 'light';
+  applyTheme(dark);
+}
+
+function applyTheme(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  localStorage.setItem('theme', dark ? 'dark' : 'light');
+  var btn = document.getElementById('theme-toggle-btn');
+  if (btn) btn.textContent = dark ? '☀️ Thème clair' : '🌙 Thème sombre';
+}
+
+function toggleTheme() {
+  var isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  applyTheme(!isDark);
+}
+
+// ════════════════════════════════════════════════════════
+// RÉGLAGES
+// ════════════════════════════════════════════════════════
+
 function renderSettings() {
   document.getElementById('settings-info').innerHTML = `
     <div class="wcard-title">Statistiques</div>
@@ -11,10 +35,6 @@ function renderSettings() {
   `;
 }
 
-/**
- * Exporte toutes les données (1RMs, séances, programmes, programme actif)
- * dans un fichier JSON horodaté.
- */
 function exportData() {
   const data = { oneRMs: S.rm, sessions: S.sessions, programs: S.progs, activeProgram: S.ap };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -25,10 +45,6 @@ function exportData() {
   notify('✅ Export OK !');
 }
 
-/**
- * Importe des données depuis un fichier JSON de sauvegarde.
- * @param {Event} e - événement onChange de l'input file
- */
 function importData(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -36,10 +52,10 @@ function importData(e) {
   reader.onload = ev => {
     try {
       const d = JSON.parse(ev.target.result);
-      if (d.sessions)                 S.sessions = d.sessions;
-      if (d.oneRMs)                   S.rm       = d.oneRMs;
-      if (d.programs)                 S.progs    = d.programs;
-      if (d.activeProgram !== undefined) S.ap    = d.activeProgram;
+      if (d.sessions)                    S.sessions = d.sessions;
+      if (d.oneRMs)                      S.rm       = d.oneRMs;
+      if (d.programs)                    S.progs    = d.programs;
+      if (d.activeProgram !== undefined) S.ap       = d.activeProgram;
       sv('sessions',      S.sessions);
       sv('oneRMs',        S.rm);
       sv('programs',      S.progs);
@@ -53,9 +69,6 @@ function importData(e) {
   reader.readAsText(file);
 }
 
-/**
- * Efface TOUTES les données locales et cloud (double confirmation).
- */
 function clearAllData() {
   if (!confirm('Effacer TOUTES les données ? Irréversible !')) return;
   if (!confirm('Vraiment tout effacer ?')) return;
