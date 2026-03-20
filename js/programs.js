@@ -22,13 +22,52 @@ function get1RMForLift(liftType) {
 }
 
 // ════════════════════════════════════════════════════════
+// RENOMMAGE INLINE
+// ════════════════════════════════════════════════════════
+
+// Renomme le programme
+function renameProg(pid) {
+  var p = S.progs.find(function(p) { return p.id === pid; });
+  if (!p || isPreset(pid)) return;
+  var val = prompt('Nouveau nom du programme :', p.name);
+  if (!val || !val.trim()) return;
+  p.name = val.trim();
+  sv('programs', S.progs);
+  renderProgList();
+  renderProgDetail();
+}
+
+// Renomme une semaine (son label affiché, ex: "Semaine 1" → "Semaine Force")
+function renameWeek(wi) {
+  var p = S.progs.find(function(p) { return p.id === dpid; });
+  if (!p || isPreset(p.id)) return;
+  var current = p.weeks[wi].label || ('Semaine ' + p.weeks[wi].weekNum);
+  var val = prompt('Nouveau nom de la semaine :', current);
+  if (!val || !val.trim()) return;
+  p.weeks[wi].label = val.trim();
+  sv('programs', S.progs);
+  renderProgDetail();
+}
+
+// Renomme une séance
+function renameSess(wi, sIdx) {
+  var p = S.progs.find(function(p) { return p.id === dpid; });
+  if (!p || isPreset(p.id)) return;
+  var val = prompt('Nouveau nom de la séance :', p.weeks[wi].sessions[sIdx].name);
+  if (!val || !val.trim()) return;
+  p.weeks[wi].sessions[sIdx].name = val.trim();
+  sv('programs', S.progs);
+  renderProgDetail();
+}
+
+// ════════════════════════════════════════════════════════
 // LISTE DES PROGRAMMES
 // ════════════════════════════════════════════════════════
 
 function renderProgList() {
-  var el       = document.getElementById('prog-list-content');
-  var presets  = S.progs.filter(function(p) { return isPreset(p.id); });
-  var customs  = S.progs.filter(function(p) { return !isPreset(p.id); });
+  var el      = document.getElementById('prog-list-content');
+  var presets = S.progs.filter(function(p) { return isPreset(p.id); });
+  var customs = S.progs.filter(function(p) { return !isPreset(p.id); });
 
   function progCard(p) {
     var locked = isPreset(p.id);
@@ -40,26 +79,24 @@ function renderProgList() {
       + '</div>'
       + (locked
         ? '<button class="btn b sm" onclick="event.stopPropagation();duplicateProgram(' + p.id + ')">📋 Copier</button>'
-        : '<button class="btn r sm" onclick="event.stopPropagation();deleteProgram(' + p.id + ')">🗑</button>')
+        : '<div style="display:flex;gap:6px;">'
+          + '<button class="btn p sm" onclick="event.stopPropagation();renameProg(' + p.id + ')">✏️</button>'
+          + '<button class="btn r sm" onclick="event.stopPropagation();deleteProgram(' + p.id + ')">🗑</button>'
+          + '</div>')
       + '</div>';
   }
 
   var html = '';
-
-  // ── Programmes personnalisés ──
   html += '<div class="sh p" style="margin-top:4px;">🎯 Mes Programmes Personnalisés</div>';
   if (!customs.length) {
     html += '<div style="font-size:12px;color:var(--text2);padding:8px 4px;">Aucun programme personnalisé — crée-en un ou copie un programme prédéfini.</div>';
   } else {
     html += customs.map(progCard).join('');
   }
-
-  // ── Programmes prédéfinis ──
   if (presets.length) {
     html += '<div class="sh p" style="margin-top:16px;">🏅 Programmes Prédéfinis</div>';
     html += presets.map(progCard).join('');
   }
-
   el.innerHTML = html || '<div class="empty"><div class="empty-icon">📋</div><p>Aucun programme</p></div>';
 }
 
@@ -80,20 +117,32 @@ function renderProgDetail() {
   if (!prog) return;
   var locked = isPreset(prog.id);
 
-  document.getElementById('detail-prog-name').textContent = prog.name + (locked ? ' 🔒' : '');
+  // Titre du programme avec bouton renommer si non verrouillé
+  var nameEl = document.getElementById('detail-prog-name');
+  if (locked) {
+    nameEl.textContent = prog.name + ' 🔒';
+  } else {
+    nameEl.innerHTML = prog.name
+      + ' <button onclick="renameProg(' + prog.id + ')" style="background:none;border:none;color:var(--purple);font-size:14px;cursor:pointer;vertical-align:middle;">✏️</button>';
+  }
 
   var addWeekBtn = document.querySelector('#prog-detail > .pc > button:last-child');
   if (addWeekBtn) addWeekBtn.style.display = locked ? 'none' : '';
 
   var el = document.getElementById('detail-weeks-content');
   el.innerHTML = prog.weeks.map(function(w, wi) {
+    var weekLabel = w.label || ('Semaine ' + w.weekNum);
+
     var sessHTML = w.sessions.map(function(sess, sIdx) {
       return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;margin-top:6px;">'
+        + '<div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;">'
         + '<div>'
         + '<div style="font-size:13px;font-weight:700;">' + sess.name + '</div>'
         + '<div style="font-size:11px;color:var(--text2);">' + sess.exercises.length + ' exercice' + (sess.exercises.length !== 1 ? 's' : '') + '</div>'
         + '</div>'
-        + '<div style="display:flex;gap:6px;">'
+        + (locked ? '' : '<button onclick="renameSess(' + wi + ',' + sIdx + ')" style="background:none;border:none;color:var(--purple);font-size:13px;cursor:pointer;flex-shrink:0;">✏️</button>')
+        + '</div>'
+        + '<div style="display:flex;gap:6px;flex-shrink:0;">'
         + (locked
           ? '<button class="btn b sm" onclick="openExEditor(' + dpid + ',' + wi + ',' + sIdx + ')">👁 Voir</button>'
           : '<button class="btn b sm" onclick="openExEditor(' + dpid + ',' + wi + ',' + sIdx + ')">✏️ Éditer</button>'
@@ -106,8 +155,9 @@ function renderProgDetail() {
       + '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;user-select:none;" onclick="toggleProgWeek(this)">'
       + '<div style="display:flex;align-items:center;gap:8px;">'
       + '<span style="font-size:14px;color:var(--text2);display:inline-block;transition:transform 0.2s;">›</span>'
-      + '<span style="font-size:13px;font-weight:800;color:var(--purple);">Semaine ' + w.weekNum + '</span>'
+      + '<span style="font-size:13px;font-weight:800;color:var(--purple);">' + weekLabel + '</span>'
       + '<span style="font-size:11px;color:var(--text2);">' + w.sessions.length + ' séance' + (w.sessions.length !== 1 ? 's' : '') + '</span>'
+      + (locked ? '' : '<button onclick="event.stopPropagation();renameWeek(' + wi + ')" style="background:none;border:none;color:var(--purple);font-size:13px;cursor:pointer;padding:0 4px;">✏️</button>')
       + '</div>'
       + (locked ? '' : '<button class="btn r sm" onclick="event.stopPropagation();deleteWeek(' + wi + ')">🗑 Supprimer</button>')
       + '</div>'
@@ -277,7 +327,7 @@ function renderExEditor() {
       : '';
 
     var rows = '';
-    for (var ri = 0; ri < ex.series.length; ri++) {  // ← ri au lieu de si
+    for (var ri = 0; ri < ex.series.length; ri++) {
       var s   = ex.series[ri];
       var dis = locked ? ' disabled style="opacity:0.6;"' : '';
       rows += '<div class="ee-set-row">'
