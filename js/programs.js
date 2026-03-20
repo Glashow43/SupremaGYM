@@ -249,7 +249,11 @@ function renderExEditor() {
       + '<div style="font-size:10px;color:' + icon.color + ';font-weight:600;">' + cat + '</div>'
       + '</div>'
       + '</div>'
+      + '<div style="display:flex;gap:4px;">'
+      + '<button class="btn out sm" onclick="moveExInEE(' + ei + ',-1)" style="padding:4px 8px;" ' + (ei === 0 ? 'disabled style="opacity:0.3;padding:4px 8px;"' : '') + '>↑</button>'
+      + '<button class="btn out sm" onclick="moveExInEE(' + ei + ',1)"  style="padding:4px 8px;" ' + (ei === eeState.exs.length - 1 ? 'disabled style="opacity:0.3;padding:4px 8px;"' : '') + '>↓</button>'
       + '<button class="btn r sm" onclick="removeExFromEE(' + ei + ')">✕</button>'
+      + '</div>'
       + '</div>'
       + '<div class="ee-hdr-labels">'
       + '<span class="ee-lbl">#</span>'
@@ -322,6 +326,15 @@ function _eeRowIndex(ei, si) {
 function addSetToEE(ei) {
   var last = eeState.exs[ei].series.slice(-1)[0] || {};
   eeState.exs[ei].series.push({ reps: last.reps || 5, pct: last.pct || null, weight: last.weight || null, rpe: last.rpe || null, rest: 180 });
+  renderExEditor();
+}
+
+function moveExInEE(ei, dir) {
+  var target = ei + dir;
+  if (target < 0 || target >= eeState.exs.length) return;
+  var tmp = eeState.exs[ei];
+  eeState.exs[ei] = eeState.exs[target];
+  eeState.exs[target] = tmp;
   renderExEditor();
 }
 
