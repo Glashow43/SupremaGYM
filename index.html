@@ -190,7 +190,6 @@
       <button class="btn r" onclick="clearSession()">✕ Annuler</button>
       <button class="btn g" onclick="saveSession()">✓ Terminer</button>
     </div>
-    </div>
   </div>
 </div>
 
@@ -223,10 +222,10 @@
         <div style="text-align:center;">
           <button class="btn g" onclick="save1RM()">💾 Sauvegarder comme 1RM</button>
         </div>
-        </div>
+      </div>
       <div id="calc-results"></div>
-    </div>
   </div>
+</div>
 
 <!-- ════════════════════════════════════════════════════ -->
 <!-- ── PAGE : HISTORIQUE ─────────────────────────────── -->
@@ -245,7 +244,6 @@
   <div class="pc">
     <div class="ptitle">⚙️ Réglages</div>
     <div class="settings-section">
-      <!-- Toggle thème -->
       <div class="settings-row">
         <div>
           <div class="settings-row-label">🌙 Thème</div>
@@ -363,6 +361,39 @@
     </div>
   </div>
   <div id="ee-body" style="flex:1;overflow-y:auto;padding:8px 0 20px;"></div>
+</div>
+
+<!-- ── DÉTAIL SÉANCE (plein écran) ───────────────────── -->
+<div class="sess-detail-overlay" id="sess-detail-overlay">
+  <div class="sess-detail-inner">
+    <div class="sess-detail-hdr">
+      <div>
+        <div class="sess-detail-name" id="sess-detail-name">Séance</div>
+        <div class="sess-detail-prog" id="sess-detail-prog"></div>
+        <div class="sess-detail-date" id="sess-detail-date"></div>
+      </div>
+      <button class="btn r sm" onclick="closeSessDetail()">← Retour</button>
+    </div>
+    <div class="sess-detail-body" id="sess-detail-body"></div>
+    <div class="sess-detail-recap">
+      <div class="det-recap-card">
+        <div class="det-recap-val" id="sess-detail-exs">—</div>
+        <div class="det-recap-lbl">Exercices</div>
+      </div>
+      <div class="det-recap-card">
+        <div class="det-recap-val" id="sess-detail-sets">—</div>
+        <div class="det-recap-lbl">Séries</div>
+      </div>
+      <div class="det-recap-card">
+        <div class="det-recap-val" id="sess-detail-reps">—</div>
+        <div class="det-recap-lbl">Reps totales</div>
+      </div>
+      <div class="det-recap-card">
+        <div class="det-recap-val" id="sess-detail-vol">—</div>
+        <div class="det-recap-lbl">Volume total</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ════════════════════════════════════════════════════ -->
