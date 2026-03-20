@@ -329,9 +329,11 @@ function renderExEditor() {
   var locked = eeState.locked;
   var html   = '';
 
-  // Le bouton + Exercice est masqué en mode lecture seule
-  var addExBtn = document.querySelector('.ex-editor-hdr .btn.g');
+  // Bouton + Exercice et Sauvegarder masqués en mode lecture seule
+  var addExBtn  = document.querySelector('.ex-editor-hdr .btn.g');
+  var saveBtn   = document.getElementById('ee-save-btn');
   if (addExBtn) addExBtn.style.display = locked ? 'none' : '';
+  if (saveBtn)  saveBtn.style.display  = locked ? 'none' : '';
 
   for (var ei = 0; ei < eeState.exs.length; ei++) {
     var ex    = eeState.exs[ei];
