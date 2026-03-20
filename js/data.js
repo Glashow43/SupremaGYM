@@ -129,7 +129,7 @@ function getDefaultProgram() {
             { reps: 5, pct: 82, weight: 151.7,  rpe: 8.0,  rest: 180 },
             { reps: 5, pct: 72, weight: 133.2,  rpe: null, rest: 180 },
           ]},
-          { name: "Bench Pause 2CT", liftType: "bench", series: [
+          { name: "Bench Pause 2ct", liftType: "bench", series: [
             { reps: 3, pct: 74, weight: 74.0, rpe: null, rest: 180 },
             { reps: 3, pct: 82, weight: 82.0, rpe: 6.0,  rest: 180 },
             { reps: 3, pct: 86, weight: 86.0, rpe: 8.0,  rest: 180 },
@@ -180,7 +180,7 @@ function getDefaultProgram() {
             { reps: 3, pct: 75, weight: 138.75, rpe: null, rest: 180 },
             { reps: 3, pct: 75, weight: 138.75, rpe: null, rest: 180 },
           ]},
-          { name: "Bench Pause 2CT", liftType: "bench", series: [
+          { name: "Bench Pause 2ct", liftType: "bench", series: [
             { reps: 2, pct: 70, weight: 70.0, rpe: null, rest: 180 },
             { reps: 2, pct: 78, weight: 78.0, rpe: null, rest: 180 },
             { reps: 2, pct: 83, weight: 83.0, rpe: null, rest: 180 },
@@ -211,11 +211,6 @@ function getDefaultProgram() {
             { reps: 1, pct: 89, weight: 173.55, rpe: 7.0,  rest: 180 },
             { reps: 1, pct: 89, weight: 173.55, rpe: 7.0,  rest: 180 },
           ]},
-          { name: "Deadlift Halte", liftType: "deadlift", series: [
-            { reps: 3, pct: 70, weight: 136.5, rpe: null, rest: 180 },
-            { reps: 3, pct: 70, weight: 136.5,  rpe: null,  rest: 180 },
-            { reps: 3, pct: 70, weight: 136.5, rpe: null,  rest: 180 },
-          ]},
         ]},
 
       ]},
@@ -234,7 +229,7 @@ function getDefaultProgram() {
             { reps: 5, pct: 82, weight: 149.65, rpe: 8.0,  rest: 180 },
             { reps: 5, pct: 82, weight: 149.65, rpe: 8.0,  rest: 180 },
           ]},
-          { name: "Bench Pause 2CT", liftType: "bench", series: [
+          { name: "Bench Pause 2ct", liftType: "bench", series: [
             { reps: 3, pct: 74, weight: 74.0, rpe: null, rest: 180 },
             { reps: 3, pct: 82, weight: 82.0, rpe: 6.0,  rest: 180 },
             { reps: 3, pct: 86, weight: 86.0, rpe: 8.0,  rest: 180 },
@@ -273,7 +268,7 @@ function getDefaultProgram() {
             { reps: 3, pct: 80, weight: 146.0, rpe: null, rest: 180 },
             { reps: 3, pct: 80, weight: 146.0, rpe: null, rest: 180 },
           ]},
-          { name: "Bench Pause 2CT", liftType: "bench", series: [
+          { name: "Bench Pause 2ct", liftType: "bench", series: [
             { reps: 2, pct: 70, weight: 66.5,  rpe: null, rest: 180 },
             { reps: 2, pct: 78, weight: 74.1,  rpe: null, rest: 180 },
             { reps: 2, pct: 83, weight: 78.85, rpe: null, rest: 180 },
@@ -320,7 +315,7 @@ function getDefaultProgram() {
             { reps: 3, pct: 86, weight: 156.95, rpe: 8.0,  rest: 180 },
             { reps: 3, pct: 86, weight: 156.95, rpe: 8.0,  rest: 180 },
           ]},
-          { name: "Bench Pause 2CT", liftType: "bench", series: [
+          { name: "Bench Pause 2ct", liftType: "bench", series: [
             { reps: 3, pct: 74, weight: 74.0, rpe: null, rest: 180 },
             { reps: 3, pct: 82, weight: 82.0, rpe: 6.0,  rest: 180 },
             { reps: 3, pct: 86, weight: 86.0, rpe: 8.0,  rest: 180 },
@@ -361,7 +356,7 @@ function getDefaultProgram() {
             { reps: 3, pct: 86, weight: 156.95, rpe: 8.0,  rest: 180 },
             { reps: 3, pct: 86, weight: 156.95, rpe: 8.0,  rest: 180 },
           ]},
-          { name: "Bench Pause 2CT", liftType: "bench", series: [
+          { name: "Bench Pause 2ct", liftType: "bench", series: [
             { reps: 3, pct: 74, weight: 70.3,  rpe: null, rest: 180 },
             { reps: 3, pct: 82, weight: 77.9,  rpe: 6.0,  rest: 180 },
             { reps: 3, pct: 86, weight: 81.7,  rpe: 8.0,  rest: 180 },
@@ -398,7 +393,7 @@ function getDefaultProgram() {
             { reps: 3, pct: 80, weight: 146.0,  rpe: 7.0,  rest: 180 },
             { reps: 3, pct: 80, weight: 146.0,  rpe: 7.0,  rest: 180 },
           ]},
-          { name: "Bench Pause 2CT", liftType: "bench", series: [
+          { name: "Bench Pause 2ct", liftType: "bench", series: [
             { reps: 3, pct: 70, weight: 66.5,  rpe: null, rest: 180 },
             { reps: 3, pct: 76, weight: 72.2,  rpe: 5.0,  rest: 180 },
             { reps: 3, pct: 80, weight: 76.0,  rpe: 7.0,  rest: 180 },
