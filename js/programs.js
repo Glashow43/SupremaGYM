@@ -303,6 +303,10 @@ function openExEditor(pid, wi, sessIdx) {
   document.getElementById('ex-editor').classList.add('open');
 }
 
+function closeExEditor() {
+  document.getElementById('ex-editor').classList.remove('open');
+}
+
 function saveEESessName(wi, sIdx, val) {
   if (!val) return;
   var prog = S.progs.find(function(p) { return p.id === eeState.pid; });
@@ -325,8 +329,9 @@ function renderExEditor() {
   var locked = eeState.locked;
   var html   = '';
 
-  var editorBtns = document.querySelector('.ex-editor-hdr div');
-  if (editorBtns) editorBtns.style.display = locked ? 'none' : '';
+  // Le bouton + Exercice est masqué en mode lecture seule
+  var addExBtn = document.querySelector('.ex-editor-hdr .btn.g');
+  if (addExBtn) addExBtn.style.display = locked ? 'none' : '';
 
   for (var ei = 0; ei < eeState.exs.length; ei++) {
     var ex    = eeState.exs[ei];
