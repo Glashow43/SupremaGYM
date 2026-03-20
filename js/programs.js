@@ -65,23 +65,22 @@ function renderProgDetail() {
 
   document.getElementById('detail-prog-name').textContent = prog.name + (locked ? ' 🔒' : '');
 
-  // Masquer/afficher le bouton "Ajouter une semaine"
   var addWeekBtn = document.querySelector('#prog-detail > .pc > button:last-child');
   if (addWeekBtn) addWeekBtn.style.display = locked ? 'none' : '';
 
   var el = document.getElementById('detail-weeks-content');
   el.innerHTML = prog.weeks.map(function(w, wi) {
-    var sessHTML = w.sessions.map(function(s, si) {
+    var sessHTML = w.sessions.map(function(sess, sIdx) {
       return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;margin-top:6px;">'
         + '<div>'
-        + '<div style="font-size:13px;font-weight:700;">' + s.name + '</div>'
-        + '<div style="font-size:11px;color:var(--text2);">' + s.exercises.length + ' exercice' + (s.exercises.length !== 1 ? 's' : '') + '</div>'
+        + '<div style="font-size:13px;font-weight:700;">' + sess.name + '</div>'
+        + '<div style="font-size:11px;color:var(--text2);">' + sess.exercises.length + ' exercice' + (sess.exercises.length !== 1 ? 's' : '') + '</div>'
         + '</div>'
         + '<div style="display:flex;gap:6px;">'
         + (locked
-          ? '<button class="btn b sm" onclick="openExEditor(' + dpid + ',' + wi + ',' + si + ')">👁 Voir</button>'
-          : '<button class="btn b sm" onclick="openExEditor(' + dpid + ',' + wi + ',' + si + ')">✏️ Éditer</button>'
-            + '<button class="btn r sm" onclick="deleteSess(' + wi + ',' + si + ')">🗑</button>')
+          ? '<button class="btn b sm" onclick="openExEditor(' + dpid + ',' + wi + ',' + sIdx + ')">👁 Voir</button>'
+          : '<button class="btn b sm" onclick="openExEditor(' + dpid + ',' + wi + ',' + sIdx + ')">✏️ Éditer</button>'
+            + '<button class="btn r sm" onclick="deleteSess(' + wi + ',' + sIdx + ')">🗑</button>')
         + '</div>'
         + '</div>';
     }).join('');
@@ -102,7 +101,6 @@ function renderProgDetail() {
       + '</div>';
   }).join('');
 
-  // Bannière "programme officiel" si verrouillé
   if (locked) {
     el.insertAdjacentHTML('afterbegin',
       '<div style="background:rgba(139,108,247,0.12);border:1px solid var(--purple);border-radius:var(--r);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;">'
@@ -117,7 +115,7 @@ function renderProgDetail() {
 function duplicateProgram(pid) {
   var orig = S.progs.find(function(p) { return p.id === pid; });
   if (!orig) return;
-  var copy = JSON.parse(JSON.stringify(orig));
+  var copy  = JSON.parse(JSON.stringify(orig));
   copy.id   = Date.now();
   copy.name = orig.name + ' (copie)';
   S.progs.push(copy);
@@ -137,8 +135,8 @@ function createProgram() {
   var weeks = [];
   for (var wi = 0; wi < nw; wi++) {
     var sessions = [];
-    for (var si = 0; si < ns; si++) {
-      sessions.push({ id: Date.now() + wi * 100 + si, name: 'Séance ' + (si + 1), exercises: [] });
+    for (var sIdx = 0; sIdx < ns; sIdx++) {
+      sessions.push({ id: Date.now() + wi * 100 + sIdx, name: 'Séance ' + (sIdx + 1), exercises: [] });
     }
     weeks.push({ weekNum: wi + 1, sessions: sessions });
   }
@@ -185,12 +183,12 @@ function deleteWeek(wi) {
   renderProgDetail();
 }
 
-function deleteSess(wi, si) {
+function deleteSess(wi, sIdx) {
   var p = S.progs.find(function(p) { return p.id === dpid; });
   if (!p || isPreset(p.id)) return;
-  var sessName = p.weeks[wi].sessions[si].name;
+  var sessName = p.weeks[wi].sessions[sIdx].name;
   if (!confirm('Supprimer "' + sessName + '" ?')) return;
-  p.weeks[wi].sessions.splice(si, 1);
+  p.weeks[wi].sessions.splice(sIdx, 1);
   sv('programs', S.progs);
   renderProgDetail();
 }
@@ -217,18 +215,18 @@ function normEx(ex) {
   return ex;
 }
 
-function openExEditor(pid, wi, si) {
+function openExEditor(pid, wi, sessIdx) {
   var prog = S.progs.find(function(p) { return p.id === pid; });
   if (!prog) return;
-  var sess = prog.weeks[wi].sessions[si];
+  var sess = prog.weeks[wi].sessions[sessIdx];
   eeState = {
     pid:    pid,
     wi:     wi,
-    si:     si,
+    si:     sessIdx,
     exs:    sess.exercises.map(function(ex) { return normEx(JSON.parse(JSON.stringify(ex))); }),
     locked: isPreset(pid)
   };
-  document.getElementById('ee-title').textContent = prog.name + ' · S' + (wi + 1) + '.' + (si + 1) + ' — ' + sess.name;
+  document.getElementById('ee-title').textContent = prog.name + ' · S' + (wi + 1) + '.' + (sessIdx + 1) + ' — ' + sess.name;
   renderExEditor();
   document.getElementById('ex-editor').classList.add('open');
 }
@@ -240,14 +238,13 @@ function closeExEditor() {
 function renderExEditor() {
   var el = document.getElementById('ee-body');
   if (!eeState.exs.length) {
-    el.innerHTML = '<div class="empty" style="margin-top:20px;"><p>Aucun exercice</p></div>';
+    el.innerHTML = '<div class="empty" style="margin-top:20px;"><p>Aucun exercice<br>Ajouter avec le bouton + Exercice</p></div>';
     return;
   }
   var allEx  = getAllExercises();
   var locked = eeState.locked;
   var html   = '';
 
-  // Masquer les boutons d'action dans le header de l'éditeur si verrouillé
   var editorBtns = document.querySelector('.ex-editor-hdr div');
   if (editorBtns) editorBtns.style.display = locked ? 'none' : '';
 
@@ -258,22 +255,21 @@ function renderExEditor() {
     var icon  = CAT_ICONS[cat] || CAT_ICONS['Personnalisé'];
     var liftForCat = getLiftForCat(cat);
     var rm         = get1RMForLift(liftForCat);
-    var hasRm      = rm !== null;
-    var rmBadge    = hasRm
+    var rmBadge    = rm
       ? '<span style="font-size:10px;background:rgba(139,108,247,0.2);color:var(--purple2);border-radius:6px;padding:2px 7px;font-weight:700;margin-left:6px;">1RM ' + rm + ' kg</span>'
       : '';
 
     var rows = '';
-    for (var si = 0; si < ex.series.length; si++) {
-      var s = ex.series[si];
+    for (var ri = 0; ri < ex.series.length; ri++) {  // ← ri au lieu de si
+      var s   = ex.series[ri];
       var dis = locked ? ' disabled style="opacity:0.6;"' : '';
       rows += '<div class="ee-set-row">'
-        + '<span class="ee-set-num">' + (si + 1) + '</span>'
-        + '<input class="ee-inp" type="number" value="' + (s.reps   || '') + '" placeholder="5"' + dis + (locked ? '' : ' oninput="eeUpdate(' + ei + ',' + si + ',\'reps\',this.value)"') + '>'
-        + '<input class="ee-inp" type="number" value="' + (s.pct    || '') + '" placeholder="—"' + dis + (locked ? '' : ' oninput="eeUpdatePct(' + ei + ',' + si + ',this.value,\'' + cat + '\')"') + ' step="0.5">'
-        + '<input class="ee-inp" type="number" value="' + (s.weight !== null && s.weight !== undefined ? s.weight : '') + '" placeholder="—"' + dis + (locked ? '' : ' oninput="eeUpdateWeight(' + ei + ',' + si + ',this.value,\'' + cat + '\')"') + ' step="0.5">'
-        + '<input class="ee-inp" type="number" value="' + (s.rpe    || '') + '" placeholder="—"' + dis + (locked ? '' : ' oninput="eeUpdate(' + ei + ',' + si + ',\'rpe\',this.value)"') + '>'
-        + (locked ? '<span></span>' : '<button onclick="removeSetFromEE(' + ei + ',' + si + ')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;">✕</button>')
+        + '<span class="ee-set-num">' + (ri + 1) + '</span>'
+        + '<input class="ee-inp" type="number" value="' + (s.reps || '') + '" placeholder="5"' + dis + (locked ? '' : ' oninput="eeUpdate(' + ei + ',' + ri + ',\'reps\',this.value)"') + '>'
+        + '<input class="ee-inp" type="number" value="' + (s.pct  || '') + '" placeholder="—"' + dis + (locked ? '' : ' oninput="eeUpdatePct(' + ei + ',' + ri + ',this.value,\'' + cat + '\')"') + ' step="0.5">'
+        + '<input class="ee-inp" type="number" value="' + (s.weight !== null && s.weight !== undefined ? s.weight : '') + '" placeholder="—"' + dis + (locked ? '' : ' oninput="eeUpdateWeight(' + ei + ',' + ri + ',this.value,\'' + cat + '\')"') + ' step="0.5">'
+        + '<input class="ee-inp" type="number" value="' + (s.rpe  || '') + '" placeholder="—"' + dis + (locked ? '' : ' oninput="eeUpdate(' + ei + ',' + ri + ',\'rpe\',this.value)"') + '>'
+        + (locked ? '<span></span>' : '<button onclick="removeSetFromEE(' + ei + ',' + ri + ')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;">✕</button>')
         + '</div>';
     }
 
@@ -310,43 +306,43 @@ function renderExEditor() {
   el.innerHTML = html;
 }
 
-function eeUpdate(ei, si, key, val) {
+function eeUpdate(ei, ri, key, val) {
   if (eeState.locked) return;
-  eeState.exs[ei].series[si][key] = val === '' ? null : parseFloat(val) || parseInt(val) || val;
+  eeState.exs[ei].series[ri][key] = val === '' ? null : parseFloat(val) || parseInt(val) || val;
 }
 
-function eeUpdatePct(ei, si, val, cat) {
+function eeUpdatePct(ei, ri, val, cat) {
   if (eeState.locked) return;
   var pct = val === '' ? null : parseFloat(val);
-  eeState.exs[ei].series[si].pct = pct;
+  eeState.exs[ei].series[ri].pct = pct;
   var rm = get1RMForLift(getLiftForCat(cat));
   if (rm && pct) {
     var computed = Math.round((rm * pct / 100) * 4) / 4;
-    eeState.exs[ei].series[si].weight = computed;
+    eeState.exs[ei].series[ri].weight = computed;
     var rows = document.querySelectorAll('.ee-set-row');
-    var idx  = _eeRowIndex(ei, si);
+    var idx  = _eeRowIndex(ei, ri);
     if (rows[idx]) { var w = rows[idx].querySelectorAll('.ee-inp')[2]; if (w) w.value = computed; }
   }
 }
 
-function eeUpdateWeight(ei, si, val, cat) {
+function eeUpdateWeight(ei, ri, val, cat) {
   if (eeState.locked) return;
   var weight = val === '' ? null : parseFloat(val);
-  eeState.exs[ei].series[si].weight = weight;
+  eeState.exs[ei].series[ri].weight = weight;
   var rm = get1RMForLift(getLiftForCat(cat));
   if (rm && weight) {
     var computed = Math.round((weight / rm * 100) * 10) / 10;
-    eeState.exs[ei].series[si].pct = computed;
+    eeState.exs[ei].series[ri].pct = computed;
     var rows = document.querySelectorAll('.ee-set-row');
-    var idx  = _eeRowIndex(ei, si);
+    var idx  = _eeRowIndex(ei, ri);
     if (rows[idx]) { var p = rows[idx].querySelectorAll('.ee-inp')[1]; if (p) p.value = computed; }
   }
 }
 
-function _eeRowIndex(ei, si) {
+function _eeRowIndex(ei, ri) {
   var idx = 0;
   for (var i = 0; i < ei; i++) idx += eeState.exs[i].series.length;
-  return idx + si;
+  return idx + ri;
 }
 
 function addSetToEE(ei) {
@@ -366,7 +362,7 @@ function moveExInEE(ei, dir) {
   renderExEditor();
 }
 
-function removeSetFromEE(ei, si) { if (eeState.locked) return; eeState.exs[ei].series.splice(si, 1); renderExEditor(); }
+function removeSetFromEE(ei, ri) { if (eeState.locked) return; eeState.exs[ei].series.splice(ri, 1); renderExEditor(); }
 function removeExFromEE(ei)       { if (eeState.locked) return; eeState.exs.splice(ei, 1);            renderExEditor(); }
 
 function saveExEditor() {
