@@ -594,3 +594,40 @@ body {
 .settings-row:last-child { border-bottom: none; }
 .settings-row-label { font-size: 14px; font-weight: 600; }
 .settings-row-sub   { font-size: 11px; color: var(--text2); margin-top: 1px; }
+
+/* ══════════════════════════════════════════════════════
+   DÉTAIL SÉANCE (plein écran)
+   ══════════════════════════════════════════════════════ */
+.sess-detail-overlay {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 600;
+  display: none; flex-direction: column;
+  overflow-y: auto;
+}
+.sess-detail-overlay.open { display: flex; }
+.sess-detail-inner  { max-width: 680px; margin: 0 auto; padding: 14px 13px 40px; width: 100%; }
+
+.sess-detail-hdr {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  background: var(--grad); border-radius: var(--r);
+  padding: 16px; color: #fff; margin-bottom: 14px;
+}
+.sess-detail-name { font-size: 18px; font-weight: 800; }
+.sess-detail-prog { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+.sess-detail-date { font-size: 11px; opacity: 0.7; margin-top: 4px; }
+
+.det-ex           { background: var(--surface); border-radius: var(--r); margin-bottom: 12px; overflow: hidden; box-shadow: var(--sh); }
+.det-ex-name      { font-size: 14px; font-weight: 800; padding: 12px 14px 8px; border-bottom: 1px solid var(--border); }
+.det-set-hdr      { display: grid; grid-template-columns: 32px 1fr 1fr 1fr; gap: 6px; padding: 6px 14px; background: var(--surface2); font-size: 10px; font-weight: 700; color: var(--text2); text-transform: uppercase; text-align: center; }
+.det-set-row      { display: grid; grid-template-columns: 32px 1fr 1fr 1fr; gap: 6px; padding: 9px 14px; border-bottom: 1px solid var(--border); align-items: center; }
+.det-set-row:last-child { border-bottom: none; }
+.det-set-num      { font-size: 12px; font-weight: 700; color: var(--text2); text-align: center; }
+.det-set-val      { font-size: 14px; font-weight: 700; text-align: center; }
+.det-set-vol      { font-size: 13px; font-weight: 600; color: var(--purple); text-align: center; }
+.det-ex-total     { font-size: 11px; color: var(--text2); font-weight: 600; padding: 8px 14px; text-align: right; background: var(--surface2); }
+
+.sess-detail-recap  { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 16px; }
+.det-recap-card     { background: var(--surface); border-radius: var(--r); padding: 14px 8px; text-align: center; box-shadow: var(--sh); }
+.det-recap-val      { font-size: 20px; font-weight: 900; color: var(--purple); }
+.det-recap-lbl      { font-size: 10px; color: var(--text2); font-weight: 600; text-transform: uppercase; margin-top: 4px; }
