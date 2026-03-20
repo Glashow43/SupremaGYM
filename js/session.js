@@ -130,11 +130,16 @@ function startSess(pid, wi, si) {
       name:     ex.name,
       liftType: ex.liftType || ex.lift || '',
       sets:     (ex.series || [{ reps: 5, weight: null }]).map(function(s) {
+        // Calcul auto du poids depuis le % et le 1RM si weight est null
+        var w = s.weight;
+        if (!w && s.pct && ex.liftType && S.rm[ex.liftType]) {
+          w = Math.round((S.rm[ex.liftType] * s.pct / 100) * 4) / 4;
+        }
         return {
-          reps:   s.reps   || 5,
-          pct:    s.pct    || null,
-          weight: s.weight ? String(s.weight) : '',
-          rpe:    s.rpe    || null,
+          reps:   s.reps || 5,
+          pct:    s.pct  || null,
+          weight: w ? String(w) : '',
+          rpe:    s.rpe  || null,
           done:   false
         };
       })
