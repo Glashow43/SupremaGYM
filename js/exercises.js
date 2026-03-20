@@ -3,6 +3,85 @@
 // ══════════════════════════════════════════════════════════
 
 // ════════════════════════════════════════════════════════
+// SYNONYMES DE RECHERCHE (FR → EN et EN → FR)
+// ════════════════════════════════════════════════════════
+const SEARCH_SYNONYMS = {
+  // Équipement
+  'haltère':    'dumbbell',
+  'haltères':   'dumbbell',
+  'barre':      'barbell',
+  'poulie':     'cable',
+  'élastique':  'band',
+  'kettlebell': 'kettlebell',
+  'poids':      'weight',
+  'machine':    'machine',
+  'corde':      'rope',
+  // Mouvements
+  'rowing':     'row',
+  'tirage':     'pull',
+  'développé':  'press',
+  'curl':       'curl',
+  'squat':      'squat',
+  'fente':      'lunge',
+  'traction':   'pull-up',
+  'pompe':      'push-up',
+  'gainage':    'plank',
+  'crunch':     'crunch',
+  'extension':  'extension',
+  'élévation':  'raise',
+  'écarté':     'fly',
+  'soulevé':    'deadlift',
+  'saut':       'jump',
+  // Positions
+  'incliné':    'incline',
+  'décliné':    'decline',
+  'assis':      'seated',
+  'debout':     'standing',
+  'couché':     'lying',
+  'penché':     'bent-over',
+  'unilatéral': 'single',
+  'inversé':    'reverse',
+  'serré':      'close',
+  'large':      'wide',
+  // Muscles
+  'pectoraux':  'chest',
+  'dos':        'back',
+  'épaule':     'shoulder',
+  'biceps':     'bicep',
+  'triceps':    'tricep',
+  'jambe':      'leg',
+  'fessier':    'glute',
+  'mollet':     'calf',
+  'abdominaux': 'abs',
+  'trapèze':    'trap',
+  'dorsal':     'lat',
+};
+
+// Étend une query avec ses synonymes
+function expandQuery(q) {
+  if (!q) return [];
+  var terms = [q];
+  var lower = q.toLowerCase();
+  // FR → EN
+  if (SEARCH_SYNONYMS[lower]) terms.push(SEARCH_SYNONYMS[lower]);
+  // EN → FR (recherche inverse)
+  Object.keys(SEARCH_SYNONYMS).forEach(function(fr) {
+    if (SEARCH_SYNONYMS[fr].toLowerCase() === lower) terms.push(fr);
+  });
+  return terms;
+}
+
+// Filtre les exercices en tenant compte des synonymes
+function filterExercises(exs, q) {
+  if (!q) return exs;
+  var terms = expandQuery(q.toLowerCase());
+  return exs.filter(function(e) {
+    var name = e.name.toLowerCase();
+    return terms.some(function(t) { return name.includes(t); });
+  });
+}
+
+// ════════════════════════════════════════════════════════
 // EXERCISE PICKER (bottom sheet universel)
 // ════════════════════════════════════════════════════════
 
@@ -25,7 +104,7 @@ function closeExPicker(e) {
 
 function renderExPicker() {
   var q    = (document.getElementById('ex-picker-search').value || '').toLowerCase();
-  var cats = ['Tous','Powerlifting','Jambes','Pectoraux','Dos','Épaules','Bras','Abdominaux','Personnalisé'];
+  var cats = ['Tous','Jambes','Pectoraux','Dos','Épaules','Bras','Abdominaux','Personnalisé'];
 
   document.getElementById('ex-picker-cats').innerHTML = cats.map(function(c) {
     var ic    = CAT_ICONS[c] || {};
@@ -35,7 +114,7 @@ function renderExPicker() {
 
   var exs = getAllExercises();
   if (pickerCat !== 'Tous') exs = exs.filter(function(e) { return pickerCat === 'Personnalisé' ? e.custom : e.cat === pickerCat; });
-  if (q) exs = exs.filter(function(e) { return e.name.toLowerCase().includes(q); });
+  exs = filterExercises(exs, q);
   _pickerExs = exs;
 
   var listEl = document.getElementById('ex-picker-list');
@@ -88,7 +167,7 @@ function renderExPage() {
   if (!listEl || !catsEl) return;
 
   var q    = (document.getElementById('expage-search') ? document.getElementById('expage-search').value : '').toLowerCase();
-  var cats = ['Tous','Powerlifting','Jambes','Pectoraux','Dos','Épaules','Bras','Abdominaux','Personnalisé'];
+  var cats = ['Tous','Jambes','Pectoraux','Dos','Épaules','Bras','Abdominaux','Personnalisé'];
 
   catsEl.innerHTML = cats.map(function(c) {
     var ic    = CAT_ICONS[c] || {};
@@ -98,7 +177,7 @@ function renderExPage() {
 
   var exs = getAllExercises();
   if (exPageCat !== 'Tous') exs = exs.filter(function(e) { return exPageCat === 'Personnalisé' ? e.custom : e.cat === exPageCat; });
-  if (q) exs = exs.filter(function(e) { return e.name.toLowerCase().includes(q); });
+  exs = filterExercises(exs, q);
   _exPageList = exs;
 
   if (!exs.length) {
@@ -106,7 +185,7 @@ function renderExPage() {
     return;
   }
 
-  var CAT_ORDER = ['Powerlifting','Jambes','Pectoraux','Dos','Épaules','Bras','Abdominaux','Personnalisé'];
+  var CAT_ORDER = ['Jambes','Pectoraux','Dos','Épaules','Bras','Abdominaux','Personnalisé'];
   var groups    = {};
   exs.forEach(function(e, i) {
     var c = e.cat || 'Personnalisé';
@@ -127,8 +206,8 @@ function renderExPage() {
       var w = e.defaultWeight || 0;
       var d = e.desc || '';
       var thumb = e.image
-        ? '<div class="exrow-thumb" style="padding:0;overflow:hidden;"><img src="' + e.image + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:9px;" onerror="this.remove()"></div>'
-        : '<div class="exrow-thumb" style="background:' + ic.bg + ';color:' + ic.color + ';">' + ic.emoji + '</div>';
+        ? '<div class="exrow-thumb" style="width:64px;height:64px;padding:0;overflow:hidden;"><img src="' + e.image + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:9px;" onerror="this.remove()"></div>'
+        : '<div class="exrow-thumb" style="width:64px;height:64px;background:' + ic.bg + ';color:' + ic.color + ';">' + ic.emoji + '</div>';
       out += '<div class="exrow">'
         + thumb
         + '<div class="exrow-body">'
@@ -137,8 +216,8 @@ function renderExPage() {
         + '<div class="exrow-weight"><strong>Poids par défaut:</strong> ' + w + ' kg</div>'
         + '</div>'
         + '<div class="exrow-actions">'
-        + '<button class="exbtn-edit" data-idx="' + i + '">✏️ Modifier</button>'
-        + (e.custom ? '<button class="exbtn-del" data-idx="' + i + '">🗑️ Supprimer</button>' : '')
+        + '<button class="exbtn-edit" data-idx="' + i + '">✏️</button>'
+        + (e.custom ? '<button class="exbtn-del" data-idx="' + i + '">🗑️</button>' : '')
         + '</div>'
         + '</div>';
     }
@@ -180,7 +259,6 @@ function openEditEx(e) {
   openModal('modal-edit-ex');
 }
 
-/** Affiche la prévisualisation de l'image dans le modal */
 function renderImagePreview(url) {
   var prev = document.getElementById('edit-ex-image-preview');
   if (!prev) return;
