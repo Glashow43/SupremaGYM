@@ -2,34 +2,64 @@
 // js/progress.js — Page Historique / Progression
 // ══════════════════════════════════════════════════════════
 
+// Génère la miniature d'un exercice (image ou icône emoji)
+function getExThumb(name, size) {
+  size = size || 40;
+  var allEx = getAllExercises();
+  var found = allEx.find(function(e) { return e.name.toLowerCase() === name.toLowerCase(); });
+  var cat   = (found && found.cat) || 'Personnalisé';
+  var icon  = CAT_ICONS[cat] || CAT_ICONS['Personnalisé'];
+  if (found && found.image) {
+    return '<div style="width:' + size + 'px;height:' + size + 'px;border-radius:8px;overflow:hidden;flex-shrink:0;">'
+      + '<img src="' + found.image + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentNode.innerHTML=\'<div style=\\\'width:' + size + 'px;height:' + size + 'px;border-radius:8px;background:' + icon.bg + ';display:flex;align-items:center;justify-content:center;font-size:' + Math.round(size * 0.45) + 'px;\\\'>' + icon.emoji + '</div>\'">'
+      + '</div>';
+  }
+  return '<div style="width:' + size + 'px;height:' + size + 'px;border-radius:8px;background:' + icon.bg + ';display:flex;align-items:center;justify-content:center;font-size:' + Math.round(size * 0.45) + 'px;flex-shrink:0;">' + icon.emoji + '</div>';
+}
+
+// ════════════════════════════════════════════════════════
+// LISTE HISTORIQUE
+// ════════════════════════════════════════════════════════
+
 function renderProgress() {
-  const el = document.getElementById('progress-content');
+  var el = document.getElementById('progress-content');
   if (!S.sessions.length) {
     el.innerHTML = '<div class="empty"><div class="empty-icon">📈</div><p>Aucune séance enregistrée</p></div>';
     return;
   }
-  el.innerHTML = S.sessions.slice().reverse().map((s, i) => {
-    const idx = S.sessions.length - 1 - i;
-    const d = new Date(s.date).toLocaleDateString('fr-FR', {
+  el.innerHTML = S.sessions.slice().reverse().map(function(s, i) {
+    var idx = S.sessions.length - 1 - i;
+    var d = new Date(s.date).toLocaleDateString('fr-FR', {
       weekday: 'short', day: '2-digit', month: 'short', year: 'numeric'
     });
-    const totalVol = s.exercises.reduce((a, e) =>
-      a + e.sets.reduce((b, st) => b + (parseFloat(st.weight) || 0) * (st.reps || 0), 0), 0
-    );
-    const totalSets = s.exercises.reduce((a, e) => a + e.sets.length, 0);
-    return `
-      <div class="hist-item" onclick="openSessDetail(${idx})" style="cursor:pointer;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div>
-            <div class="hist-date">${d}</div>
-            <div class="hist-name">${s.context?.sessionName || 'Séance libre'}</div>
-            <div style="font-size:11px;color:var(--text2);margin-top:2px;">
-              ${s.exercises.length} exercice${s.exercises.length !== 1 ? 's' : ''} · ${totalSets} séries · ${totalVol.toFixed(0)} kg
-            </div>
-          </div>
-          <span style="font-size:18px;color:var(--text3);">›</span>
-        </div>
-      </div>`;
+    var totalVol  = s.exercises.reduce(function(a, e) {
+      return a + e.sets.reduce(function(b, st) { return b + (parseFloat(st.weight) || 0) * (st.reps || 0); }, 0);
+    }, 0);
+    var totalSets = s.exercises.reduce(function(a, e) { return a + e.sets.length; }, 0);
+
+    // Miniatures des exercices (max 4 affichées)
+    var thumbsHTML = s.exercises.slice(0, 4).map(function(e) {
+      return '<div style="flex-shrink:0;">' + getExThumb(e.name, 36) + '</div>';
+    }).join('');
+    var extra = s.exercises.length > 4
+      ? '<div style="width:36px;height:36px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text2);flex-shrink:0;">+' + (s.exercises.length - 4) + '</div>'
+      : '';
+
+    return '<div class="hist-item" onclick="openSessDetail(' + idx + ')" style="cursor:pointer;">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">'
+      + '<div style="flex:1;min-width:0;">'
+      + '<div class="hist-date">' + d + '</div>'
+      + '<div class="hist-name">' + (s.context && s.context.sessionName ? s.context.sessionName : 'Séance libre') + '</div>'
+      + '<div style="font-size:11px;color:var(--text2);margin-top:2px;">'
+      + s.exercises.length + ' exercice' + (s.exercises.length !== 1 ? 's' : '') + ' · ' + totalSets + ' séries · ' + totalVol.toFixed(0) + ' kg'
+      + '</div>'
+      + '<div style="display:flex;gap:5px;margin-top:8px;align-items:center;">'
+      + thumbsHTML + extra
+      + '</div>'
+      + '</div>'
+      + '<span style="font-size:18px;color:var(--text3);flex-shrink:0;">›</span>'
+      + '</div>'
+      + '</div>';
   }).join('');
 }
 
@@ -38,52 +68,53 @@ function renderProgress() {
 // ════════════════════════════════════════════════════════
 
 function openSessDetail(idx) {
-  const s = S.sessions[idx];
+  var s = S.sessions[idx];
   if (!s) return;
 
-  const d = new Date(s.date).toLocaleDateString('fr-FR', {
+  var d = new Date(s.date).toLocaleDateString('fr-FR', {
     weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
   });
 
-  // Récapitulatif global
-  const totalExs  = s.exercises.length;
-  const totalSets = s.exercises.reduce((a, e) => a + e.sets.length, 0);
-  const totalReps = s.exercises.reduce((a, e) => a + e.sets.reduce((b, st) => b + (st.reps || 0), 0), 0);
-  const totalVol  = s.exercises.reduce((a, e) =>
-    a + e.sets.reduce((b, st) => b + (parseFloat(st.weight) || 0) * (st.reps || 0), 0), 0
-  );
+  var totalExs  = s.exercises.length;
+  var totalSets = s.exercises.reduce(function(a, e) { return a + e.sets.length; }, 0);
+  var totalReps = s.exercises.reduce(function(a, e) {
+    return a + e.sets.reduce(function(b, st) { return b + (st.reps || 0); }, 0);
+  }, 0);
+  var totalVol = s.exercises.reduce(function(a, e) {
+    return a + e.sets.reduce(function(b, st) { return b + (parseFloat(st.weight) || 0) * (st.reps || 0); }, 0);
+  }, 0);
 
-  // HTML de chaque exercice
-  const exsHTML = s.exercises.map(e => {
-    const exVol  = e.sets.reduce((a, st) => a + (parseFloat(st.weight) || 0) * (st.reps || 0), 0);
-    const exReps = e.sets.reduce((a, st) => a + (st.reps || 0), 0);
-    const exMax  = Math.max(...e.sets.map(st => parseFloat(st.weight) || 0));
+  var exsHTML = s.exercises.map(function(e) {
+    var exVol  = e.sets.reduce(function(a, st) { return a + (parseFloat(st.weight) || 0) * (st.reps || 0); }, 0);
+    var exReps = e.sets.reduce(function(a, st) { return a + (st.reps || 0); }, 0);
+    var exMax  = Math.max.apply(null, e.sets.map(function(st) { return parseFloat(st.weight) || 0; }));
 
-    const setsHTML = e.sets.map((st, si) => `
-      <div class="det-set-row">
-        <span class="det-set-num">${si + 1}</span>
-        <span class="det-set-val">${parseFloat(st.weight) || '—'} kg</span>
-        <span class="det-set-val">${st.reps || '—'} reps</span>
-        <span class="det-set-vol">${((parseFloat(st.weight) || 0) * (st.reps || 0)).toFixed(0)} kg</span>
-      </div>`).join('');
+    var setsHTML = e.sets.map(function(st, si) {
+      return '<div class="det-set-row">'
+        + '<span class="det-set-num">' + (si + 1) + '</span>'
+        + '<span class="det-set-val">' + (parseFloat(st.weight) || '—') + ' kg</span>'
+        + '<span class="det-set-val">' + (st.reps || '—') + ' reps</span>'
+        + '<span class="det-set-vol">' + ((parseFloat(st.weight) || 0) * (st.reps || 0)).toFixed(0) + ' kg</span>'
+        + '</div>';
+    }).join('');
 
-    return `
-      <div class="det-ex">
-        <div class="det-ex-name">${e.name}</div>
-        <div class="det-set-hdr">
-          <span>Série</span><span>Poids</span><span>Reps</span><span>Volume</span>
-        </div>
-        ${setsHTML}
-        <div class="det-ex-total">
-          Total · ${exReps} reps · max ${exMax} kg · ${exVol.toFixed(0)} kg volume
-        </div>
-      </div>`;
+    return '<div class="det-ex">'
+      + '<div class="det-ex-name" style="display:flex;align-items:center;gap:10px;">'
+      + getExThumb(e.name, 44)
+      + '<div>'
+      + '<div style="font-size:14px;font-weight:800;">' + e.name + '</div>'
+      + '<div style="font-size:10px;color:var(--text2);margin-top:1px;">' + exReps + ' reps · max ' + exMax + ' kg</div>'
+      + '</div>'
+      + '</div>'
+      + '<div class="det-set-hdr"><span>Série</span><span>Poids</span><span>Reps</span><span>Volume</span></div>'
+      + setsHTML
+      + '<div class="det-ex-total">Total · ' + exReps + ' reps · max ' + exMax + ' kg · ' + exVol.toFixed(0) + ' kg volume</div>'
+      + '</div>';
   }).join('');
 
-  // Injection dans l'overlay
   document.getElementById('sess-detail-date').textContent  = d;
-  document.getElementById('sess-detail-name').textContent  = s.context?.sessionName || 'Séance libre';
-  document.getElementById('sess-detail-prog').textContent  = s.context?.progName    || '';
+  document.getElementById('sess-detail-name').textContent  = (s.context && s.context.sessionName) || 'Séance libre';
+  document.getElementById('sess-detail-prog').textContent  = (s.context && s.context.progName)    || '';
   document.getElementById('sess-detail-body').innerHTML    = exsHTML;
   document.getElementById('sess-detail-exs').textContent   = totalExs;
   document.getElementById('sess-detail-sets').textContent  = totalSets;
