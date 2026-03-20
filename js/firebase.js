@@ -97,7 +97,12 @@ auth.onAuthStateChanged(async user => {
     }
 
     // Toujours mettre à jour le programme prédéfini avec la dernière version
-    resetDefaultProgram();
+    // (getDefaultProgram est défini dans data.js, chargé après state.js)
+    var def = getDefaultProgram();
+    var idx = S.progs.findIndex(function(p) { return p.id === def.id; });
+    if (idx >= 0) S.progs[idx] = def;
+    else S.progs.unshift(def);
+    sv('programs', S.progs);
     await syncToCloud();
 
     // Masquer l'écran de login
