@@ -5,6 +5,25 @@
 let dpid = null;
 
 // ════════════════════════════════════════════════════════
+// MAPPING CATÉGORIE → 1RM
+// ════════════════════════════════════════════════════════
+
+// Retourne le liftType associé à une catégorie d'exercice
+function getLiftForCat(cat) {
+  if (cat === 'Jambes')    return 'squat';
+  if (cat === 'Pectoraux') return 'bench';
+  if (cat === 'Dos')       return 'deadlift';
+  return null;
+}
+
+// Retourne le 1RM en kg pour un liftType donné (ou null)
+function get1RMForLift(liftType) {
+  if (!liftType || !S.rm) return null;
+  var val = S.rm[liftType];
+  return (val && val > 0) ? val : null;
+}
+
+// ════════════════════════════════════════════════════════
 // LISTE DES PROGRAMMES
 // ════════════════════════════════════════════════════════
 
@@ -114,8 +133,6 @@ function addSessToWeek(pid, wi) {
   renderProgDetail();
 }
 
-
-
 function toggleProgWeek(hdr) {
   var body    = hdr.nextElementSibling;
   var chevron = hdr.querySelector('span');
@@ -193,15 +210,25 @@ function renderExEditor() {
     var cat   = (found && found.cat) || 'Personnalisé';
     var icon  = CAT_ICONS[cat] || CAT_ICONS['Personnalisé'];
 
+    // Détermine si cette catégorie a un 1RM associé
+    var liftForCat = getLiftForCat(cat);
+    var rm         = get1RMForLift(liftForCat);
+    var hasRm      = rm !== null;
+
+    // Indicateur 1RM affiché dans le header de l'exercice
+    var rmBadge = hasRm
+      ? '<span style="font-size:10px;background:rgba(139,108,247,0.2);color:var(--purple2);border-radius:6px;padding:2px 7px;font-weight:700;margin-left:6px;">1RM ' + rm + ' kg</span>'
+      : '';
+
     var rows = '';
     for (var si = 0; si < ex.series.length; si++) {
       var s = ex.series[si];
       rows += '<div class="ee-set-row">'
         + '<span class="ee-set-num">' + (si + 1) + '</span>'
-        + '<input class="ee-inp" type="number" value="' + (s.reps   || '') + '" placeholder="5" oninput="eeUpdate(' + ei + ',' + si + ',\'reps\',this.value)">'
-        + '<input class="ee-inp" type="number" value="' + (s.pct    || '') + '" placeholder="—" oninput="eeUpdate(' + ei + ',' + si + ',\'pct\',this.value)">'
-        + '<input class="ee-inp" type="number" value="' + (s.weight || '') + '" placeholder="—" oninput="eeUpdate(' + ei + ',' + si + ',\'weight\',this.value)">'
-        + '<input class="ee-inp" type="number" value="' + (s.rpe    || '') + '" placeholder="—" oninput="eeUpdate(' + ei + ',' + si + ',\'rpe\',this.value)">'
+        + '<input class="ee-inp" type="number" value="' + (s.reps   || '') + '" placeholder="5"   oninput="eeUpdate(' + ei + ',' + si + ',\'reps\',this.value)">'
+        + '<input class="ee-inp" type="number" value="' + (s.pct    || '') + '" placeholder="—"   oninput="eeUpdatePct(' + ei + ',' + si + ',this.value,\'' + cat + '\')" step="0.5">'
+        + '<input class="ee-inp" type="number" value="' + (s.weight !== null && s.weight !== undefined ? s.weight : '') + '" placeholder="—" oninput="eeUpdateWeight(' + ei + ',' + si + ',this.value,\'' + cat + '\')" step="0.5">'
+        + '<input class="ee-inp" type="number" value="' + (s.rpe    || '') + '" placeholder="—"   oninput="eeUpdate(' + ei + ',' + si + ',\'rpe\',this.value)">'
         + '<button onclick="removeSetFromEE(' + ei + ',' + si + ')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;">✕</button>'
         + '</div>';
     }
@@ -215,7 +242,10 @@ function renderExEditor() {
         : '<div style="width:36px;height:36px;border-radius:9px;background:' + icon.bg + ';display:flex;align-items:center;justify-content:center;font-size:20px;">' + icon.emoji + '</div>')
       + '</div>'
       + '<div>'
+      + '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">'
       + '<div class="ee-ex-name">' + ex.name + '</div>'
+      + rmBadge
+      + '</div>'
       + '<div style="font-size:10px;color:' + icon.color + ';font-weight:600;">' + cat + '</div>'
       + '</div>'
       + '</div>'
@@ -238,8 +268,55 @@ function renderExEditor() {
   el.innerHTML = html;
 }
 
+// ── Mise à jour générique ─────────────────────────────────
 function eeUpdate(ei, si, key, val) {
   eeState.exs[ei].series[si][key] = val === '' ? null : parseFloat(val) || parseInt(val) || val;
+}
+
+// ── Saisie du % → calcule le poids si 1RM dispo ──────────
+function eeUpdatePct(ei, si, val, cat) {
+  var pct  = val === '' ? null : parseFloat(val);
+  eeState.exs[ei].series[si].pct = pct;
+
+  var liftType = getLiftForCat(cat);
+  var rm       = get1RMForLift(liftType);
+  if (rm && pct) {
+    var computed = Math.round((rm * pct / 100) * 4) / 4; // arrondi au 0.25 kg
+    eeState.exs[ei].series[si].weight = computed;
+    // Mettre à jour le champ poids dans le DOM sans re-render complet
+    var rows = document.querySelectorAll('.ee-set-row');
+    var idx  = _eeRowIndex(ei, si);
+    if (rows[idx]) {
+      var weightInp = rows[idx].querySelectorAll('.ee-inp')[2];
+      if (weightInp) weightInp.value = computed;
+    }
+  }
+}
+
+// ── Saisie du poids → calcule le % si 1RM dispo ──────────
+function eeUpdateWeight(ei, si, val, cat) {
+  var weight = val === '' ? null : parseFloat(val);
+  eeState.exs[ei].series[si].weight = weight;
+
+  var liftType = getLiftForCat(cat);
+  var rm       = get1RMForLift(liftType);
+  if (rm && weight) {
+    var computed = Math.round((weight / rm * 100) * 10) / 10; // arrondi au 0.1%
+    eeState.exs[ei].series[si].pct = computed;
+    var rows = document.querySelectorAll('.ee-set-row');
+    var idx  = _eeRowIndex(ei, si);
+    if (rows[idx]) {
+      var pctInp = rows[idx].querySelectorAll('.ee-inp')[1];
+      if (pctInp) pctInp.value = computed;
+    }
+  }
+}
+
+// Calcule l'index global d'une ligne série dans le DOM
+function _eeRowIndex(ei, si) {
+  var idx = 0;
+  for (var i = 0; i < ei; i++) idx += eeState.exs[i].series.length;
+  return idx + si;
 }
 
 function addSetToEE(ei) {
