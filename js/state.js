@@ -31,17 +31,3 @@ let S = {
 };
 
 let xid = 0;
-
-// ── Réinitialisation du programme par défaut ─────────────
-// Remplace le programme prédéfini par sa version à jour depuis data.js
-// Appelé au démarrage pour s'assurer que le preset est toujours à jour
-function resetDefaultProgram() {
-  var def  = getDefaultProgram();
-  var idx  = S.progs.findIndex(function(p) { return p.id === def.id; });
-  if (idx >= 0) {
-    S.progs[idx] = def;
-  } else {
-    S.progs.unshift(def);
-  }
-  sv('programs', S.progs);
-}
