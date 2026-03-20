@@ -164,18 +164,23 @@ function renderSess() {
       : '<div style="width:64px;height:64px;border-radius:9px;background:' + icon.bg + ';display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">' + icon.emoji + '</div>';
 
     var setsHTML = ex.sets.map(function(s, si) {
-      return '<div class="sess-set-row" style="grid-template-columns:28px 1fr 1fr 1fr 1fr 32px;">'
+      var locked = s.done; // ligne bloquée si cochée
+      var rowStyle = locked
+        ? 'grid-template-columns:28px 1fr 1fr 1fr 1fr 32px;background:rgba(34,197,94,0.07);'
+        : 'grid-template-columns:28px 1fr 1fr 1fr 1fr 32px;';
+      var inpAttr = locked ? ' disabled style="opacity:0.6;background:var(--surface2);"' : '';
+
+      return '<div class="sess-set-row" style="' + rowStyle + '">'
         + '<span class="set-num">' + (si + 1) + '</span>'
-        + '<input class="set-inp" type="number" value="' + s.reps + '" oninput="sessUpdate(' + ei + ',' + si + ',\'reps\',this.value)" placeholder="5">'
-        + '<input class="set-inp" type="number" value="' + (s.pct || '') + '" oninput="sessUpdate(' + ei + ',' + si + ',\'pct\',this.value)" placeholder="—">'
-        + '<input class="set-inp" type="number" value="' + s.weight + '" oninput="sessUpdate(' + ei + ',' + si + ',\'weight\',this.value)" placeholder="kg">'
-        + '<input class="set-inp" type="number" value="' + (s.rpe || '') + '" oninput="sessUpdate(' + ei + ',' + si + ',\'rpe\',this.value)" placeholder="—" step="0.5">'
-        + '<button class="set-done' + (s.done ? ' done' : '') + '" onclick="toggleDone(' + ei + ',' + si + ')">' + (s.done ? '✓' : '') + '</button>'
+        + '<input class="set-inp" type="number" value="' + s.reps + '" oninput="sessUpdate(' + ei + ',' + si + ',\'reps\',this.value)" placeholder="5"' + inpAttr + '>'
+        + '<input class="set-inp" type="number" value="' + (s.pct || '') + '" oninput="sessUpdate(' + ei + ',' + si + ',\'pct\',this.value)" placeholder="—"' + inpAttr + '>'
+        + '<input class="set-inp" type="number" value="' + s.weight + '" oninput="sessUpdate(' + ei + ',' + si + ',\'weight\',this.value)" placeholder="kg"' + inpAttr + '>'
+        + '<input class="set-inp" type="number" value="' + (s.rpe || '') + '" oninput="sessUpdate(' + ei + ',' + si + ',\'rpe\',this.value)" placeholder="—" step="0.5"' + inpAttr + '>'
+        + '<button class="set-done' + (locked ? ' done' : '') + '" onclick="toggleDone(' + ei + ',' + si + ')">' + (locked ? '✓' : '') + '</button>'
         + '</div>';
     }).join('');
 
     return '<div class="sess-ex">'
-      // Header : thumb + nom à gauche, bouton ✕ exercice à droite
       + '<div class="sess-ex-hdr" style="display:flex;align-items:center;justify-content:space-between;">'
       + '<div style="display:flex;align-items:center;gap:10px;">'
       + thumb
@@ -186,7 +191,6 @@ function renderSess() {
       + '</div>'
       + '<button class="btn r sm" onclick="removeExFromSess(' + ei + ')">✕</button>'
       + '</div>'
-      // Header colonnes
       + '<div style="display:grid;grid-template-columns:28px 1fr 1fr 1fr 1fr 32px;gap:6px;padding:4px 12px 2px;background:var(--surface2);">'
       + '<span class="set-lbl">#</span>'
       + '<span class="set-lbl">Reps</span>'
@@ -195,9 +199,7 @@ function renderSess() {
       + '<span class="set-lbl">RPE</span>'
       + '<span class="set-lbl">✓</span>'
       + '</div>'
-      // Séries
       + setsHTML
-      // Boutons sous les séries, centrés
       + '<div style="display:flex;gap:6px;padding:8px 12px;justify-content:center;">'
       + '<button class="btn g sm" onclick="addSetToSess(' + ei + ')">＋ Ajouter série</button>'
       + '<button class="btn r sm" onclick="removeSetToSess(' + ei + ')">✕ Supprimer série</button>'
@@ -207,6 +209,8 @@ function renderSess() {
 }
 
 function sessUpdate(ei, si, key, val) {
+  // Ignorer si la série est verrouillée
+  if (S.cur[ei].sets[si].done) return;
   S.cur[ei].sets[si][key] = val;
   sv('currentSession', S.cur);
 }
@@ -226,12 +230,18 @@ function addSetToSess(ei) {
 
 function removeSetToSess(ei) {
   if (S.cur[ei].sets.length <= 1) { notify('Il faut au moins une série !'); return; }
+  // Empêcher la suppression d'une série validée
+  var last = S.cur[ei].sets.slice(-1)[0];
+  if (last && last.done) { notify('Impossible de supprimer une série validée !'); return; }
   S.cur[ei].sets.pop();
   sv('currentSession', S.cur);
   renderSess();
 }
 
 function removeExFromSess(ei) {
+  // Vérifier si des séries sont déjà validées
+  var hasDone = S.cur[ei].sets.some(function(s) { return s.done; });
+  if (hasDone && !confirm('Cet exercice a des séries validées. Le supprimer quand même ?')) return;
   S.cur.splice(ei, 1);
   sv('currentSession', S.cur);
   renderSess();
@@ -261,20 +271,30 @@ function confirmQuickEx() {
 // ════════════════════════════════════════════════════════
 
 function saveSession() {
+  // Compter uniquement les séries validées (done === true)
+  var exercises = S.cur.map(function(ex) {
+    return {
+      name:     ex.name,
+      liftType: ex.liftType,
+      sets:     ex.sets.filter(function(s) { return s.done; })
+    };
+  }).filter(function(e) { return e.sets.length > 0; });
+
+  var totalDone = exercises.reduce(function(a, e) { return a + e.sets.length; }, 0);
+
+  // Confirmation avant de terminer
+  var msg = totalDone > 0
+    ? '✅ ' + totalDone + ' série' + (totalDone > 1 ? 's' : '') + ' validée' + (totalDone > 1 ? 's' : '') + ' seront sauvegardées.\n\nTerminer la séance ? Aucune modification possible après.'
+    : 'Aucune série validée. Terminer quand même ?';
+
+  if (!confirm(msg)) return;
+
   var sess = {
     id:        Date.now(),
     date:      new Date().toISOString(),
     context:   S.ctx,
-    exercises: S.cur.map(function(ex) {
-      return {
-        name:     ex.name,
-        liftType: ex.liftType,
-        sets:     ex.sets.filter(function(s) { return s.weight || s.done; })
-      };
-    }).filter(function(e) { return e.sets.length > 0; })
+    exercises: exercises
   };
-
-  if (!sess.exercises.length && !confirm('Aucune série enregistrée. Sauvegarder quand même ?')) return;
 
   S.sessions.push(sess);
 
