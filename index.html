@@ -4,16 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>SupremaGym</title>
+
+<!-- Icônes -->
 <link rel="icon" type="image/png" href="images/favicon supremagym.png">
 <link rel="apple-touch-icon" href="images/favicon supremagym.png">
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#4c3fa0">
+
+<!-- iOS PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SupremaGym">
+
+<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
 <!-- App Styles -->
 <link rel="stylesheet" href="css/style.css">
+
 <!-- Thème appliqué avant le rendu pour éviter le flash -->
 <script>
   (function() {
@@ -23,16 +39,54 @@
 </script>
 </head>
 
+<body>
+
 <!-- ── NOTIFICATIONS ─────────────────────────────────── -->
 <div id="notif"></div>
 
-<!-- ── INSTALL BANNER (PWA) ─────────────────────────── -->
+<!-- ── INSTALL BANNER (PWA Android/Chrome) ───────────── -->
 <div id="install-banner">
   <span>📲 Installer SupremaGym sur l'écran d'accueil</span>
   <button onclick="installApp()">Installer</button>
 </div>
 
-<!-- ── LOGIN SCREEN ──────────────────────────────────── -->
+<!-- ── INSTALL HINT (PWA iOS/Safari) ─────────────────── -->
+<div id="ios-install-hint" style="
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  background: rgba(30, 20, 60, 0.97);
+  border: 1px solid rgba(139,108,247,0.4);
+  border-radius: 16px;
+  padding: 14px 18px;
+  max-width: 320px;
+  width: 90%;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  text-align: center;
+">
+  <div style="font-size: 22px;">📲</div>
+  <div style="color:#fff; font-size:13px; font-weight:700;">Installer SupremaGym</div>
+  <div style="color:rgba(255,255,255,0.7); font-size:12px; line-height:1.5;">
+    Appuyez sur <strong style="color:#fff;">Partager</strong> (📤) puis
+    <strong style="color:#fff;">"Sur l'écran d'accueil"</strong>
+  </div>
+  <button onclick="document.getElementById('ios-install-hint').style.display='none'" style="
+    margin-top: 4px;
+    background: rgba(139,108,247,0.3);
+    border: 1px solid rgba(139,108,247,0.5);
+    color: #fff; border-radius: 8px;
+    padding: 6px 16px; font-size: 12px;
+    font-weight: 700; cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  ">OK compris</button>
+</div>
+
 <!-- ── LOGIN SCREEN ──────────────────────────────────── -->
 <div id="login-screen">
   <div class="login-logo">
@@ -151,7 +205,7 @@
       <div class="ptitle">📋 Mes Programmes</div>
       <div class="wcard" style="text-align:center;">
         <div style="text-align:center;">
-        <button class="btn g" onclick="openModal('modal-create-prog')">✚ Créer un programme</button>
+          <button class="btn g" onclick="openModal('modal-create-prog')">✚ Créer un programme</button>
         </div>
       </div>
       <div id="prog-list-content"></div>
@@ -191,7 +245,7 @@
     </div>
     <div id="sess-exercises"></div>
     <div style="text-align:center;">
-    <button class="btn g" style="margin-bottom:8px;" onclick="openExPicker('session')">＋ Ajouter un exercice</button>
+      <button class="btn g" style="margin-bottom:8px;" onclick="openExPicker('session')">＋ Ajouter un exercice</button>
     </div>
     <div style="display:flex;justify-content:center;gap:12px;margin-bottom:12px;">
       <button class="btn r" onclick="clearSession()">✕ Annuler</button>
@@ -207,30 +261,30 @@
   <div class="pc">
     <div class="ptitle">🏆 Calculateur 1RM</div>
     <div id="calc-rm-cards"></div>
-      <div class="wcard">
+    <div class="wcard">
+      <div class="fg">
+        <label class="fl">Type de levé</label>
+        <select class="fi" id="calc-lift" onchange="renderCalc()">
+          <option value="squat">Squat</option>
+          <option value="bench">Bench Press</option>
+          <option value="deadlift">Deadlift</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div class="fg">
-          <label class="fl">Type de levé</label>
-          <select class="fi" id="calc-lift" onchange="renderCalc()">
-            <option value="squat">Squat</option>
-            <option value="bench">Bench Press</option>
-            <option value="deadlift">Deadlift</option>
-          </select>
+          <label class="fl">Poids (kg)</label>
+          <input type="number" class="fi" id="calc-weight" placeholder="100" oninput="renderCalc()" min="0">
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div class="fg">
-            <label class="fl">Poids (kg)</label>
-            <input type="number" class="fi" id="calc-weight" placeholder="100" oninput="renderCalc()" min="0">
-          </div>
-          <div class="fg">
-            <label class="fl">Répétitions</label>
-            <input type="number" class="fi" id="calc-reps" placeholder="5" oninput="renderCalc()" min="1" max="20">
-          </div>
-        </div>
-        <div style="text-align:center;">
-          <button class="btn g" onclick="save1RM()">💾 Sauvegarder comme 1RM</button>
+        <div class="fg">
+          <label class="fl">Répétitions</label>
+          <input type="number" class="fi" id="calc-reps" placeholder="5" oninput="renderCalc()" min="1" max="20">
         </div>
       </div>
-      <div id="calc-results"></div>
+      <div style="text-align:center;">
+        <button class="btn g" onclick="save1RM()">💾 Sauvegarder comme 1RM</button>
+      </div>
+    </div>
+    <div id="calc-results"></div>
   </div>
 </div>
 
@@ -288,7 +342,6 @@
 <!-- ════════════════════════════════════════════════════ -->
 <!-- ── MODALS ────────────────────────────────────────── -->
 <!-- ════════════════════════════════════════════════════ -->
-
 <div class="mo" id="modal-create-prog">
   <div class="mdl">
     <div class="mdl-title">Nouveau programme <button class="mclose" onclick="closeModal('modal-create-prog')">×</button></div>
@@ -296,7 +349,7 @@
     <div class="fg"><label class="fl">Nombre de semaines</label><input type="number" class="fi" id="prog-weeks-input" value="4" min="1" max="20"></div>
     <div class="fg"><label class="fl">Séances par semaine</label><input type="number" class="fi" id="prog-sessions-input" value="4" min="1" max="7"></div>
     <div style="text-align:center;">
-    <button class="btn g" onclick="createProgram()">✚ Créer</button>
+      <button class="btn g" onclick="createProgram()">✚ Créer</button>
     </div>
   </div>
 </div>
@@ -320,7 +373,7 @@
       <div id="edit-ex-image-preview"></div>
     </div>
     <div style="text-align:center;">
-    <button class="btn g" onclick="saveEditEx()">✅ Enregistrer</button>
+      <button class="btn g" onclick="saveEditEx()">✅ Enregistrer</button>
     </div>
   </div>
 </div>
@@ -334,7 +387,7 @@
       <div class="fg"><label class="fl">Répétitions</label><input type="number" class="fi" id="qex-reps" value="5" min="1"></div>
     </div>
     <div style="text-align:center;">
-    <button class="btn g" onclick="confirmQuickEx()">✅ Ajouter</button>
+      <button class="btn g" onclick="confirmQuickEx()">✅ Ajouter</button>
     </div>
   </div>
 </div>
@@ -389,7 +442,7 @@
     <button id="ee-save-btn" class="btn g sm full" onclick="saveExEditor()">💾 Sauvegarder</button>
   </div>
 </div>
-  
+
 <!-- ── DÉTAIL SÉANCE (plein écran) ───────────────────── -->
 <div class="sess-detail-overlay" id="sess-detail-overlay">
   <div class="sess-detail-inner">
@@ -427,9 +480,9 @@
 <!-- ════════════════════════════════════════════════════ -->
 <!-- ── SCRIPTS (ordre important) ─────────────────────── -->
 <!-- ════════════════════════════════════════════════════ -->
-<script src="js/state.js"></script>      <!-- 1. État global S + helpers -->
-<script src="js/data.js"></script>       <!-- 2. Exercices + getDefaultProgram -->
-<script src="js/firebase.js"></script>   <!-- 3. Auth + sync (utilise S et getDefaultProgram) -->
+<script src="js/state.js"></script>
+<script src="js/data.js"></script>
+<script src="js/firebase.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/home.js"></script>
 <script src="js/exercises.js"></script>
