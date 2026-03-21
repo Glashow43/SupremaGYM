@@ -1,18 +1,18 @@
 // ══════════════════════════════════════════════════════════
-// js/pwa.js — PWA : bannière d'installation + Service Worker
+// js/pwa.js — PWA : installation Android + iOS
 // ══════════════════════════════════════════════════════════
-let deferredPrompt = null;
 
+// ── Android / Chrome : bannière d'installation ────────────
+let deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
   document.getElementById('install-banner').style.display = 'flex';
 });
-
 window.addEventListener('appinstalled', () => {
   document.getElementById('install-banner').style.display = 'none';
+  deferredPrompt = null;
 });
-
 function installApp() {
   if (deferredPrompt) {
     deferredPrompt.prompt();
@@ -21,34 +21,26 @@ function installApp() {
   }
 }
 
-// ── Service Worker — ne cache JAMAIS les JS/CSS ───────────
+// ── iOS : détecter Safari et afficher les instructions ────
+function isIOS() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+function isInStandaloneMode() {
+  return window.navigator.standalone === true;
+}
+function showIOSInstallHint() {
+  if (isIOS() && !isInStandaloneMode()) {
+    var hint = document.getElementById('ios-install-hint');
+    if (hint) hint.style.display = 'flex';
+  }
+}
+window.addEventListener('load', showIOSInstallHint);
+
+// ── Service Worker ────────────────────────────────────────
 if ('serviceWorker' in navigator) {
-  const CACHE_VERSION = 'sg-v20'; // ← incrémente à chaque déploiement
-  const swCode = `
-    const CACHE = '${CACHE_VERSION}';
-    self.addEventListener('install', e => {
-      e.waitUntil(
-        caches.keys().then(keys =>
-          Promise.all(keys.map(k => caches.delete(k)))
-        )
-      );
-      self.skipWaiting();
-    });
-    self.addEventListener('activate', e => {
-      e.waitUntil(self.clients.claim());
-    });
-    self.addEventListener('fetch', e => {
-      // Ne jamais cacher JS, CSS — toujours depuis le réseau
-      if (e.request.url.match(/\\.(js|css)(\?.*)?$/)) {
-        e.respondWith(fetch(e.request));
-        return;
-      }
-      // Pour le reste, réseau en priorité
-      e.respondWith(
-        fetch(e.request).catch(() => caches.match(e.request))
-      );
-    });
-  `;
-  const blob = new Blob([swCode], { type: 'application/javascript' });
-  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('SW enregistré :', reg.scope))
+      .catch(err => console.error('SW erreur :', err));
+  });
 }
