@@ -4,7 +4,7 @@
 
 /* ── Thème SOMBRE (défaut) ───────────────────────────── */
 :root, [data-theme="dark"] {
-  --bg:       #0e0f17;
+  --bg:       #0d0d1a;
   --surface:  #181a27;
   --surface2: #1f2133;
   --border:   #2a2d42;
@@ -29,7 +29,7 @@
 
 /* ── Thème CLAIR ─────────────────────────────────────── */
 [data-theme="light"] {
-  --bg:       #f0f2f8;
+  --bg:       #f0f4ff;
   --surface:  #ffffff;
   --surface2: #e8eaf2;
   --border:   #d0d4e8;
@@ -54,25 +54,18 @@
 
 /* ── Reset ───────────────────────────────────────────── */
 * { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ── Body – fond commun avec orbes ──────────────────── */
 body {
   font-family: 'Inter', sans-serif;
   background: var(--bg);
   min-height: 100dvh;
   color: var(--text);
-}
-
-/* ══════════════════════════════════════════════════════
-   ÉCRAN DE CONNEXION
-   ══════════════════════════════════════════════════════ */
-
-/* ── FOND GLOBAL ── */
-body {
-  background: #0d0d1a;
-  min-height: 100vh;
   overflow-x: hidden;
+  position: relative;
 }
 
-/* Orbes globales fixées en arrière-plan */
+/* Orbes floutées – thème sombre */
 body::before,
 body::after {
   content: '';
@@ -84,43 +77,51 @@ body::after {
   z-index: 0;
 }
 body::before {
-  width: 420px;
-  height: 420px;
+  width: 420px; height: 420px;
   background: radial-gradient(circle, #6c3bff, #2d1b8e);
-  top: -80px;
-  left: -100px;
+  top: -80px; left: -100px;
   animation: drift1 10s ease-in-out infinite alternate;
 }
 body::after {
-  width: 350px;
-  height: 350px;
+  width: 350px; height: 350px;
   background: radial-gradient(circle, #00c6ff, #0072ff);
-  bottom: -60px;
-  right: -80px;
+  bottom: -60px; right: -80px;
   animation: drift2 12s ease-in-out infinite alternate;
 }
 
-/* Fond sombre avec bulles floutées */
+/* Orbes floutées – thème clair */
+[data-theme="light"] body::before {
+  background: radial-gradient(circle, #c4a8ff, #a78bfa);
+  opacity: 0.2;
+}
+[data-theme="light"] body::after {
+  background: radial-gradient(circle, #93d5f7, #60b8f5);
+  opacity: 0.2;
+}
+
+@keyframes drift1 {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(40px, 30px) scale(1.1); }
+}
+@keyframes drift2 {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(-30px, -40px) scale(1.15); }
+}
+
+/* ══════════════════════════════════════════════════════
+   ÉCRAN DE CONNEXION
+   ══════════════════════════════════════════════════════ */
 #login-screen {
   display: flex;
   position: fixed;
   inset: 0;
   z-index: 9000;
-  background: #0d0d1a;
+  background: var(--bg);
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 30px;
   overflow: hidden;
-}
-
-@keyframes drift1 {
-  from { transform: translate(0, 0) scale(1);   }
-  to   { transform: translate(40px, 30px) scale(1.1); }
-}
-@keyframes drift2 {
-  from { transform: translate(0, 0) scale(1);   }
-  to   { transform: translate(-30px, -40px) scale(1.15); }
 }
 
 /* Card centrale en verre */
@@ -142,12 +143,17 @@ body::after {
     0 8px 32px rgba(0, 0, 0, 0.5),
     inset 0 1px 0 rgba(255,255,255,0.1);
 }
+[data-theme="light"] .login-card {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 8px 32px rgba(100, 80, 220, 0.12), inset 0 1px 0 rgba(255,255,255,0.8);
+}
 
 .login-logo  { font-size: 150px; margin-bottom: 16px; }
-.login-title { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+.login-title { font-size: 28px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
 .login-sub   {
   font-size: 14px;
-  color: rgba(255,255,255,0.6);
+  color: var(--text2);
   margin-bottom: 40px;
   text-align: center;
 }
@@ -161,20 +167,28 @@ body::after {
   font-size: 15px; font-weight: 700;
   cursor: pointer;
   font-family: 'Inter', sans-serif;
-  color: #fff;
+  color: var(--text);
   box-shadow: 0 4px 20px rgba(0,0,0,0.3);
   width: 100%; max-width: 300px;
   justify-content: center;
   backdrop-filter: blur(8px);
   transition: background 0.2s, border-color 0.2s;
 }
+[data-theme="light"] .login-btn {
+  background: rgba(255,255,255,0.75);
+  border-color: rgba(100,80,220,0.2);
+  box-shadow: 0 4px 20px rgba(100,80,220,0.15);
+}
 .login-btn:hover {
   background: rgba(255, 255, 255, 0.18);
   border-color: rgba(255, 255, 255, 0.35);
 }
+[data-theme="light"] .login-btn:hover {
+  background: rgba(255,255,255,0.95);
+}
 
-#login-loading { display: none; margin-top: 20px; color: rgba(255,255,255,0.7); font-size: 13px; }
-#login-error   { display: none; color: rgba(255,100,100,0.9); font-size: 12px; margin-top: 16px; text-align: center; }
+#login-loading { display: none; margin-top: 20px; color: var(--text2); font-size: 13px; }
+#login-error   { display: none; color: var(--red); font-size: 12px; margin-top: 16px; text-align: center; }
 
 #login-loading-spinner {
   display: inline-block; width: 16px; height: 16px;
@@ -183,6 +197,7 @@ body::after {
   margin-right: 8px; vertical-align: middle;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
 /* ══════════════════════════════════════════════════════
    NAVIGATION HAUTE
    ══════════════════════════════════════════════════════ */
