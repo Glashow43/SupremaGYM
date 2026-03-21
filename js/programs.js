@@ -124,7 +124,7 @@ function renderProgDetail() {
     nameEl.textContent = prog.name + ' 🔒';
   } else {
     nameEl.innerHTML = prog.name
-      + ' <button onclick="renameProg(' + prog.id + ')" style="background:none;border:none;color:var(--purple);font-size:14px;cursor:pointer;vertical-align:middle;">✏️</button>';
+      + '<button class="btn b sm" <button onclick="renameProg(' + prog.id + ')">✏️</button>';
   }
 
   var addWeekBtn = document.querySelector('#prog-detail > .pc > button:last-child');
