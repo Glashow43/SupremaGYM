@@ -427,9 +427,9 @@
 <!-- ════════════════════════════════════════════════════ -->
 <!-- ── SCRIPTS (ordre important) ─────────────────────── -->
 <!-- ════════════════════════════════════════════════════ -->
-<script src="js/firebase.js"></script>
-<script src="js/state.js"></script>
-<script src="js/data.js"></script>
+<script src="js/state.js"></script>      <!-- 1. État global S + helpers -->
+<script src="js/data.js"></script>       <!-- 2. Exercices + getDefaultProgram -->
+<script src="js/firebase.js"></script>   <!-- 3. Auth + sync (utilise S et getDefaultProgram) -->
 <script src="js/nav.js"></script>
 <script src="js/home.js"></script>
 <script src="js/exercises.js"></script>
