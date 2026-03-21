@@ -36,6 +36,7 @@ function renderProgress() {
       return a + e.sets.reduce(function(b, st) { return b + (parseFloat(st.weight) || 0) * (st.reps || 0); }, 0);
     }, 0);
     var totalSets = s.exercises.reduce(function(a, e) { return a + e.sets.length; }, 0);
+    var dur = s.duration ? ' · ⏱ ' + formatDuration(s.duration) : '';
 
     return '<div class="hist-item" onclick="openSessDetail(' + idx + ')" style="cursor:pointer;">'
       + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">'
@@ -43,7 +44,7 @@ function renderProgress() {
       + '<div class="hist-date">' + d + '</div>'
       + '<div class="hist-name">' + (s.context && s.context.sessionName ? s.context.sessionName : 'Séance libre') + '</div>'
       + '<div style="font-size:11px;color:var(--text2);margin-top:2px;">'
-      + s.exercises.length + ' exercice' + (s.exercises.length !== 1 ? 's' : '') + ' · ' + totalSets + ' séries · ' + totalVol.toFixed(0) + ' kg'
+      + s.exercises.length + ' exercice' + (s.exercises.length !== 1 ? 's' : '') + ' · ' + totalSets + ' séries · ' + totalVol.toFixed(0) + ' kg' + dur
       + '</div>'
       + '</div>'
       + '<span style="font-size:18px;color:var(--text3);flex-shrink:0;">›</span>'
@@ -101,7 +102,10 @@ function openSessDetail(idx) {
       + '</div>';
   }).join('');
 
-  document.getElementById('sess-detail-date').textContent  = d;
+  // Durée dans le header
+  var durStr = s.duration ? formatDuration(s.duration) : null;
+
+  document.getElementById('sess-detail-date').textContent  = durStr ? d + ' · ⏱ ' + durStr : d;
   document.getElementById('sess-detail-name').textContent  = (s.context && s.context.sessionName) || 'Séance libre';
   document.getElementById('sess-detail-prog').textContent  = (s.context && s.context.progName)    || '';
   document.getElementById('sess-detail-body').innerHTML    = exsHTML;
