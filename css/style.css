@@ -493,12 +493,38 @@ body::after {
   bottom: 0; left: 0; right: 0;
   z-index: 50;
   display: flex;
-  gap: 12px;
-  padding: 12px 16px;
-  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 16px;
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
   background: var(--nav-bg);
   border-top: 1px solid var(--border);
   box-shadow: 0 -4px 16px rgba(0,0,0,0.2);
+}
+.sess-timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--purple);
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+}
+.sess-timer-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse-dot 1s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
+}
+.sess-footer-btns {
+  display: flex;
+  gap: 12px;
 }
 
 /* ══════════════════════════════════════════════════════
