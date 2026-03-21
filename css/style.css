@@ -106,7 +106,7 @@ body::after {
   position: fixed;
   inset: 0;
   z-index: 9000;
-  background: transparent;
+  background: #0d0d1a;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -183,7 +183,6 @@ body::after {
   margin-right: 8px; vertical-align: middle;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-
 /* ══════════════════════════════════════════════════════
    NAVIGATION HAUTE
    ══════════════════════════════════════════════════════ */
