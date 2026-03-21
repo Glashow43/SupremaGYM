@@ -3,6 +3,43 @@
 // ══════════════════════════════════════════════════════════
 
 // ════════════════════════════════════════════════════════
+// TIMER DE SÉANCE
+// ════════════════════════════════════════════════════════
+let sessTimerInterval = null;
+let sessTimerStart    = null;
+let sessTimerElapsed  = 0;
+
+function startSessTimer() {
+  sessTimerStart   = Date.now();
+  sessTimerElapsed = 0;
+  clearInterval(sessTimerInterval);
+  sessTimerInterval = setInterval(function() {
+    sessTimerElapsed = Math.floor((Date.now() - sessTimerStart) / 1000);
+    var h = Math.floor(sessTimerElapsed / 3600);
+    var m = Math.floor((sessTimerElapsed % 3600) / 60);
+    var s = sessTimerElapsed % 60;
+    var el = document.getElementById('sess-timer-display');
+    if (el) el.textContent =
+      String(h).padStart(2,'0') + ':' +
+      String(m).padStart(2,'0') + ':' +
+      String(s).padStart(2,'0');
+  }, 1000);
+}
+
+function stopSessTimer() {
+  clearInterval(sessTimerInterval);
+  sessTimerInterval = null;
+}
+
+function formatDuration(seconds) {
+  var h = Math.floor(seconds / 3600);
+  var m = Math.floor((seconds % 3600) / 60);
+  var s = seconds % 60;
+  if (h > 0) return h + 'h ' + String(m).padStart(2,'0') + 'min';
+  return m + 'min ' + String(s).padStart(2,'0') + 's';
+}
+
+// ════════════════════════════════════════════════════════
 // WAKE LOCK
 // ════════════════════════════════════════════════════════
 let wakeLock = null;
@@ -149,6 +186,7 @@ function startSess(pid, wi, si) {
   sv('currentSession',        S.cur);
   sv('currentSessionContext', S.ctx);
   requestWakeLock();
+  startSessTimer();
   showPage('session', 3);
 }
 
@@ -307,9 +345,12 @@ function saveSession() {
   var sess = {
     id:        Date.now(),
     date:      new Date().toISOString(),
+    duration:  sessTimerElapsed,
     context:   S.ctx,
     exercises: exercises
   };
+
+  stopSessTimer();
 
   S.sessions.push(sess);
 
@@ -348,7 +389,7 @@ function saveSession() {
 
   releaseWakeLock();
   if (prs.length) notify('🏆 Nouveau PR ! ' + prs.join(', '));
-  else            notify('✅ Séance sauvegardée !');
+  else            notify('✅ Séance terminée en ' + formatDuration(sess.duration) + ' !');
   showPage('home', 0);
 }
 
@@ -357,6 +398,7 @@ function clearSession() {
   S.cur = []; S.ctx = null;
   sv('currentSession',        S.cur);
   sv('currentSessionContext', S.ctx);
+  stopSessTimer();
   releaseWakeLock();
   showPage('train', 3);
 }
