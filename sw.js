@@ -5,23 +5,23 @@
 // ══════════════════════════════════════════════════════════
 const CACHE_VERSION = 'sg-v1';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/css/style.css',
-  '/js/state.js',
-  '/js/data.js',
-  '/js/firebase.js',
-  '/js/nav.js',
-  '/js/home.js',
-  '/js/exercises.js',
-  '/js/programs.js',
-  '/js/session.js',
-  '/js/calc.js',
-  '/js/progress.js',
-  '/js/settings.js',
-  '/js/pwa.js',
-  '/images/favicon supremagym.png',
-  '/manifest.json'
+  '/SupremaGYM/',
+  '/SupremaGYM/index.html',
+  '/SupremaGYM/css/style.css',
+  '/SupremaGYM/js/state.js',
+  '/SupremaGYM/js/data.js',
+  '/SupremaGYM/js/firebase.js',
+  '/SupremaGYM/js/nav.js',
+  '/SupremaGYM/js/home.js',
+  '/SupremaGYM/js/exercises.js',
+  '/SupremaGYM/js/programs.js',
+  '/SupremaGYM/js/session.js',
+  '/SupremaGYM/js/calc.js',
+  '/SupremaGYM/js/progress.js',
+  '/SupremaGYM/js/settings.js',
+  '/SupremaGYM/js/pwa.js',
+  '/SupremaGYM/images/favicon supremagym.png',
+  '/SupremaGYM/manifest.json'
 ];
 
 // ── Installation : mise en cache des assets ───────────────
