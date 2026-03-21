@@ -92,11 +92,11 @@ function renderTrain() {
 
   var html = '';
   if (customs.length) {
-    html += '<div class="sh p" style="margin-top:4px;">🎯 Mes Programmes</div>';
+    html += '<div class="sh" style="margin-top:4px;color:var(--green);border-color:var(--green);">🎯 Mes Programmes</div>';
     html += customs.map(progBlock).join('');
   }
   if (presets.length) {
-    html += '<div class="sh p" style="margin-top:16px;">🏅 Programmes Prédéfinis</div>';
+    html += '<div class="sh" style="margin-top:16px;color:var(--blue);border-color:var(--blue);">🏅 Programmes Prédéfinis</div>';
     html += presets.map(progBlock).join('');
   }
   el.innerHTML = html;
@@ -130,7 +130,6 @@ function startSess(pid, wi, si) {
       name:     ex.name,
       liftType: ex.liftType || ex.lift || '',
       sets:     (ex.series || [{ reps: 5, weight: null }]).map(function(s) {
-        // Calcul auto du poids depuis le % et le 1RM si weight est null
         var w = s.weight;
         if (!w && s.pct && ex.liftType && S.rm[ex.liftType]) {
           w = Math.round((S.rm[ex.liftType] * s.pct / 100) * 4) / 4;
@@ -184,7 +183,7 @@ function renderSess() {
       : '<div style="width:64px;height:64px;border-radius:9px;background:' + icon.bg + ';display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">' + icon.emoji + '</div>';
 
     var setsHTML = ex.sets.map(function(s, si) {
-      var locked = s.done; // ligne bloquée si cochée
+      var locked = s.done;
       var rowStyle = locked
         ? 'grid-template-columns:28px 1fr 1fr 1fr 1fr 32px;background:rgba(34,197,94,0.07);'
         : 'grid-template-columns:28px 1fr 1fr 1fr 1fr 32px;';
@@ -229,7 +228,6 @@ function renderSess() {
 }
 
 function sessUpdate(ei, si, key, val) {
-  // Ignorer si la série est verrouillée
   if (S.cur[ei].sets[si].done) return;
   S.cur[ei].sets[si][key] = val;
   sv('currentSession', S.cur);
@@ -250,7 +248,6 @@ function addSetToSess(ei) {
 
 function removeSetToSess(ei) {
   if (S.cur[ei].sets.length <= 1) { notify('Il faut au moins une série !'); return; }
-  // Empêcher la suppression d'une série validée
   var last = S.cur[ei].sets.slice(-1)[0];
   if (last && last.done) { notify('Impossible de supprimer une série validée !'); return; }
   S.cur[ei].sets.pop();
@@ -259,7 +256,6 @@ function removeSetToSess(ei) {
 }
 
 function removeExFromSess(ei) {
-  // Vérifier si des séries sont déjà validées
   var hasDone = S.cur[ei].sets.some(function(s) { return s.done; });
   if (hasDone && !confirm('Cet exercice a des séries validées. Le supprimer quand même ?')) return;
   S.cur.splice(ei, 1);
@@ -291,7 +287,6 @@ function confirmQuickEx() {
 // ════════════════════════════════════════════════════════
 
 function saveSession() {
-  // Compter uniquement les séries validées (done === true)
   var exercises = S.cur.map(function(ex) {
     return {
       name:     ex.name,
@@ -302,7 +297,6 @@ function saveSession() {
 
   var totalDone = exercises.reduce(function(a, e) { return a + e.sets.length; }, 0);
 
-  // Confirmation avant de terminer
   var msg = totalDone > 0
     ? '✅ ' + totalDone + ' série' + (totalDone > 1 ? 's' : '') + ' validée' + (totalDone > 1 ? 's' : '') + ' seront sauvegardées.\n\nTerminer la séance ? Aucune modification possible après.'
     : 'Aucune série validée. Terminer quand même ?';
@@ -318,7 +312,6 @@ function saveSession() {
 
   S.sessions.push(sess);
 
-  // Mise à jour des 1RM
   var prs = [];
   sess.exercises.forEach(function(ex) {
     if (!ex.liftType) return;
@@ -340,7 +333,6 @@ function saveSession() {
   sv('currentSession',        S.cur);
   sv('currentSessionContext', S.ctx);
 
-  // Avancer le compteur du programme
   if (S.ap && S.ap.programId === (sess.context && sess.context.progId)) {
     var prog = S.progs.find(function(p) { return p.id === S.ap.programId; });
     if (prog) {
