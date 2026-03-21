@@ -65,31 +65,25 @@ body {
    ÉCRAN DE CONNEXION
    ══════════════════════════════════════════════════════ */
 
-/* Fond sombre avec bulles floutées */
-#login-screen {
-  display: flex;
-  position: fixed;
-  inset: 0;
-  z-index: 9000;
-  background: #0d0d1a;          /* noir bleuté profond */
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 30px;
-  overflow: hidden;
+/* ── FOND GLOBAL ── */
+body {
+  background: #0d0d1a;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* Orbes colorées en arrière-plan (effet glassmorphism) */
-#login-screen::before,
-#login-screen::after {
+/* Orbes globales fixées en arrière-plan */
+body::before,
+body::after {
   content: '';
-  position: absolute;
+  position: fixed;
   border-radius: 50%;
   filter: blur(80px);
-  opacity: 0.35;
+  opacity: 0.25;
   pointer-events: none;
+  z-index: 0;
 }
-#login-screen::before {
+body::before {
   width: 420px;
   height: 420px;
   background: radial-gradient(circle, #6c3bff, #2d1b8e);
@@ -97,13 +91,27 @@ body {
   left: -100px;
   animation: drift1 10s ease-in-out infinite alternate;
 }
-#login-screen::after {
+body::after {
   width: 350px;
   height: 350px;
   background: radial-gradient(circle, #00c6ff, #0072ff);
   bottom: -60px;
   right: -80px;
   animation: drift2 12s ease-in-out infinite alternate;
+}
+
+/* Fond sombre avec bulles floutées */
+#login-screen {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: transparent;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  overflow: hidden;
 }
 
 @keyframes drift1 {
@@ -135,7 +143,7 @@ body {
     inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
-.login-logo  { margin-bottom: 10px; }
+.login-logo  { font-size: 150px; margin-bottom: 16px; }
 .login-title { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 6px; }
 .login-sub   {
   font-size: 14px;
