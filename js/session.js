@@ -224,8 +224,8 @@ function renderSess() {
     var setsHTML = ex.sets.map(function(s, si) {
       var locked = s.done;
       var rowStyle = locked
-        ? 'grid-template-columns:28px 1fr 1fr 1fr 1fr 32px;background:rgba(34,197,94,0.07);'
-        : 'grid-template-columns:28px 1fr 1fr 1fr 1fr 32px;';
+        ? 'grid-template-columns:24px 1fr 1fr 1.4fr 1fr 32px;background:rgba(34,197,94,0.07);'
+        : 'grid-template-columns:24px 1fr 1fr 1.4fr 1fr 32px;';
       var inpAttr = locked ? ' disabled style="opacity:0.6;background:var(--surface2);"' : '';
 
       return '<div class="sess-set-row" style="' + rowStyle + '">'
@@ -249,7 +249,7 @@ function renderSess() {
       + '</div>'
       + '<button class="btn r sm" onclick="removeExFromSess(' + ei + ')">✕</button>'
       + '</div>'
-      + '<div style="display:grid;grid-template-columns:28px 1fr 1fr 1fr 1fr 32px;gap:6px;padding:4px 12px 2px;background:var(--surface2);">'
+      + '<div style="display:grid;grid-template-columns:24px 1fr 1fr 1.4fr 1fr 32px;gap:4px;padding:4px 12px 2px;background:var(--surface2);">'
       + '<span class="set-lbl">#</span>'
       + '<span class="set-lbl">Reps</span>'
       + '<span class="set-lbl">%1RM</span>'
