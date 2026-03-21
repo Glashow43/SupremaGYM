@@ -25,7 +25,6 @@ function get1RMForLift(liftType) {
 // RENOMMAGE INLINE
 // ════════════════════════════════════════════════════════
 
-// Renomme le programme
 function renameProg(pid) {
   var p = S.progs.find(function(p) { return p.id === pid; });
   if (!p || isPreset(pid)) return;
@@ -37,7 +36,6 @@ function renameProg(pid) {
   renderProgDetail();
 }
 
-// Renomme une semaine (son label affiché, ex: "Semaine 1" → "Semaine Force")
 function renameWeek(wi) {
   var p = S.progs.find(function(p) { return p.id === dpid; });
   if (!p || isPreset(p.id)) return;
@@ -49,7 +47,6 @@ function renameWeek(wi) {
   renderProgDetail();
 }
 
-// Renomme une séance
 function renameSess(wi, sIdx) {
   var p = S.progs.find(function(p) { return p.id === dpid; });
   if (!p || isPreset(p.id)) return;
@@ -118,21 +115,29 @@ function renderProgDetail() {
   if (!prog) return;
   var locked = isPreset(prog.id);
 
-  // Titre du programme avec bouton renommer si non verrouillé
+  // ── Titre + bouton renommer (avec espacement) ──────────
   var nameEl = document.getElementById('detail-prog-name');
   if (locked) {
     nameEl.textContent = prog.name + ' 🔒';
   } else {
-    nameEl.innerHTML = prog.name
-      + '<button class="btn b sm" <button onclick="renameProg(' + prog.id + ')">✏️</button>';
+    nameEl.innerHTML = '<span>' + prog.name + '</span>'
+      + '<button class="btn b sm" onclick="renameProg(' + prog.id + ')" style="margin-left:12px;">✏️</button>';
   }
 
   var addWeekBtn = document.querySelector('#prog-detail > .pc > button:last-child');
   if (addWeekBtn) addWeekBtn.style.display = locked ? 'none' : '';
 
   var el = document.getElementById('detail-weeks-content');
+
+  // Garde en mémoire les semaines ouvertes avant le re-render
+  var openWeeks = {};
+  el.querySelectorAll('[data-week-body]').forEach(function(body, i) {
+    if (body.style.display === 'block') openWeeks[i] = true;
+  });
+
   el.innerHTML = prog.weeks.map(function(w, wi) {
     var weekLabel = w.label || ('Semaine ' + w.weekNum);
+    var isOpen    = openWeeks[wi] !== undefined;
 
     var sessHTML = w.sessions.map(function(sess, sIdx) {
       return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;margin-top:6px;">'
@@ -141,7 +146,6 @@ function renderProgDetail() {
         + '<div style="font-size:13px;font-weight:700;">' + sess.name + '</div>'
         + '<div style="font-size:11px;color:var(--text2);">' + sess.exercises.length + ' exercice' + (sess.exercises.length !== 1 ? 's' : '') + '</div>'
         + '</div>'
-
         + '</div>'
         + '<div style="display:flex;gap:6px;flex-shrink:0;">'
         + (locked
@@ -155,14 +159,14 @@ function renderProgDetail() {
     return '<div class="wcard" style="margin-bottom:10px;padding:0;overflow:hidden;">'
       + '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;user-select:none;" onclick="toggleProgWeek(this)">'
       + '<div style="display:flex;align-items:center;gap:8px;">'
-      + '<span style="font-size:14px;color:var(--text2);display:inline-block;transition:transform 0.2s;">›</span>'
+      + '<span style="font-size:14px;color:var(--text2);display:inline-block;transition:transform 0.2s;' + (isOpen ? 'transform:rotate(90deg);' : '') + '">›</span>'
       + '<span style="font-size:13px;font-weight:800;color:var(--purple);">' + weekLabel + '</span>'
       + '<span style="font-size:11px;color:var(--text2);">' + w.sessions.length + ' séance' + (w.sessions.length !== 1 ? 's' : '') + '</span>'
-              + (locked ? '' : '<button onclick="event.stopPropagation();renameWeek(' + wi + ')" class="btn b sm" style="padding:3px 7px;">✏️</button>')
+      + (locked ? '' : '<button onclick="event.stopPropagation();renameWeek(' + wi + ')" class="btn b sm" style="padding:3px 7px;">✏️</button>')
       + '</div>'
       + (locked ? '' : '<button class="btn r sm" onclick="event.stopPropagation();deleteWeek(' + wi + ')">🗑 Supprimer</button>')
       + '</div>'
-      + '<div style="display:none;padding:0 14px 12px;">'
+      + '<div data-week-body style="display:' + (isOpen ? 'block' : 'none') + ';padding:0 14px 12px;">'
       + sessHTML
       + (locked ? '' : '<button onclick="addSessToWeek(' + dpid + ',' + wi + ')" style="width:100%;padding:7px;background:none;border:1.5px dashed var(--border);border-radius:8px;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;font-family:\'Inter\',sans-serif;margin-top:4px;">＋ Ajouter une séance</button>')
       + '</div>'
@@ -230,6 +234,29 @@ function addSessToWeek(pid, wi) {
   if (!p || isPreset(p.id)) return;
   p.weeks[wi].sessions.push({ id: Date.now(), name: 'Séance ' + (p.weeks[wi].sessions.length + 1), exercises: [] });
   sv('programs', S.progs);
+  // Re-render en préservant l'état ouvert de la semaine wi
+  renderProgDetailKeepOpen(wi);
+}
+
+// Re-render en forçant une semaine ouverte
+function renderProgDetailKeepOpen(forceOpenWi) {
+  var prog = S.progs.find(function(p) { return p.id === dpid; });
+  if (!prog) return;
+
+  // Récupère les semaines déjà ouvertes
+  var openWeeks = {};
+  document.querySelectorAll('[data-week-body]').forEach(function(body, i) {
+    if (body.style.display === 'block') openWeeks[i] = true;
+  });
+  // Force la semaine cible ouverte
+  if (forceOpenWi !== undefined) openWeeks[forceOpenWi] = true;
+
+  // Injecte temporairement dans openWeeks pour que renderProgDetail les lise
+  var el = document.getElementById('detail-weeks-content');
+  el.querySelectorAll('[data-week-body]').forEach(function(body, i) {
+    body.style.display = openWeeks[i] ? 'block' : 'none';
+  });
+
   renderProgDetail();
 }
 
@@ -293,7 +320,6 @@ function openExEditor(pid, wi, sessIdx) {
     si:     sessIdx,
     exs:    sess.exercises.map(function(ex) {
       var copy = normEx(JSON.parse(JSON.stringify(ex)));
-      // Calcul auto du poids depuis le % si weight est null
       var allEx = getAllExercises();
       var found = allEx.find(function(e) { return e.name.toLowerCase() === copy.name.toLowerCase(); });
       var cat   = (found && found.cat) || 'Personnalisé';
@@ -329,10 +355,6 @@ function saveEESessName(wi, sIdx, val) {
   sv('programs', S.progs);
 }
 
-function closeExEditor() {
-  document.getElementById('ex-editor').classList.remove('open');
-}
-
 function renderExEditor() {
   var el = document.getElementById('ee-body');
   if (!eeState.exs.length) {
@@ -343,9 +365,8 @@ function renderExEditor() {
   var locked = eeState.locked;
   var html   = '';
 
-  // Bouton + Exercice et Sauvegarder masqués en mode lecture seule
-  var addExBtn  = document.querySelector('.ex-editor-hdr .btn.g');
-  var saveBtn   = document.getElementById('ee-save-btn');
+  var addExBtn = document.querySelector('.ex-editor-hdr .btn.g');
+  var saveBtn  = document.getElementById('ee-save-btn');
   if (addExBtn) addExBtn.style.display = locked ? 'none' : '';
   if (saveBtn)  saveBtn.style.display  = locked ? 'none' : '';
 
