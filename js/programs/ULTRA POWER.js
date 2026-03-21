@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════
-// js/programs/ultra-power.js
+// js/programs/ULTRA POWER.js
 // ══════════════════════════════════════════════════════════
 function getUltraPower() {
   return {
