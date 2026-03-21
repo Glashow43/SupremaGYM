@@ -71,7 +71,7 @@ function renderProgList() {
 
   function progCard(p) {
     var locked = isPreset(p.id);
-    var border = locked ? '2px solid var(--blue)' : '2px solid var(--green)';
+    var border = locked ? '0.5px solid var(--blue)' : '0.5px solid var(--green)';
     return '<div class="prog-item" onclick="openProgDetail(' + p.id + ')" style="border:' + border + ';">'
       + '<div class="prog-icon" style="background:' + (locked ? 'rgba(59,130,246,0.15)' : 'rgba(34,197,94,0.15)') + ';">' + (locked ? '🔒' : '📋') + '</div>'
       + '<div class="prog-info">'
