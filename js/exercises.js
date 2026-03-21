@@ -6,7 +6,6 @@
 // SYNONYMES DE RECHERCHE (FR → EN et EN → FR)
 // ════════════════════════════════════════════════════════
 const SEARCH_SYNONYMS = {
-  // Équipement
   'haltère':    'dumbbell',
   'haltères':   'dumbbell',
   'barre':      'barbell',
@@ -16,7 +15,6 @@ const SEARCH_SYNONYMS = {
   'poids':      'weight',
   'machine':    'machine',
   'corde':      'rope',
-  // Mouvements
   'rowing':     'row',
   'tirage':     'pull',
   'développé':  'press',
@@ -32,7 +30,6 @@ const SEARCH_SYNONYMS = {
   'écarté':     'fly',
   'soulevé':    'deadlift',
   'saut':       'jump',
-  // Positions
   'incliné':    'incline',
   'décliné':    'decline',
   'assis':      'seated',
@@ -43,7 +40,6 @@ const SEARCH_SYNONYMS = {
   'inversé':    'reverse',
   'serré':      'close',
   'large':      'wide',
-  // Muscles
   'pectoraux':  'chest',
   'dos':        'back',
   'épaule':     'shoulder',
@@ -57,21 +53,17 @@ const SEARCH_SYNONYMS = {
   'dorsal':     'lat',
 };
 
-// Étend une query avec ses synonymes
 function expandQuery(q) {
   if (!q) return [];
   var terms = [q];
   var lower = q.toLowerCase();
-  // FR → EN
   if (SEARCH_SYNONYMS[lower]) terms.push(SEARCH_SYNONYMS[lower]);
-  // EN → FR (recherche inverse)
   Object.keys(SEARCH_SYNONYMS).forEach(function(fr) {
     if (SEARCH_SYNONYMS[fr].toLowerCase() === lower) terms.push(fr);
   });
   return terms;
 }
 
-// Filtre les exercices en tenant compte des synonymes
 function filterExercises(exs, q) {
   if (!q) return exs;
   var terms = expandQuery(q.toLowerCase());
@@ -124,7 +116,7 @@ function renderExPicker() {
   }
   listEl.innerHTML = '';
   exs.forEach(function(e, i) {
-    var ic   = CAT_ICONS[e.cat] || CAT_ICONS['Personnalisé'];
+    var ic    = CAT_ICONS[e.cat] || CAT_ICONS['Personnalisé'];
     var thumb = e.image
       ? '<div class="ex-pick-icon" style="padding:0;overflow:hidden;"><img src="' + e.image + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:10px;" onerror="this.remove()"></div>'
       : '<div class="ex-pick-icon" style="background:' + ic.bg + ';color:' + ic.color + ';">' + ic.emoji + '</div>';
@@ -244,6 +236,7 @@ function openAddCustomEx() {
   document.getElementById('edit-ex-cat').value     = 'Jambes';
   document.getElementById('edit-ex-weight').value  = '0';
   document.getElementById('edit-ex-image').value   = '';
+  document.getElementById('edit-ex-file').value    = '';
   renderImagePreview('');
   openModal('modal-edit-ex');
 }
@@ -255,6 +248,7 @@ function openEditEx(e) {
   document.getElementById('edit-ex-cat').value     = e.cat   || 'Jambes';
   document.getElementById('edit-ex-weight').value  = e.defaultWeight || 0;
   document.getElementById('edit-ex-image').value   = e.image || '';
+  document.getElementById('edit-ex-file').value    = '';
   renderImagePreview(e.image || '');
   openModal('modal-edit-ex');
 }
@@ -267,6 +261,33 @@ function renderImagePreview(url) {
   } else {
     prev.innerHTML = '';
   }
+}
+
+// ── Photo depuis la galerie (compression automatique) ─────
+function handleExImageFile(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var maxSize = 400;
+      var w = img.width, h = img.height;
+      if (w > maxSize || h > maxSize) {
+        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+        else       { w = Math.round(w * maxSize / h); h = maxSize; }
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      var base64 = canvas.toDataURL('image/jpeg', 0.7);
+      document.getElementById('edit-ex-image').value = base64;
+      renderImagePreview(base64);
+      notify('✅ Photo chargée !');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 function saveEditEx() {
