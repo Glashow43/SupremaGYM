@@ -368,9 +368,29 @@
     </div>
     <div class="fg"><label class="fl">Poids par défaut (kg)</label><input type="number" class="fi" id="edit-ex-weight" value="0" min="0"></div>
     <div class="fg">
-      <label class="fl">Image / GIF (URL)</label>
-      <input class="fi" type="url" id="edit-ex-image" placeholder="https://..." oninput="renderImagePreview(this.value)">
-      <div id="edit-ex-image-preview"></div>
+      <label class="fl">Image / GIF</label>
+      <!-- Champ URL -->
+      <input class="fi" type="url" id="edit-ex-image" placeholder="https://... (URL)" oninput="renderImagePreview(this.value)" style="margin-bottom:8px;">
+      <!-- Input file caché -->
+      <input type="file" id="edit-ex-file" accept="image/*" style="display:none" onchange="handleExImageFile(event)">
+      <!-- Bouton parcourir -->
+      <button type="button" onclick="document.getElementById('edit-ex-file').click()" style="
+        display:flex;align-items:center;gap:8px;
+        background:var(--surface2);
+        border:1.5px dashed var(--border);
+        border-radius:10px;
+        padding:10px 14px;
+        font-size:13px;font-weight:600;
+        color:var(--text2);
+        cursor:pointer;
+        font-family:'Inter',sans-serif;
+        width:100%;
+        transition:border-color 0.2s,color 0.2s;
+      " onmouseover="this.style.borderColor='var(--purple)';this.style.color='var(--purple)'"
+         onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">
+        📷 Parcourir la galerie
+      </button>
+      <div id="edit-ex-image-preview" style="margin-top:8px;"></div>
     </div>
     <div style="text-align:center;">
       <button class="btn g" onclick="saveEditEx()">✅ Enregistrer</button>
