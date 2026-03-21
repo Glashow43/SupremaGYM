@@ -135,7 +135,7 @@ body {
     inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
-.login-logo  { font-size: 150px; margin-bottom: 10px; }
+.login-logo  { margin-bottom: 10px; }
 .login-title { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 6px; }
 .login-sub   {
   font-size: 14px;
