@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════
-// js/programs/full-power.js
+// js/programs/FULL POWER.js
 // ══════════════════════════════════════════════════════════
 function getFullPower() {
   return {
