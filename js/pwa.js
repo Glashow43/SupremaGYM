@@ -39,7 +39,7 @@ window.addEventListener('load', showIOSInstallHint);
 // ── Service Worker ────────────────────────────────────────
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
+    navigator.serviceWorker.register('/SupremaGYM/sw.js')
       .then(reg => console.log('SW enregistré :', reg.scope))
       .catch(err => console.error('SW erreur :', err));
   });
