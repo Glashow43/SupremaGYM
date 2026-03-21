@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════
-// js/programs/power-rush-pana.js
+// js/programs/POWER RUSH PANA.js
 // ══════════════════════════════════════════════════════════
 function getPowerRushPana() {
   return {
