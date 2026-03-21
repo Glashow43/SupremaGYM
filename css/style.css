@@ -781,10 +781,10 @@ body::after {
 .det-set-row:last-child { border-bottom: none; }
 .det-set-num      { font-size: 12px; font-weight: 700; color: var(--text2); text-align: center; }
 .det-set-val      { font-size: 14px; font-weight: 700; text-align: center; }
-.det-set-vol      { font-size: 13px; font-weight: 600; color: var(--purple); text-align: center; }
+.det-set-vol      { font-size: 13px; font-weight: 600; color: var(--blue); text-align: center; }
 .det-ex-total     { font-size: 11px; color: var(--text2); font-weight: 600; padding: 8px 14px; text-align: right; background: var(--surface2); }
 
 .sess-detail-recap  { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 16px; }
 .det-recap-card     { background: var(--surface); border-radius: var(--r); padding: 14px 8px; text-align: center; box-shadow: var(--sh); }
-.det-recap-val      { font-size: 20px; font-weight: 900; color: var(--purple); }
+.det-recap-val      { font-size: 20px; font-weight: 900; color: var(--blue); }
 .det-recap-lbl      { font-size: 10px; color: var(--text2); font-weight: 600; text-transform: uppercase; margin-top: 4px; }
