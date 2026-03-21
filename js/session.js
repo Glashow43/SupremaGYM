@@ -32,6 +32,7 @@ function stopSessTimer() {
 }
 
 function formatDuration(seconds) {
+  if (!seconds) return null;
   var h = Math.floor(seconds / 3600);
   var m = Math.floor((seconds % 3600) / 60);
   var s = seconds % 60;
