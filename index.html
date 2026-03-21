@@ -250,8 +250,14 @@
   </div>
   <!-- Barre fixe en bas -->
   <div class="sess-footer">
-    <button class="btn r full" onclick="clearSession()">✕ Annuler</button>
-    <button class="btn g full" onclick="saveSession()">✓ Terminer</button>
+    <div class="sess-timer">
+      <div class="sess-timer-dot"></div>
+      <span id="sess-timer-display">00:00:00</span>
+    </div>
+    <div class="sess-footer-btns">
+      <button class="btn r full" onclick="clearSession()">✕ Annuler</button>
+      <button class="btn g full" onclick="saveSession()">✓ Terminer</button>
+    </div>
   </div>
 </div>
 
