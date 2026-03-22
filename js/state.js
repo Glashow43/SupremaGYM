@@ -7,14 +7,13 @@ function ld(k, d) {
   try { return JSON.parse(localStorage.getItem(k)) ?? d; }
   catch { return d; }
 }
-
 function sv(k, v) {
   localStorage.setItem(k, JSON.stringify(v));
   scheduleSyncToCloud();
 }
 
 // ── IDs des programmes prédéfinis (verrouillés) ───────────
-const PRESET_PROGRAM_IDS = [1001];
+const PRESET_PROGRAM_IDS = [1001, 1002, 1003, 1004, 1005, 1006];
 
 function isPreset(pid) {
   return PRESET_PROGRAM_IDS.includes(pid);
@@ -29,5 +28,4 @@ let S = {
   ap:       ld('activeProgram',         null),
   ctx:      ld('currentSessionContext', null)
 };
-
 let xid = 0;
