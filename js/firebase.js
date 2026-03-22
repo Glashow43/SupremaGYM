@@ -86,22 +86,22 @@ auth.onAuthStateChanged(async user => {
     document.getElementById('login-loading').style.display = 'block';
 
     const loaded = await loadFromCloud();
-    if (!loaded) {
-      // Premier chargement : injecter le programme par défaut
-      const defProg = getDefaultProgram();
-      if (!S.progs.find(p => p.id === defProg.id)) {
-        S.progs.unshift(defProg);
+
+    // Injecter les programmes prédéfinis manquants
+    getPresetPrograms().forEach(function(def) {
+      if (!S.progs.find(function(p) { return p.id === def.id; })) {
+        S.progs.unshift(def);
         localStorage.setItem('programs', JSON.stringify(S.progs));
       }
-      await syncToCloud();
-    }
+    });
+    if (!loaded) await syncToCloud();
 
-    // Toujours mettre à jour le programme prédéfini avec la dernière version
-    // (getDefaultProgram est défini dans data.js, chargé après state.js)
-    var def = getDefaultProgram();
-    var idx = S.progs.findIndex(function(p) { return p.id === def.id; });
-    if (idx >= 0) S.progs[idx] = def;
-    else S.progs.unshift(def);
+    // Toujours mettre à jour les programmes prédéfinis avec la dernière version
+    getPresetPrograms().forEach(function(def) {
+      var idx = S.progs.findIndex(function(p) { return p.id === def.id; });
+      if (idx >= 0) S.progs[idx] = def;
+      else S.progs.unshift(def);
+    });
     sv('programs', S.progs);
     await syncToCloud();
 
