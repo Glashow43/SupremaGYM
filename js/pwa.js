@@ -1,7 +1,6 @@
 // ══════════════════════════════════════════════════════════
 // js/pwa.js — PWA : installation Android + iOS
 // ══════════════════════════════════════════════════════════
-
 // ── Android / Chrome : bannière d'installation ────────────
 let deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', e => {
@@ -20,7 +19,6 @@ function installApp() {
     document.getElementById('install-banner').style.display = 'none';
   }
 }
-
 // ── iOS : détecter Safari et afficher les instructions ────
 function isIOS() {
   return /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -35,7 +33,22 @@ function showIOSInstallHint() {
   }
 }
 window.addEventListener('load', showIOSInstallHint);
+// ── Retour arrière-plan Android : restaurer l'état ────────
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
 
+  // Si une séance est en cours, s'assurer qu'on est sur la bonne page
+  // et que le timer tourne toujours
+  if (S.cur && S.cur.length > 0) {
+    var pageSession = document.getElementById('page-session');
+    if (pageSession && pageSession.classList.contains('active')) {
+      // On est déjà sur la page session — juste relancer le timer si mort
+      if (!sessTimerInterval && localStorage.getItem('sessTimerStart')) {
+        resumeSessTimer();
+      }
+    }
+  }
+});
 // ── Service Worker ────────────────────────────────────────
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
