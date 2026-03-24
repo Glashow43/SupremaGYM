@@ -10,25 +10,40 @@ let sessTimerStart    = null;
 let sessTimerElapsed  = 0;
 
 function startSessTimer() {
-  sessTimerStart   = Date.now();
+  // Persistance du timestamp de départ
+  sessTimerStart = Date.now();
+  localStorage.setItem('sessTimerStart', sessTimerStart);
   sessTimerElapsed = 0;
   clearInterval(sessTimerInterval);
-  sessTimerInterval = setInterval(function() {
-    sessTimerElapsed = Math.floor((Date.now() - sessTimerStart) / 1000);
-    var h = Math.floor(sessTimerElapsed / 3600);
-    var m = Math.floor((sessTimerElapsed % 3600) / 60);
-    var s = sessTimerElapsed % 60;
-    var el = document.getElementById('sess-timer-display');
-    if (el) el.textContent =
-      String(h).padStart(2,'0') + ':' +
-      String(m).padStart(2,'0') + ':' +
-      String(s).padStart(2,'0');
-  }, 1000);
+  sessTimerInterval = setInterval(_tickTimer, 1000);
+}
+
+function resumeSessTimer() {
+  // Restaure le timer depuis localStorage si une séance est en cours
+  var saved = localStorage.getItem('sessTimerStart');
+  if (!saved) return;
+  sessTimerStart = parseInt(saved);
+  clearInterval(sessTimerInterval);
+  sessTimerInterval = setInterval(_tickTimer, 1000);
+}
+
+function _tickTimer() {
+  sessTimerElapsed = Math.floor((Date.now() - sessTimerStart) / 1000);
+  var h = Math.floor(sessTimerElapsed / 3600);
+  var m = Math.floor((sessTimerElapsed % 3600) / 60);
+  var s = sessTimerElapsed % 60;
+  var el = document.getElementById('sess-timer-display');
+  if (el) el.textContent =
+    String(h).padStart(2,'0') + ':' +
+    String(m).padStart(2,'0') + ':' +
+    String(s).padStart(2,'0');
 }
 
 function stopSessTimer() {
   clearInterval(sessTimerInterval);
   sessTimerInterval = null;
+  sessTimerElapsed  = Math.floor((Date.now() - sessTimerStart) / 1000);
+  localStorage.removeItem('sessTimerStart');
 }
 
 function formatDuration(seconds) {
@@ -168,7 +183,6 @@ function startSess(pid, wi, si) {
       name:     ex.name,
       liftType: ex.liftType || ex.lift || '',
       sets:     (ex.series || [{ reps: 5, weight: null }]).map(function(s) {
-        // Calcul auto du poids depuis le % et le 1RM si weight est null
         var w = s.weight;
         if (!w && s.pct && ex.liftType && S.rm[ex.liftType]) {
           w = Math.round((S.rm[ex.liftType] * s.pct / 100) * 4) / 4;
@@ -205,6 +219,11 @@ function renderSess() {
     subEl.textContent   = '';
     exEl.innerHTML      = '<div class="empty"><p>Aucun exercice · Utilise le bouton + pour ajouter</p></div>';
     return;
+  }
+
+  // Restaurer le timer si l'intervalle n'est plus actif (retour arrière-plan)
+  if (!sessTimerInterval && localStorage.getItem('sessTimerStart')) {
+    resumeSessTimer();
   }
 
   if (S.ctx) {
