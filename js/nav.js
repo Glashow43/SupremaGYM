@@ -1,8 +1,13 @@
 // ══════════════════════════════════════════════════════════
 // js/nav.js — Navigation, drawer, notifications, modals
 // ══════════════════════════════════════════════════════════
-
 function showPage(id, ni) {
+  // ── Guard : si une séance est en cours et qu'on navigue vers 'train',
+  //    rediriger automatiquement vers la page session ──────────────────
+  if (id === 'train' && S.cur && S.cur.length > 0) {
+    id = 'session';
+  }
+
   document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
   document.getElementById('page-' + id).classList.add('active');
   // Mettre à jour le drawer
@@ -20,26 +25,21 @@ function showPage(id, ni) {
   if (id === 'settings')  renderSettings();
   window.scrollTo(0, 0);
 }
-
 // ── Drawer ────────────────────────────────────────────────
 function openDrawer() {
   document.getElementById('drawer').classList.add('open');
   document.getElementById('drawer-overlay').classList.add('open');
 }
-
 function closeDrawer() {
   document.getElementById('drawer').classList.remove('open');
   document.getElementById('drawer-overlay').classList.remove('open');
 }
-
 function navTo(id, ni) {
   closeDrawer();
   showPage(id, ni);
 }
-
 // ── Notification toast ────────────────────────────────────
 var _notifTimer = null;
-
 function notify(m) {
   var e = document.getElementById('notif');
   e.textContent = m;
@@ -47,7 +47,6 @@ function notify(m) {
   clearTimeout(_notifTimer);
   _notifTimer = setTimeout(function() { e.classList.remove('show'); }, 2400);
 }
-
 // ── Modals génériques ─────────────────────────────────────
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
