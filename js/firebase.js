@@ -82,6 +82,9 @@ function signOut() {
 
 auth.onAuthStateChanged(async user => {
   if (user) {
+    // ── Guard : retour d'arrière-plan Android, ne pas tout re-render ──
+    if (currentUser && currentUser.uid === user.uid) return;
+
     currentUser = user;
     document.getElementById('login-loading').style.display = 'block';
 
