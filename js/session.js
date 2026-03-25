@@ -59,6 +59,24 @@ function formatDuration(seconds) {
 let restTimerInterval = null;
 let restRemaining     = 0;
 
+function _playRestEndSound() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.25, 0.5].forEach(function(delay) {
+      var osc  = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime + delay);
+      gain.gain.setValueAtTime(0.6, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.18);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + 0.18);
+    });
+  } catch(e) {}
+}
+
 function startRestTimer(seconds) {
   clearInterval(restTimerInterval);
   restRemaining = seconds > 0 ? seconds : 180;
@@ -70,7 +88,8 @@ function startRestTimer(seconds) {
     _updateRestDisplay();
     if (restRemaining <= 0) {
       skipRest();
-      if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+      _playRestEndSound();
+      if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]);
     }
   }, 1000);
 }
@@ -344,7 +363,6 @@ function toggleDone(ei, si) {
   sv('currentSession', S.cur);
   renderSess();
 
-  // Déclenche le repos uniquement à la validation (pas à la dé-validation)
   if (!wasDone) {
     var rest = S.cur[ei].sets[si].rest;
     var seconds = (rest !== undefined && rest !== null && rest !== '') ? parseInt(rest) : 180;
@@ -425,7 +443,6 @@ function saveSession() {
 
   if (!confirm(msg)) return;
 
-  // Stopper le timer de repos si actif
   skipRest();
 
   var sess = {
