@@ -4,10 +4,6 @@
 
 let dpid = null;
 
-// ════════════════════════════════════════════════════════
-// MAPPING CATÉGORIE → 1RM
-// ════════════════════════════════════════════════════════
-
 function getLiftForCat(cat) {
   if (cat === 'Jambes')    return 'squat';
   if (cat === 'Pectoraux') return 'bench';
@@ -20,10 +16,6 @@ function get1RMForLift(liftType) {
   var val = S.rm[liftType];
   return (val && val > 0) ? val : null;
 }
-
-// ════════════════════════════════════════════════════════
-// RENOMMAGE INLINE
-// ════════════════════════════════════════════════════════
 
 function renameProg(pid) {
   var p = S.progs.find(function(p) { return p.id === pid; });
@@ -56,10 +48,6 @@ function renameSess(wi, sIdx) {
   sv('programs', S.progs);
   renderProgDetail();
 }
-
-// ════════════════════════════════════════════════════════
-// LISTE DES PROGRAMMES
-// ════════════════════════════════════════════════════════
 
 function renderProgList() {
   var el      = document.getElementById('prog-list-content');
@@ -115,7 +103,6 @@ function renderProgDetail() {
   if (!prog) return;
   var locked = isPreset(prog.id);
 
-  // ── Titre + bouton renommer (avec espacement) ──────────
   var nameEl = document.getElementById('detail-prog-name');
   if (locked) {
     nameEl.textContent = prog.name + ' 🔒';
@@ -129,7 +116,6 @@ function renderProgDetail() {
 
   var el = document.getElementById('detail-weeks-content');
 
-  // Garde en mémoire les semaines ouvertes avant le re-render
   var openWeeks = {};
   el.querySelectorAll('[data-week-body]').forEach(function(body, i) {
     if (body.style.display === 'block') openWeeks[i] = true;
@@ -183,7 +169,6 @@ function renderProgDetail() {
   }
 }
 
-// ── Dupliquer un programme prédéfini ─────────────────────
 function duplicateProgram(pid) {
   var orig = S.progs.find(function(p) { return p.id === pid; });
   if (!orig) return;
@@ -196,8 +181,6 @@ function duplicateProgram(pid) {
   openProgDetail(copy.id);
   notify('📋 Programme copié ! Tu peux maintenant le modifier.');
 }
-
-// ── CRUD ─────────────────────────────────────────────────
 
 function createProgram() {
   var name = document.getElementById('prog-name-input').value.trim();
@@ -234,29 +217,21 @@ function addSessToWeek(pid, wi) {
   if (!p || isPreset(p.id)) return;
   p.weeks[wi].sessions.push({ id: Date.now(), name: 'Séance ' + (p.weeks[wi].sessions.length + 1), exercises: [] });
   sv('programs', S.progs);
-  // Re-render en préservant l'état ouvert de la semaine wi
   renderProgDetailKeepOpen(wi);
 }
 
-// Re-render en forçant une semaine ouverte
 function renderProgDetailKeepOpen(forceOpenWi) {
   var prog = S.progs.find(function(p) { return p.id === dpid; });
   if (!prog) return;
-
-  // Récupère les semaines déjà ouvertes
   var openWeeks = {};
   document.querySelectorAll('[data-week-body]').forEach(function(body, i) {
     if (body.style.display === 'block') openWeeks[i] = true;
   });
-  // Force la semaine cible ouverte
   if (forceOpenWi !== undefined) openWeeks[forceOpenWi] = true;
-
-  // Injecte temporairement dans openWeeks pour que renderProgDetail les lise
   var el = document.getElementById('detail-weeks-content');
   el.querySelectorAll('[data-week-body]').forEach(function(body, i) {
     body.style.display = openWeeks[i] ? 'block' : 'none';
   });
-
   renderProgDetail();
 }
 
@@ -307,6 +282,11 @@ var eeState = { pid: null, wi: null, si: null, exs: [], locked: false };
 function normEx(ex) {
   if (!ex.series || !ex.series.length)
     ex.series = [{ reps: 5, pct: null, weight: null, rpe: null, rest: 180 }];
+  // S'assurer que chaque série a un champ rest
+  ex.series = ex.series.map(function(s) {
+    if (s.rest === undefined || s.rest === null) s.rest = 180;
+    return s;
+  });
   return ex;
 }
 
@@ -370,6 +350,9 @@ function renderExEditor() {
   if (addExBtn) addExBtn.style.display = locked ? 'none' : '';
   if (saveBtn)  saveBtn.style.display  = locked ? 'none' : '';
 
+  // ── Grille : # | Reps | %1RM | Poids | RPE | Repos | ✕
+  var GRID = 'grid-template-columns:24px 1fr 1fr 1.2fr 1fr 1.2fr 32px;';
+
   for (var ei = 0; ei < eeState.exs.length; ei++) {
     var ex    = eeState.exs[ei];
     var found = allEx.find(function(e) { return e.name.toLowerCase() === ex.name.toLowerCase(); });
@@ -385,12 +368,13 @@ function renderExEditor() {
     for (var ri = 0; ri < ex.series.length; ri++) {
       var s   = ex.series[ri];
       var dis = locked ? ' disabled style="opacity:0.6;"' : '';
-      rows += '<div class="ee-set-row">'
+      rows += '<div class="ee-set-row" style="' + GRID + '">'
         + '<span class="ee-set-num">' + (ri + 1) + '</span>'
         + '<input class="ee-inp" type="number" value="' + (s.reps || '') + '" placeholder="5"' + dis + (locked ? '' : ' oninput="eeUpdate(' + ei + ',' + ri + ',\'reps\',this.value)"') + '>'
         + '<input class="ee-inp" type="number" value="' + (s.pct  || '') + '" placeholder="—"' + dis + (locked ? '' : ' oninput="eeUpdatePct(' + ei + ',' + ri + ',this.value,\'' + cat + '\')"') + ' step="0.5">'
         + '<input class="ee-inp" type="number" value="' + (s.weight !== null && s.weight !== undefined ? s.weight : '') + '" placeholder="—"' + dis + (locked ? '' : ' oninput="eeUpdateWeight(' + ei + ',' + ri + ',this.value,\'' + cat + '\')"') + ' step="0.5">'
         + '<input class="ee-inp" type="number" value="' + (s.rpe  || '') + '" placeholder="—"' + dis + (locked ? '' : ' oninput="eeUpdate(' + ei + ',' + ri + ',\'rpe\',this.value)"') + '>'
+        + '<input class="ee-inp" type="number" value="' + (s.rest !== undefined && s.rest !== null ? s.rest : 180) + '" placeholder="180"' + dis + (locked ? '' : ' oninput="eeUpdate(' + ei + ',' + ri + ',\'rest\',this.value)"') + ' min="0">'
         + (locked ? '<span></span>' : '<button onclick="removeSetFromEE(' + ei + ',' + ri + ')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;">✕</button>')
         + '</div>';
     }
@@ -418,8 +402,14 @@ function renderExEditor() {
           + '<button class="btn r sm" onclick="removeExFromEE(' + ei + ')">✕</button>'
           + '</div>')
       + '</div>'
-      + '<div class="ee-hdr-labels">'
-      + '<span class="ee-lbl">#</span><span class="ee-lbl">Reps</span><span class="ee-lbl">%1RM</span><span class="ee-lbl">Poids</span><span class="ee-lbl">RPE</span><span class="ee-lbl"></span>'
+      + '<div class="ee-hdr-labels" style="' + GRID + '">'
+      + '<span class="ee-lbl">#</span>'
+      + '<span class="ee-lbl">Reps</span>'
+      + '<span class="ee-lbl">%1RM</span>'
+      + '<span class="ee-lbl">Poids</span>'
+      + '<span class="ee-lbl">RPE</span>'
+      + '<span class="ee-lbl">Repos</span>'
+      + '<span class="ee-lbl"></span>'
       + '</div>'
       + rows
       + (locked ? '' : '<div style="padding:8px 10px;"><button class="btn g sm full" onclick="addSetToEE(' + ei + ')">＋ Série</button></div>')
@@ -470,7 +460,13 @@ function _eeRowIndex(ei, ri) {
 function addSetToEE(ei) {
   if (eeState.locked) return;
   var last = eeState.exs[ei].series.slice(-1)[0] || {};
-  eeState.exs[ei].series.push({ reps: last.reps || 5, pct: last.pct || null, weight: last.weight || null, rpe: last.rpe || null, rest: 180 });
+  eeState.exs[ei].series.push({
+    reps:   last.reps   || 5,
+    pct:    last.pct    || null,
+    weight: last.weight || null,
+    rpe:    last.rpe    || null,
+    rest:   last.rest   !== undefined ? last.rest : 180
+  });
   renderExEditor();
 }
 
