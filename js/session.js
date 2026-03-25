@@ -10,7 +10,6 @@ let sessTimerStart    = null;
 let sessTimerElapsed  = 0;
 
 function startSessTimer() {
-  // Persistance du timestamp de départ
   sessTimerStart = Date.now();
   localStorage.setItem('sessTimerStart', sessTimerStart);
   sessTimerElapsed = 0;
@@ -19,7 +18,6 @@ function startSessTimer() {
 }
 
 function resumeSessTimer() {
-  // Restaure le timer depuis localStorage si une séance est en cours
   var saved = localStorage.getItem('sessTimerStart');
   if (!saved) return;
   sessTimerStart = parseInt(saved);
@@ -56,6 +54,56 @@ function formatDuration(seconds) {
 }
 
 // ════════════════════════════════════════════════════════
+// TIMER DE REPOS
+// ════════════════════════════════════════════════════════
+let restTimerInterval = null;
+let restRemaining     = 0;
+
+function startRestTimer(seconds) {
+  clearInterval(restTimerInterval);
+  restRemaining = seconds > 0 ? seconds : 180;
+  var overlay = document.getElementById('rest-overlay');
+  overlay.style.display = 'flex';
+  _updateRestDisplay();
+  restTimerInterval = setInterval(function() {
+    restRemaining--;
+    _updateRestDisplay();
+    if (restRemaining <= 0) {
+      skipRest();
+      if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+    }
+  }, 1000);
+}
+
+function _updateRestDisplay() {
+  var m  = Math.floor(restRemaining / 60);
+  var s  = restRemaining % 60;
+  var el = document.getElementById('rest-countdown');
+  if (el) el.textContent = m + ':' + String(s).padStart(2, '0');
+  var circle = document.getElementById('rest-circle');
+  if (circle) {
+    if (restRemaining <= 10)      circle.style.borderColor = 'var(--red)';
+    else if (restRemaining <= 30) circle.style.borderColor = '#f59e0b';
+    else                          circle.style.borderColor = 'var(--purple)';
+  }
+}
+
+function addRestTime(delta) {
+  restRemaining = Math.max(0, restRemaining + delta);
+  _updateRestDisplay();
+}
+
+function skipRest() {
+  clearInterval(restTimerInterval);
+  restTimerInterval = null;
+  document.getElementById('rest-overlay').style.display = 'none';
+}
+
+function cancelRest() {
+  skipRest();
+}
+
+// ════════════════════════════════════════════════════════
 // WAKE LOCK
 // ════════════════════════════════════════════════════════
 let wakeLock = null;
@@ -89,7 +137,6 @@ function renderTrain() {
     return;
   }
 
-  // Séance suggérée
   if (S.ap) {
     var prog = S.progs.find(function(p) { return p.id === S.ap.programId; });
     if (prog) {
@@ -108,7 +155,6 @@ function renderTrain() {
     }
   }
 
-  // Liste complète — séparée en deux sections
   var customs = S.progs.filter(function(p) { return !isPreset(p.id); });
   var presets = S.progs.filter(function(p) { return isPreset(p.id); });
 
@@ -182,7 +228,7 @@ function startSess(pid, wi, si) {
       id:       ++xid,
       name:     ex.name,
       liftType: ex.liftType || ex.lift || '',
-      sets:     (ex.series || [{ reps: 5, weight: null }]).map(function(s) {
+      sets:     (ex.series || [{ reps: 5, weight: null, rest: 180 }]).map(function(s) {
         var w = s.weight;
         if (!w && s.pct && ex.liftType && S.rm[ex.liftType]) {
           w = Math.round((S.rm[ex.liftType] * s.pct / 100) * 4) / 4;
@@ -192,6 +238,7 @@ function startSess(pid, wi, si) {
           pct:    s.pct  || null,
           weight: w ? String(w) : '',
           rpe:    s.rpe  || null,
+          rest:   (s.rest !== undefined && s.rest !== null) ? s.rest : 180,
           done:   false
         };
       })
@@ -221,7 +268,6 @@ function renderSess() {
     return;
   }
 
-  // Restaurer le timer si l'intervalle n'est plus actif (retour arrière-plan)
   if (!sessTimerInterval && localStorage.getItem('sessTimerStart')) {
     resumeSessTimer();
   }
@@ -293,14 +339,29 @@ function sessUpdate(ei, si, key, val) {
 }
 
 function toggleDone(ei, si) {
-  S.cur[ei].sets[si].done = !S.cur[ei].sets[si].done;
+  var wasDone = S.cur[ei].sets[si].done;
+  S.cur[ei].sets[si].done = !wasDone;
   sv('currentSession', S.cur);
   renderSess();
+
+  // Déclenche le repos uniquement à la validation (pas à la dé-validation)
+  if (!wasDone) {
+    var rest = S.cur[ei].sets[si].rest;
+    var seconds = (rest !== undefined && rest !== null && rest !== '') ? parseInt(rest) : 180;
+    if (seconds > 0) startRestTimer(seconds);
+  }
 }
 
 function addSetToSess(ei) {
-  var last = S.cur[ei].sets.slice(-1)[0] || { reps: 5, weight: '' };
-  S.cur[ei].sets.push({ reps: last.reps, pct: null, weight: last.weight, rpe: null, done: false });
+  var last = S.cur[ei].sets.slice(-1)[0] || { reps: 5, weight: '', rest: 180 };
+  S.cur[ei].sets.push({
+    reps:   last.reps,
+    pct:    null,
+    weight: last.weight,
+    rpe:    null,
+    rest:   last.rest !== undefined ? last.rest : 180,
+    done:   false
+  });
   sv('currentSession', S.cur);
   renderSess();
 }
@@ -333,7 +394,9 @@ function confirmQuickEx() {
     id:       ++xid,
     name:     pendingPickedEx.name,
     liftType: pendingPickedEx.lift || '',
-    sets:     Array(sets).fill(null).map(function() { return { reps: reps, pct: null, weight: '', rpe: null, done: false }; })
+    sets:     Array(sets).fill(null).map(function() {
+      return { reps: reps, pct: null, weight: '', rpe: null, rest: 180, done: false };
+    })
   });
   sv('currentSession', S.cur);
   document.getElementById('modal-quick-ex').classList.remove('open');
@@ -362,6 +425,9 @@ function saveSession() {
 
   if (!confirm(msg)) return;
 
+  // Stopper le timer de repos si actif
+  skipRest();
+
   var sess = {
     id:        Date.now(),
     date:      new Date().toISOString(),
@@ -371,7 +437,6 @@ function saveSession() {
   };
 
   stopSessTimer();
-
   S.sessions.push(sess);
 
   var prs = [];
@@ -415,6 +480,7 @@ function saveSession() {
 
 function clearSession() {
   if (!confirm('Annuler la séance ? Les données seront perdues.')) return;
+  skipRest();
   S.cur = []; S.ctx = null;
   sv('currentSession',        S.cur);
   sv('currentSessionContext', S.ctx);
