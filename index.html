@@ -504,6 +504,53 @@
   </div>
 </div>
 
+<!-- ── TIMER DE REPOS (overlay) ──────────────────────── -->
+<div id="rest-overlay" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:2000;
+  background:rgba(10,8,25,0.92);
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+">
+  <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase;">⏱ Repos</div>
+  <div id="rest-circle" style="
+    width:180px;height:180px;border-radius:50%;
+    border:6px solid var(--purple);
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    background:rgba(139,108,247,0.08);
+    box-shadow:0 0 40px rgba(139,108,247,0.25);
+  ">
+    <div id="rest-countdown" style="font-size:52px;font-weight:900;color:#fff;line-height:1;">3:00</div>
+    <div id="rest-label" style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px;">secondes</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-top:8px;">
+    <button onclick="addRestTime(-15)" style="
+      background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);
+      color:#fff;border-radius:50px;padding:8px 18px;font-size:13px;font-weight:700;
+      cursor:pointer;font-family:'Inter',sans-serif;">−15s</button>
+    <button onclick="addRestTime(15)" style="
+      background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);
+      color:#fff;border-radius:50px;padding:8px 18px;font-size:13px;font-weight:700;
+      cursor:pointer;font-family:'Inter',sans-serif;">+15s</button>
+  </div>
+  <button onclick="skipRest()" style="
+    background:var(--green);border:none;color:#fff;
+    border-radius:50px;padding:12px 36px;
+    font-size:14px;font-weight:800;cursor:pointer;
+    font-family:'Inter',sans-serif;margin-top:4px;">
+    ✓ Passer
+  </button>
+  <button onclick="cancelRest()" style="
+    background:none;border:none;color:rgba(255,255,255,0.4);
+    font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;">
+    Annuler le repos
+  </button>
+</div>
 <!-- ════════════════════════════════════════════════════ -->
 <!-- ── SCRIPTS (ordre important) ─────────────────────── -->
 <!-- ════════════════════════════════════════════════════ -->
