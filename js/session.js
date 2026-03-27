@@ -477,11 +477,12 @@ function saveSession() {
   sv('currentSession',        S.cur);
   sv('currentSessionContext', S.ctx);
 
+  // ── Avancer depuis la séance EFFECTUÉE (ctx), pas depuis la suggestion (ap) ──
   if (S.ap && S.ap.programId === (sess.context && sess.context.progId)) {
     var prog = S.progs.find(function(p) { return p.id === S.ap.programId; });
     if (prog) {
-      var wi2 = S.ap.weekIdx;
-      var si2 = S.ap.sessionIdx + 1;
+      var wi2 = sess.context.weekIdx;
+      var si2 = sess.context.sessionIdx + 1;
       if (si2 >= prog.weeks[wi2].sessions.length) { wi2++; si2 = 0; }
       if (wi2 >= prog.weeks.length)               { wi2 = 0; si2 = 0; }
       S.ap = { programId: S.ap.programId, weekIdx: wi2, sessionIdx: si2 };
