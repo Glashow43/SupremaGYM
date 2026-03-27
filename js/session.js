@@ -490,7 +490,7 @@ function saveSession() {
     }
   }
 
- releaseWakeLock();
+   releaseWakeLock();
   syncToCloudNow(); // ── Sync immédiat pour garantir que S.ap est bien sauvegardé
   if (prs.length) notify('🏆 Nouveau PR ! ' + prs.join(', '));
   else            notify('✅ Séance terminée en ' + formatDuration(sess.duration) + ' !');
