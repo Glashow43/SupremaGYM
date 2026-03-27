@@ -23,6 +23,12 @@ function scheduleSyncToCloud() {
   syncTimer = setTimeout(syncToCloud, 1500);
 }
 
+// ── Sync immédiat — à appeler après une action critique ──
+async function syncToCloudNow() {
+  clearTimeout(syncTimer);
+  await syncToCloud();
+}
+
 async function syncToCloud() {
   if (!currentUser) return;
   try {
