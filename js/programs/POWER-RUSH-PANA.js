@@ -168,6 +168,7 @@ function getPowerRushPana() {
             { reps: 1, pct: 87, weight: null, rpe: 8.0,  rest: 180 },
             { reps: 5, pct: 77, weight: null, rpe: 8.0,  rest: 180 },
             { reps: 5, pct: 77, weight: null, rpe: 8.0,  rest: 180 },
+            { reps: 5, pct: 77, weight: null, rpe: 8.0,  rest: 180 },
           ]},
           { name: "Extension Triceps Poulie", liftType: "", series: [
             { reps: 12, pct: null, weight: null, rpe: null, rest: 180 },
@@ -210,6 +211,9 @@ function getPowerRushPana() {
             { reps: 1, pct: 79, weight: null, rpe: null, rest: 180 },
             { reps: 1, pct: 86, weight: null, rpe: 6.0,  rest: 180 },
             { reps: 1, pct: 93, weight: null, rpe: 8.0,  rest: 180 },
+            { reps: 1, pct: 93, weight: null, rpe: 8.0,  rest: 180 },
+            { reps: 1, pct: 93, weight: null, rpe: 8.0,  rest: 180 },
+            { reps: 7, pct: 72, weight: null, rpe: 7.0,  rest: 180 },
             { reps: 7, pct: 72, weight: null, rpe: 7.0,  rest: 180 },
             { reps: 7, pct: 72, weight: null, rpe: 7.0,  rest: 180 },
           ]},
