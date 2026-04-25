@@ -108,6 +108,7 @@ function getPowerRushPana() {
             { reps: 1, pct: 84, weight: null, rpe: 5.0,  rest: 180 },
             { reps: 1, pct: 89, weight: null, rpe: 7.0,  rest: 180 },
             { reps: 1, pct: 89, weight: null, rpe: 7.0,  rest: 180 },
+            { reps: 1, pct: 89, weight: null, rpe: 7.0,  rest: 180 },
           ]},
           { name: "Deadlift Halte", liftType: "deadlift", series: [
             { reps: 3, pct: 70, weight: null, rpe: null, rest: 180 },
