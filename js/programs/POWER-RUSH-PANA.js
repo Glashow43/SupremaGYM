@@ -262,6 +262,7 @@ function getPowerRushPana() {
             { reps: 3, pct: 82, weight: null, rpe: 6.0,  rest: 180 },
             { reps: 3, pct: 86, weight: null, rpe: 8.0,  rest: 180 },
             { reps: 3, pct: 86, weight: null, rpe: 8.0,  rest: 180 },
+            { reps: 3, pct: 86, weight: null, rpe: 8.0,  rest: 180 },
           ]},
           { name: "RDL (Haltères)", liftType: "deadlift", series: [
             { reps: 10, pct: null, weight: null, rpe: null, rest: 180 },
@@ -333,6 +334,7 @@ function getPowerRushPana() {
             { reps: 1, pct: 86, weight: null, rpe: 5.0,  rest: 180 },
             { reps: 1, pct: 93, weight: null, rpe: 8.0,  rest: 180 },
             { reps: 1, pct: 96, weight: null, rpe: 9.0,  rest: 180 },
+            { reps: 1, pct: 89, weight: null, rpe: null,  rest: 180 },
           ]},
           { name: "Deadlift Halte", liftType: "deadlift", series: [
             { reps: 3, pct: 75, weight: null, rpe: null, rest: 180 },
