@@ -45,6 +45,12 @@ function exportData() {
   notify('✅ Export OK !');
 }
 
+/**
+ * Importe des données depuis un fichier JSON.
+ * - Sauvegarde complète (sessions/oneRMs présents) → restauration totale (avec confirmation)
+ * - Fichier "programmes seuls" → fusion avec les programmes existants (mise à jour si même id)
+ * @param {Event} e - événement onChange de l'input file
+ */
 function importData(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -52,19 +58,45 @@ function importData(e) {
   reader.onload = ev => {
     try {
       const d = JSON.parse(ev.target.result);
-      if (d.sessions)                    S.sessions = d.sessions;
-      if (d.oneRMs)                      S.rm       = d.oneRMs;
-      if (d.programs)                    S.progs    = d.programs;
-      if (d.activeProgram !== undefined) S.ap       = d.activeProgram;
-      sv('sessions',      S.sessions);
-      sv('oneRMs',        S.rm);
-      sv('programs',      S.progs);
-      sv('activeProgram', S.ap);
-      renderDash();
-      notify('✅ Import OK !');
+      const isFullBackup = !!(d.sessions || d.oneRMs);
+
+      if (isFullBackup) {
+        if (!confirm('Ce fichier est une sauvegarde complète : elle va remplacer toutes tes données. Continuer ?')) {
+          e.target.value = '';
+          return;
+        }
+        if (d.sessions)                    S.sessions = d.sessions;
+        if (d.oneRMs)                      S.rm       = d.oneRMs;
+        if (d.programs)                    S.progs    = d.programs;
+        if (d.activeProgram !== undefined) S.ap       = d.activeProgram;
+        sv('sessions',      S.sessions);
+        sv('oneRMs',        S.rm);
+        sv('programs',      S.progs);
+        sv('activeProgram', S.ap);
+        renderDash();
+        notify('✅ Sauvegarde restaurée !');
+
+      } else if (Array.isArray(d.programs) && d.programs.length) {
+        let added = 0, updated = 0;
+        d.programs.forEach(p => {
+          if (!p || !p.name || !Array.isArray(p.weeks)) return;
+          if (!p.id) p.id = Date.now() + added;
+          const idx = S.progs.findIndex(x => x.id === p.id);
+          if (idx === -1) { S.progs.push(p); added++; }
+          else            { S.progs[idx] = p; updated++; }
+        });
+        if (!added && !updated) { notify('❌ Aucun programme valide'); return; }
+        sv('programs', S.progs);
+        renderDash();
+        notify('✅ ' + added + ' ajouté(s), ' + updated + ' mis à jour');
+
+      } else {
+        notify('❌ Fichier invalide');
+      }
     } catch (err) {
       notify('❌ Fichier invalide');
     }
+    e.target.value = '';
   };
   reader.readAsText(file);
 }
