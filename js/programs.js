@@ -4,6 +4,60 @@
 
 let dpid = null;
 
+// ════════════════════════════════════════════════════════
+// BI-SETS — helpers partagés (utilisés aussi par session.js)
+// Un bi-set = 2 exercices CONSÉCUTIFS avec le même champ `biset`
+// ════════════════════════════════════════════════════════
+
+var BISET_COLOR = '#f59e0b';
+
+function newBisetId() {
+  return 'bs' + Date.now() + Math.floor(Math.random() * 1000);
+}
+
+// Renvoie l'index du partenaire de bi-set de exs[i], ou -1
+function bisetPartner(exs, i) {
+  var ex = exs[i];
+  if (!ex || !ex.biset) return -1;
+  if (i > 0 && exs[i - 1].biset === ex.biset) return i - 1;
+  if (i < exs.length - 1 && exs[i + 1].biset === ex.biset) return i + 1;
+  return -1;
+}
+
+// Supprime les bi-sets cassés (exercice seul, non consécutifs, >2 exercices)
+function cleanBisets(exs) {
+  var counts = {};
+  exs.forEach(function(e) { if (e.biset) counts[e.biset] = (counts[e.biset] || 0) + 1; });
+  exs.forEach(function(e, i) {
+    if (!e.biset) return;
+    var adjacent = (i > 0 && exs[i - 1].biset === e.biset)
+                || (i < exs.length - 1 && exs[i + 1].biset === e.biset);
+    if (counts[e.biset] !== 2 || !adjacent) delete e.biset;
+  });
+  return exs;
+}
+
+// Renvoie pour chaque index : null ou { letter: 'A', pos: 1|2 }
+function bisetLabels(exs) {
+  var labels = exs.map(function() { return null; });
+  var code   = 65; // 'A'
+  for (var i = 0; i < exs.length - 1; i++) {
+    if (exs[i].biset && exs[i + 1].biset === exs[i].biset) {
+      var l = String.fromCharCode(code++);
+      labels[i]     = { letter: l, pos: 1 };
+      labels[i + 1] = { letter: l, pos: 2 };
+      i++;
+    }
+  }
+  return labels;
+}
+
+function bisetBadge(lbl) {
+  if (!lbl) return '';
+  return '<span style="font-size:10px;background:' + BISET_COLOR + ';color:#000;border-radius:6px;padding:2px 7px;font-weight:800;margin-right:4px;">'
+    + lbl.letter + lbl.pos + '</span>';
+}
+
 function getLiftForCat(cat) {
   if (cat === 'Jambes')    return 'squat';
   if (cat === 'Pectoraux') return 'bench';
@@ -126,11 +180,14 @@ function renderProgDetail() {
     var isOpen    = openWeeks[wi] !== undefined;
 
     var sessHTML = w.sessions.map(function(sess, sIdx) {
+      var nbBisets = bisetLabels(sess.exercises).filter(function(l) { return l && l.pos === 1; }).length;
       return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;margin-top:6px;">'
         + '<div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;">'
         + '<div>'
         + '<div style="font-size:13px;font-weight:700;">' + sess.name + '</div>'
-        + '<div style="font-size:11px;color:var(--text2);">' + sess.exercises.length + ' exercice' + (sess.exercises.length !== 1 ? 's' : '') + '</div>'
+        + '<div style="font-size:11px;color:var(--text2);">' + sess.exercises.length + ' exercice' + (sess.exercises.length !== 1 ? 's' : '')
+        + (nbBisets ? ' · <span style="color:' + BISET_COLOR + ';font-weight:700;">🔗 ' + nbBisets + ' bi-set' + (nbBisets > 1 ? 's' : '') + '</span>' : '')
+        + '</div>'
         + '</div>'
         + '</div>'
         + '<div style="display:flex;gap:6px;flex-shrink:0;">'
@@ -298,7 +355,7 @@ function openExEditor(pid, wi, sessIdx) {
     pid:    pid,
     wi:     wi,
     si:     sessIdx,
-    exs:    sess.exercises.map(function(ex) {
+    exs:    cleanBisets(sess.exercises.map(function(ex) {
       var copy = normEx(JSON.parse(JSON.stringify(ex)));
       var allEx = getAllExercises();
       var found = allEx.find(function(e) { return e.name.toLowerCase() === copy.name.toLowerCase(); });
@@ -311,7 +368,7 @@ function openExEditor(pid, wi, sessIdx) {
         return s;
       });
       return copy;
-    }),
+    })),
     locked: isPreset(pid)
   };
   var titleEl = document.getElementById('ee-title');
@@ -343,6 +400,7 @@ function renderExEditor() {
   }
   var allEx  = getAllExercises();
   var locked = eeState.locked;
+  var labels = bisetLabels(eeState.exs);
   var html   = '';
 
   var addExBtn = document.querySelector('.ex-editor-hdr .btn.g');
@@ -355,6 +413,7 @@ function renderExEditor() {
 
   for (var ei = 0; ei < eeState.exs.length; ei++) {
     var ex    = eeState.exs[ei];
+    var lbl   = labels[ei];
     var found = allEx.find(function(e) { return e.name.toLowerCase() === ex.name.toLowerCase(); });
     var cat   = (found && found.cat) || 'Personnalisé';
     var icon  = CAT_ICONS[cat] || CAT_ICONS['Personnalisé'];
@@ -363,6 +422,19 @@ function renderExEditor() {
     var rmBadge    = rm
       ? '<span style="font-size:10px;background:rgba(139,108,247,0.2);color:var(--purple2);border-radius:6px;padding:2px 7px;font-weight:700;margin-left:6px;">1RM ' + rm + ' kg</span>'
       : '';
+
+    // Bloc : un bi-set (2 exos) ou un exo seul — sert à griser ↑ / ↓
+    var blockStart = (lbl && lbl.pos === 2) ? ei - 1 : ei;
+    var blockEnd   = (lbl && lbl.pos === 1) ? ei + 1 : ei;
+
+    // ── Ouverture du cadre bi-set
+    if (lbl && lbl.pos === 1) {
+      html += '<div style="border:1.5px solid ' + BISET_COLOR + ';border-radius:var(--r);padding:6px;margin-bottom:10px;background:rgba(245,158,11,0.06);">'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;padding:2px 4px 6px;">'
+        + '<span style="font-size:12px;font-weight:800;color:' + BISET_COLOR + ';">🔗 Bi-set ' + lbl.letter + '</span>'
+        + '<span style="font-size:10px;color:var(--text2);">Enchaîner sans repos · repos après ' + lbl.letter + '2</span>'
+        + '</div>';
+    }
 
     var rows = '';
     for (var ri = 0; ri < ex.series.length; ri++) {
@@ -379,7 +451,7 @@ function renderExEditor() {
         + '</div>';
     }
 
-    html += '<div class="ee-ex-item">'
+    html += '<div class="ee-ex-item"' + (lbl ? ' style="margin-bottom:0;"' : '') + '>'
       + '<div class="ee-ex-hdr">'
       + '<div style="display:flex;align-items:center;gap:10px;">'
       + '<div style="width:36px;height:36px;border-radius:9px;overflow:hidden;flex-shrink:0;">'
@@ -389,6 +461,7 @@ function renderExEditor() {
       + '</div>'
       + '<div>'
       + '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">'
+      + bisetBadge(lbl)
       + '<div class="ee-ex-name">' + ex.name + '</div>'
       + rmBadge
       + '</div>'
@@ -397,8 +470,8 @@ function renderExEditor() {
       + '</div>'
       + (locked ? '' :
           '<div style="display:flex;gap:4px;">'
-          + '<button class="btn out sm" onclick="moveExInEE(' + ei + ',-1)" style="padding:4px 8px;"' + (ei === 0 ? ' disabled' : '') + '>↑</button>'
-          + '<button class="btn out sm" onclick="moveExInEE(' + ei + ',1)"  style="padding:4px 8px;"' + (ei === eeState.exs.length - 1 ? ' disabled' : '') + '>↓</button>'
+          + '<button class="btn out sm" onclick="moveExInEE(' + ei + ',-1)" style="padding:4px 8px;"' + (blockStart === 0 ? ' disabled' : '') + '>↑</button>'
+          + '<button class="btn out sm" onclick="moveExInEE(' + ei + ',1)"  style="padding:4px 8px;"' + (blockEnd === eeState.exs.length - 1 ? ' disabled' : '') + '>↓</button>'
           + '<button class="btn r sm" onclick="removeExFromEE(' + ei + ')">✕</button>'
           + '</div>')
       + '</div>'
@@ -414,8 +487,47 @@ function renderExEditor() {
       + rows
       + (locked ? '' : '<div style="padding:8px 10px;"><button class="btn g sm full" onclick="addSetToEE(' + ei + ')">＋ Série</button></div>')
       + '</div>';
+
+    // ── Barre de liaison entre ei et ei+1
+    if (ei < eeState.exs.length - 1) {
+      var nextLbl = labels[ei + 1];
+      if (lbl && lbl.pos === 1) {
+        // A1 → A2 : à l'intérieur du cadre bi-set
+        html += '<div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:6px 0;">'
+          + '<span style="font-size:11px;color:' + BISET_COLOR + ';font-weight:700;">⬇ sans repos</span>'
+          + (locked ? '' : '<button class="btn out sm" onclick="unlinkBisetEE(' + ei + ')" style="padding:3px 8px;font-size:11px;">✂️ Délier</button>')
+          + '</div>';
+      } else if (!locked && !lbl && !nextLbl) {
+        html += '<button onclick="linkBisetEE(' + ei + ')" style="display:block;width:100%;padding:5px;margin:-4px 0 10px;background:none;border:1.5px dashed ' + BISET_COLOR + ';border-radius:8px;color:' + BISET_COLOR + ';font-size:11px;font-weight:700;cursor:pointer;font-family:\'Inter\',sans-serif;opacity:0.75;">🔗 Lier en bi-set avec l\'exercice suivant</button>';
+      }
+    }
+
+    // ── Fermeture du cadre bi-set
+    if (lbl && lbl.pos === 2) html += '</div>';
   }
   el.innerHTML = html;
+}
+
+function linkBisetEE(ei) {
+  if (eeState.locked) return;
+  var exs = eeState.exs;
+  if (!exs[ei] || !exs[ei + 1]) return;
+  if (bisetPartner(exs, ei) >= 0 || bisetPartner(exs, ei + 1) >= 0) {
+    notify('Un exercice ne peut faire partie que d\'un seul bi-set');
+    return;
+  }
+  var id = newBisetId();
+  exs[ei].biset     = id;
+  exs[ei + 1].biset = id;
+  renderExEditor();
+}
+
+function unlinkBisetEE(ei) {
+  if (eeState.locked) return;
+  var exs = eeState.exs;
+  if (exs[ei])     delete exs[ei].biset;
+  if (exs[ei + 1]) delete exs[ei + 1].biset;
+  renderExEditor();
 }
 
 function eeUpdate(ei, ri, key, val) {
@@ -470,24 +582,49 @@ function addSetToEE(ei) {
   renderExEditor();
 }
 
+// Bloc = [début, fin] : le bi-set entier, ou l'exercice seul
+function _eeBlock(ei) {
+  var p = bisetPartner(eeState.exs, ei);
+  if (p < 0) return [ei, ei];
+  return [Math.min(ei, p), Math.max(ei, p)];
+}
+
+// Déplace le bloc entier (un bi-set bouge en un seul morceau)
 function moveExInEE(ei, dir) {
   if (eeState.locked) return;
-  var target = ei + dir;
-  if (target < 0 || target >= eeState.exs.length) return;
-  var tmp = eeState.exs[ei];
-  eeState.exs[ei] = eeState.exs[target];
-  eeState.exs[target] = tmp;
+  var exs   = eeState.exs;
+  var b     = _eeBlock(ei);
+  var len   = b[1] - b[0] + 1;
+  var block;
+  if (dir < 0) {
+    if (b[0] === 0) return;
+    var prev = _eeBlock(b[0] - 1);
+    block = exs.splice(b[0], len);
+    Array.prototype.splice.apply(exs, [prev[0], 0].concat(block));
+  } else {
+    if (b[1] === exs.length - 1) return;
+    var next    = _eeBlock(b[1] + 1);
+    var nextLen = next[1] - next[0] + 1;
+    block = exs.splice(b[0], len);
+    Array.prototype.splice.apply(exs, [b[0] + nextLen, 0].concat(block));
+  }
   renderExEditor();
 }
 
 function removeSetFromEE(ei, ri) { if (eeState.locked) return; eeState.exs[ei].series.splice(ri, 1); renderExEditor(); }
-function removeExFromEE(ei)       { if (eeState.locked) return; eeState.exs.splice(ei, 1);            renderExEditor(); }
+
+function removeExFromEE(ei) {
+  if (eeState.locked) return;
+  eeState.exs.splice(ei, 1);
+  cleanBisets(eeState.exs);
+  renderExEditor();
+}
 
 function saveExEditor() {
   if (eeState.locked) { closeExEditor(); return; }
   var prog = S.progs.find(function(p) { return p.id === eeState.pid; });
   if (!prog) return;
-  prog.weeks[eeState.wi].sessions[eeState.si].exercises = eeState.exs;
+  prog.weeks[eeState.wi].sessions[eeState.si].exercises = cleanBisets(eeState.exs);
   sv('programs', S.progs);
   closeExEditor();
   renderProgDetail();
