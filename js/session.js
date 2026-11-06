@@ -1,6 +1,8 @@
 // ══════════════════════════════════════════════════════════
 // js/session.js — Page Train + Logger de séance
 // ══════════════════════════════════════════════════════════
+// Bi-sets : utilise bisetPartner / bisetLabels / bisetBadge /
+// cleanBisets / BISET_COLOR définis dans js/programs.js
 
 // ════════════════════════════════════════════════════════
 // TIMER DE SÉANCE
@@ -243,7 +245,7 @@ function startSess(pid, wi, si) {
 
   S.ctx = { progId: pid, weekIdx: wi, sessionIdx: si, progName: prog.name, sessionName: sess.name };
   S.cur = sess.exercises.map(function(ex) {
-    return {
+    var item = {
       id:       ++xid,
       name:     ex.name,
       liftType: ex.liftType || ex.lift || '',
@@ -262,7 +264,10 @@ function startSess(pid, wi, si) {
         };
       })
     };
+    if (ex.biset) item.biset = ex.biset;
+    return item;
   });
+  cleanBisets(S.cur);
 
   sv('currentSession',        S.cur);
   sv('currentSessionContext', S.ctx);
@@ -296,9 +301,11 @@ function renderSess() {
     subEl.textContent   = S.ctx.progName    || '';
   }
 
-  var allEx = getAllExercises();
+  var allEx  = getAllExercises();
+  var labels = bisetLabels(S.cur);
 
   exEl.innerHTML = S.cur.map(function(ex, ei) {
+    var lbl   = labels[ei];
     var found = allEx.find(function(e) { return e.name.toLowerCase() === ex.name.toLowerCase(); });
     var cat   = (found && found.cat) || 'Personnalisé';
     var icon  = CAT_ICONS[cat] || CAT_ICONS['Personnalisé'];
@@ -313,7 +320,7 @@ function renderSess() {
         : 'grid-template-columns:24px 1fr 1fr 1.4fr 1fr 32px;';
       var inpAttr = locked ? ' disabled style="opacity:0.6;background:var(--surface2);"' : '';
 
-      return '<div class="sess-set-row" style="' + rowStyle + '">'
+      return '<div class="sess-set-row" id="set-' + ei + '-' + si + '" style="' + rowStyle + 'transition:background 0.4s;">'
         + '<span class="set-num">' + (si + 1) + '</span>'
         + '<input class="set-inp" type="number" value="' + s.reps + '" oninput="sessUpdate(' + ei + ',' + si + ',\'reps\',this.value)" placeholder="5"' + inpAttr + '>'
         + '<input class="set-inp" type="number" value="' + (s.pct || '') + '" oninput="sessUpdate(' + ei + ',' + si + ',\'pct\',this.value)" placeholder="—"' + inpAttr + '>'
@@ -323,12 +330,26 @@ function renderSess() {
         + '</div>';
     }).join('');
 
-    return '<div class="sess-ex">'
+    var html = '';
+
+    // ── Ouverture du cadre bi-set
+    if (lbl && lbl.pos === 1) {
+      html += '<div style="border:1.5px solid ' + BISET_COLOR + ';border-radius:var(--r);padding:6px;margin-bottom:12px;background:rgba(245,158,11,0.06);">'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;padding:2px 4px 6px;">'
+        + '<span style="font-size:12px;font-weight:800;color:' + BISET_COLOR + ';">🔗 Bi-set ' + lbl.letter + '</span>'
+        + '<span style="font-size:10px;color:var(--text2);">' + lbl.letter + '1 → ' + lbl.letter + '2 → repos</span>'
+        + '</div>';
+    }
+
+    html += '<div class="sess-ex"' + (lbl ? ' style="margin-bottom:0;"' : '') + '>'
       + '<div class="sess-ex-hdr" style="display:flex;align-items:center;justify-content:space-between;">'
       + '<div style="display:flex;align-items:center;gap:10px;">'
       + thumb
       + '<div>'
+      + '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">'
+      + bisetBadge(lbl)
       + '<div class="sess-ex-name">' + ex.name + '</div>'
+      + '</div>'
       + '<div style="font-size:10px;color:' + icon.color + ';font-weight:600;">' + cat + '</div>'
       + '</div>'
       + '</div>'
@@ -348,6 +369,15 @@ function renderSess() {
       + '<button class="btn r sm" onclick="removeSetToSess(' + ei + ')">✕ Supprimer série</button>'
       + '</div>'
       + '</div>';
+
+    if (lbl && lbl.pos === 1) {
+      html += '<div style="text-align:center;padding:6px 0;font-size:11px;font-weight:700;color:' + BISET_COLOR + ';">⬇ sans repos</div>';
+    }
+
+    // ── Fermeture du cadre bi-set
+    if (lbl && lbl.pos === 2) html += '</div>';
+
+    return html;
   }).join('');
 }
 
@@ -357,17 +387,53 @@ function sessUpdate(ei, si, key, val) {
   sv('currentSession', S.cur);
 }
 
+function _restSeconds(set) {
+  if (!set) return 0;
+  var r = set.rest;
+  return (r !== undefined && r !== null && r !== '') ? parseInt(r) : 180;
+}
+
+// Met en évidence la série à enchaîner (bi-set)
+function _focusSetRow(ei, si) {
+  var row = document.getElementById('set-' + ei + '-' + si);
+  if (!row) return;
+  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  var old = row.style.background;
+  row.style.background = 'rgba(245,158,11,0.30)';
+  setTimeout(function() { row.style.background = old; }, 1200);
+}
+
 function toggleDone(ei, si) {
   var wasDone = S.cur[ei].sets[si].done;
   S.cur[ei].sets[si].done = !wasDone;
   sv('currentSession', S.cur);
   renderSess();
 
-  if (!wasDone) {
-    var rest = S.cur[ei].sets[si].rest;
-    var seconds = (rest !== undefined && rest !== null && rest !== '') ? parseInt(rest) : 180;
-    if (seconds > 0) startRestTimer(seconds);
+  if (wasDone) return;
+
+  var thisSet = S.cur[ei].sets[si];
+  var pi      = bisetPartner(S.cur, ei);
+
+  // ── Exercice seul : repos normal
+  if (pi < 0) {
+    var sec = _restSeconds(thisSet);
+    if (sec > 0) startRestTimer(sec);
+    return;
   }
+
+  // ── Bi-set : la série correspondante du partenaire est-elle à faire ?
+  var partnerSet = S.cur[pi].sets[si];
+  if (partnerSet && !partnerSet.done) {
+    // → on enchaîne directement, pas de repos
+    if (navigator.vibrate) navigator.vibrate(120);
+    notify('➡️ Enchaîne : ' + S.cur[pi].name + ' (série ' + (si + 1) + ')');
+    _focusSetRow(pi, si);
+    return;
+  }
+
+  // → tour du bi-set terminé (ou le partenaire n'a pas cette série) : repos
+  var seconds = Math.max(_restSeconds(thisSet), partnerSet ? _restSeconds(partnerSet) : 0);
+  if (seconds > 0) startRestTimer(seconds);
 }
 
 function addSetToSess(ei) {
@@ -397,6 +463,7 @@ function removeExFromSess(ei) {
   var hasDone = S.cur[ei].sets.some(function(s) { return s.done; });
   if (hasDone && !confirm('Cet exercice a des séries validées. Le supprimer quand même ?')) return;
   S.cur.splice(ei, 1);
+  cleanBisets(S.cur);
   sv('currentSession', S.cur);
   renderSess();
 }
@@ -428,11 +495,13 @@ function confirmQuickEx() {
 
 function saveSession() {
   var exercises = S.cur.map(function(ex) {
-    return {
+    var out = {
       name:     ex.name,
       liftType: ex.liftType,
       sets:     ex.sets.filter(function(s) { return s.done; })
     };
+    if (ex.biset) out.biset = ex.biset;
+    return out;
   }).filter(function(e) { return e.sets.length > 0; });
 
   var totalDone = exercises.reduce(function(a, e) { return a + e.sets.length; }, 0);
