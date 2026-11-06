@@ -45,10 +45,60 @@ function exportData() {
   notify('✅ Export OK !');
 }
 
+// ════════════════════════════════════════════════════════
+// IMPORT
+// ════════════════════════════════════════════════════════
+
+/**
+ * Crée en exercices perso tous les exercices des programmes donnés
+ * qui n'existent pas encore dans la bibliothèque (intégrés + ExerciseDB + perso).
+ * Comparaison insensible à la casse et aux accents.
+ * @param {Array} programs
+ * @returns {number} nombre d'exercices créés
+ */
+function createMissingExercises(programs) {
+  function norm(s) {
+    return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  }
+  var catByLift = { squat: 'Jambes', bench: 'Pectoraux', deadlift: 'Dos' };
+
+  var known = {};
+  getAllExercises().forEach(function (e) { known[norm(e.name)] = true; });
+
+  var custom  = ld('customExercises', []) || [];
+  var created = 0;
+
+  (programs || []).forEach(function (p) {
+    (p.weeks || []).forEach(function (w) {
+      (w.sessions || []).forEach(function (s) {
+        (s.exercises || []).forEach(function (ex) {
+          var key = norm(ex.name);
+          if (!key || known[key]) return;
+          known[key] = true;
+          custom.push({
+            name:          ex.name,
+            desc:          'Importé avec le programme ' + p.name,
+            cat:           catByLift[ex.liftType] || 'Personnalisé',
+            lift:          ex.liftType || '',
+            defaultWeight: 0,
+            image:         '',
+            custom:        true
+          });
+          created++;
+        });
+      });
+    });
+  });
+
+  if (created) sv('customExercises', custom);
+  return created;
+}
+
 /**
  * Importe des données depuis un fichier JSON.
  * - Sauvegarde complète (sessions/oneRMs présents) → restauration totale (avec confirmation)
  * - Fichier "programmes seuls" → fusion avec les programmes existants (mise à jour si même id)
+ * Dans les deux cas, les exercices absents de la bibliothèque sont créés en exercices perso.
  * @param {Event} e - événement onChange de l'input file
  */
 function importData(e) {
@@ -73,33 +123,43 @@ function importData(e) {
         sv('oneRMs',        S.rm);
         sv('programs',      S.progs);
         sv('activeProgram', S.ap);
+        const nbEx = createMissingExercises(S.progs);
         renderDash();
-        notify('✅ Sauvegarde restaurée !');
+        notify('✅ Sauvegarde restaurée !' + (nbEx ? ' (' + nbEx + ' exercice(s) créé(s))' : ''));
 
       } else if (Array.isArray(d.programs) && d.programs.length) {
         let added = 0, updated = 0;
+        const imported = [];
         d.programs.forEach(p => {
           if (!p || !p.name || !Array.isArray(p.weeks)) return;
           if (!p.id) p.id = Date.now() + added;
           const idx = S.progs.findIndex(x => x.id === p.id);
           if (idx === -1) { S.progs.push(p); added++; }
           else            { S.progs[idx] = p; updated++; }
+          imported.push(p);
         });
         if (!added && !updated) { notify('❌ Aucun programme valide'); return; }
         sv('programs', S.progs);
+        const nbEx = createMissingExercises(imported);
         renderDash();
-        notify('✅ ' + added + ' ajouté(s), ' + updated + ' mis à jour');
+        notify('✅ ' + added + ' ajouté(s), ' + updated + ' mis à jour'
+          + (nbEx ? ', ' + nbEx + ' exercice(s) créé(s)' : ''));
 
       } else {
         notify('❌ Fichier invalide');
       }
     } catch (err) {
+      console.error('Import :', err);
       notify('❌ Fichier invalide');
     }
     e.target.value = '';
   };
   reader.readAsText(file);
 }
+
+// ════════════════════════════════════════════════════════
+// RESET
+// ════════════════════════════════════════════════════════
 
 function clearAllData() {
   if (!confirm('Effacer TOUTES les données ? Irréversible !')) return;
